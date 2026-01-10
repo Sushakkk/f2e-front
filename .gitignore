@@ -1,0 +1,10 @@
+*.log
+node_modules/
+public/
+dist/
+*.local
+.idea/
+.vscode/
+.DS_Store
+.swc/
+circular-deps.*

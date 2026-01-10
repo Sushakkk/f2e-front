@@ -1,0 +1,17 @@
+{
+  "bracketSameLine": false,
+  "bracketSpacing": true,
+  "endOfLine": "auto",
+  "tabWidth": 2,
+  "singleQuote": true,
+  "trailingComma": "es5",
+  "printWidth": 100,
+  "overrides": [
+    {
+      "files": ["**.*.css", "*.css", "**.*.scss", "*.scss"],
+      "options": {
+        "singleQuote": false
+      }
+    }
+  ]
+}

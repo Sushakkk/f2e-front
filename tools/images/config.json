@@ -1,0 +1,4 @@
+{
+  "srcPatterns": ["src/assets/images/**/*.{jpg,png,svg,jpeg}"],
+  "exclude": [".+.c.svg$"]
+}

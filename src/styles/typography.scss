@@ -1,0 +1,23 @@
+// Конфиг шрифтов задан в файле tools/fonts/config.ts и используется конфиге vitejs для встраивания в index.html на этапе сборки
+// Здесь достаточно задать только набор font-family для переиспользования в стилях
+
+$font-primary: "SF Pro Display", sans-serif;
+$font-secondary: "VK Sans Display", sans-serif;
+
+/// Задает дополнительный шрифт: **SF Pro Display**
+///
+/// @param {number} $weight
+///   Допустимые значения 400, 500, 600, 700
+@mixin font-primary($weight: 400) {
+  font-family: $font-primary;
+  font-weight: $weight;
+}
+
+/// Задает основной шрифт: **VK Sans Display**
+///
+/// @param {number} $weight
+///   Допустимые значения 300, 400, 500, 600, 700
+@mixin font-secondary($weight: 400) {
+  font-family: $font-secondary;
+  font-weight: $weight;
+}

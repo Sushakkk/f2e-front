@@ -1,0 +1,27 @@
+{
+  "fileExtensions": [
+    "ts",
+    "tsx",
+    "js",
+    "jsx"
+  ],
+  "excludeRegExp": [
+    "node_modules",
+    "\\.d\\.ts$",
+    "\\.test\\.",
+    "\\.spec\\.",
+    "\\.stories\\.",
+    "tools/",
+    "static/",
+    "__tests__/"
+  ],
+  "tsConfig": "./tsconfig.json",
+  "webpack": false,
+  "includeNpm": false,
+  "circular": true,
+  "detectiveOptions": {
+    "ts": {
+      "skipTypeImports": true
+    }
+  }
+}

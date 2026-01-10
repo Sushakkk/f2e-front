@@ -1,0 +1,41 @@
+$font-base-url: "https://public-data.hb.bizmrg.com/fonts/SFProDisplay/";
+
+@font-face {
+  font-family: "SF Pro Display";
+  src:
+    url("#{font-base-url}SFProDisplay-Regular.woff2") format("woff2"),
+    url("#{font-base-url}SFProDisplay-Regular.woff") format("woff");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "SF Pro Display";
+  src:
+    url("#{font-base-url}SFProDisplay-Medium.woff2") format("woff2"),
+    url("#{font-base-url}SFProDisplay-Medium.woff") format("woff");
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "SF Pro Display";
+  src:
+    url("#{font-base-url}SFProDisplay-Semibold.woff2") format("woff2"),
+    url("#{font-base-url}SFProDisplay-Semibold.woff") format("woff");
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "SF Pro Display";
+  src:
+    url("#{font-base-url}SFProDisplay-Bold.woff2") format("woff2"),
+    url("#{font-base-url}SFProDisplay-Bold.woff") format("woff");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
