@@ -5,7 +5,60 @@
 @import "styles/theme";
 @import "styles/sizes";
 @import "styles/typography";
+@import "./breakpoints.scss";
 
 @mixin flexGap($row: 0, $col: $row) {
   gap: $row $col;
+}
+
+@mixin page {
+  padding: 0 30px;
+  overflow: hidden;
+  max-width: 1440px;
+  margin: 0 auto;
+  padding-top: 86px;
+
+  @include media-down(sm) {
+    padding: 0 16px;
+    padding-top: 60px;
+  }
+}
+
+// ≥ breakpoint
+@mixin media-up($key) {
+  @media (min-width: #{map-get($breakpoints, $key)}px) {
+    @content;
+  }
+}
+
+// ≤ breakpoint
+@mixin media-down($key) {
+  @media (max-width: #{map-get($breakpoints, $key)}px) {
+    @content;
+  }
+}
+
+// диапазон
+@mixin media-between($from, $to) {
+  @media (
+    min-width: #{map-get($breakpoints, $from)}px
+  ) and (
+    max-width: #{map-get($breakpoints, $to)}px
+  ) {
+    @content;
+  }
+}
+
+@mixin mobile {
+  @include media-down(sm) {
+    @content;
+  }
+}
+
+@mixin hover {
+  @media (hover: hover) and (pointer: fine) {
+    &:hover {
+      @content;
+    }
+  }
 }

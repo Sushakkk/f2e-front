@@ -11,13 +11,16 @@ export const LAYOUT_CONFIG: Record<RoutePath, LayoutConfig> = {
   [RoutePath.error]: {
     withHeader: false,
   },
-  [RoutePath.onboarding]: {
-    withHeader: false,
-  },
   [RoutePath.home]: {
     withHeader: true,
   },
-  [RoutePath.about]: {
+  [RoutePath.calendar]: {
+    withHeader: true,
+  },
+  [RoutePath.map]: {
+    withHeader: true,
+  },
+  [RoutePath.profile]: {
     withHeader: true,
   },
 };

@@ -1,0 +1,12 @@
+@import "styles/mixins";
+
+.page {
+  @include page;
+  padding-bottom: 72px; /* чтобы контент не перекрывался мобильным футером */
+}
+
+.title {
+  margin: 0;
+  font-size: 28px;
+  font-weight: 600;
+}

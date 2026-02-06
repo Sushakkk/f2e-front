@@ -1,0 +1,43 @@
+@import "styles/mixins";
+
+.root {
+  display: none;
+
+  @include mobile {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+
+    padding: 8px 16px;
+    padding-bottom: calc(8px + env(safe-area-inset-bottom, 0px));
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    background-color: $color-bg-second;
+    z-index: 1;
+  }
+}
+
+.item {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+}
+
+.icon {
+  display: inline-flex;
+  color: $color-white;
+  transition: color 150ms ease;
+}
+
+.iconActive {
+  color: $color-accent;
+}

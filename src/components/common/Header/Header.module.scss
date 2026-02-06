@@ -1,0 +1,51 @@
+@import "styles/mixins";
+
+.header {
+  width: 100%;
+  position: fixed;
+  padding: 16px 30px;
+  display: flex;
+  align-items: center;
+  background-color: $color-bg-second;
+  z-index: 40;
+
+  @include mobile {
+    justify-content: space-between;
+    padding: 8px 16px;
+  }
+}
+
+.logo {
+  font-size: 32px;
+  font-weight: 600;
+  color: $color-accent;
+
+  @include mobile {
+    font-size: 24px;
+  }
+}
+
+.nav {
+  display: flex;
+  margin: 0 auto;
+  gap: 34px;
+
+  @include mobile {
+    display: none;
+  }
+}
+
+.link {
+  font-size: 18px;
+  font-weight: 600;
+
+  transition: color 0.3s ease;
+
+  @include hover {
+    color: $color-accent;
+  }
+}
+
+.linkActive {
+  color: $color-accent;
+}
