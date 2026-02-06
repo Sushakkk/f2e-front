@@ -38,6 +38,12 @@
 .link {
   font-size: 18px;
   font-weight: 600;
+
+  transition: color 0.3s ease;
+
+  @include hover {
+    color: $color-accent;
+  }
 }
 
 .linkActive {
