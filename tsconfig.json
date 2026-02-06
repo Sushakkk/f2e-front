@@ -33,7 +33,8 @@
       "store/*": ["store/*"],
       "styles/*": ["styles/*"],
       "types/*": ["types/*"],
-      "utils/*": ["utils/*"]
+      "utils/*": ["utils/*"],
+      "layouts/*": ["layouts/*"]
     }
   },
   "include": ["src"]

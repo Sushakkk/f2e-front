@@ -1,10 +1,12 @@
 import * as React from 'react';
 import { createBrowserRouter } from 'react-router-dom';
 
-import { AppLayout, ErrorFallback } from 'components/special';
-import { AboutPage } from 'pages/AboutPage';
+import { ErrorFallback } from 'components/special';
+import AppLayout from 'layouts/AppLayout/AppLayout';
+import CalendarPage from 'pages/CalendarPage/CalendarPage';
 import { HomePage } from 'pages/HomePage';
-import { OnboardingPage } from 'pages/OnboardingPage';
+import MapPage from 'pages/MapPage/MapPage';
+import ProfilePage from 'pages/ProfilePage/ProfilePage';
 
 import { RoutePath } from './paths';
 
@@ -15,23 +17,24 @@ export const ROUTER = createBrowserRouter([
     errorElement: <ErrorFallback />,
     children: [
       {
-        children: [
-          {
-            index: false,
-          },
-          {
-            path: RoutePath.onboarding,
-            element: <OnboardingPage />,
-          },
-          {
-            path: RoutePath.home,
-            element: <HomePage />,
-          },
-          {
-            path: RoutePath.about,
-            element: <AboutPage />,
-          },
-        ],
+        index: true,
+        element: <HomePage />,
+      },
+      {
+        path: RoutePath.home,
+        element: <HomePage />,
+      },
+      {
+        path: RoutePath.calendar,
+        element: <CalendarPage />,
+      },
+      {
+        path: RoutePath.map,
+        element: <MapPage />,
+      },
+      {
+        path: RoutePath.profile,
+        element: <ProfilePage />,
       },
     ],
   },

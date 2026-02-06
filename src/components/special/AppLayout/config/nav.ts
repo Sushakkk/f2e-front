@@ -10,8 +10,4 @@ export const NAV_CONFIGS: NavConfig[] = [
     path: RoutePath.home,
     title: 'Home',
   },
-  {
-    path: RoutePath.about,
-    title: 'About',
-  },
 ];
