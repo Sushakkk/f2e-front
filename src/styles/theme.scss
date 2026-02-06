@@ -6,6 +6,27 @@ $color-white: #fff;
 $color-accent: #7707b8;
 $color-bg: #11181c;
 
-$color-bg-second: #0c0e10;
+$color-bg-secondary: #0c0e10;
+$color-bg-tertiary: #192126;
 
-$color-text-secondary: #d9d9d9;
+$color-white-secondary: #d9d9d9;
+
+
+$color-overlay-strong: rgba($color-black, 0.65);
+$color-overlay-none: rgba($color-black, 0);
+
+// gradients
+$color-overlay-gradient: linear-gradient(
+    90deg,
+    $color-overlay-strong 0%,
+    $color-overlay-none 28%,
+    $color-overlay-none 72%,
+    $color-overlay-strong 100%
+  ),
+  linear-gradient(
+    180deg,
+    $color-overlay-strong 0%,
+    $color-overlay-none 28%,
+    $color-overlay-none 72%,
+    $color-overlay-strong 100%
+  );
