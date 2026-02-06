@@ -1,5 +1,24 @@
 @import "styles/mixins";
 
 .page {
+  position: relative;
   @include page;
+}
+
+
+.cards {
+  margin-top: 30px;
+  display: grid;
+  gap: 20px;
+
+
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+
+  align-items: stretch;
+
+
+  @include mobile {
+   margin-top: 24px;
+    grid-template-columns: 1fr;
+  }
 }

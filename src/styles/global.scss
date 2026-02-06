@@ -21,11 +21,11 @@ body {
   padding: 0;
 
   width: 100%;
-  min-height: 100%;
+  height: 100%;
   overflow-x: hidden;
-  background-color: $color-bg;
+
+  background: $color-black;
   color: $color-white;
-  overscroll-behavior: none;
 }
 
 a {
@@ -40,6 +40,5 @@ textarea {
 
 #root {
   width: 100%;
-  min-height: 100%;
-  background-color: $color-bg;
+  height: 100%;
 }
