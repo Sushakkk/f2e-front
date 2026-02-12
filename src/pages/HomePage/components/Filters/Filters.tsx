@@ -1,27 +1,16 @@
+import { observer } from 'mobx-react';
 import * as React from 'react';
 
 import { Button } from 'components/common';
-import { CourseConfigItem, CourseLevel } from 'pages/HomePage/config/cards';
-import { COURSE_LEVEL_LABELS } from 'pages/HomePage/config/levels';
+import { CourseConfigItem } from 'pages/HomePage/config/cards';
+import { useLocalStore } from 'store/hooks/useLocalStore';
 
 import s from './Filters.module.scss';
-import { PickerInput } from './PickerInput';
-import { DateRangePicker } from './DateRangePicker';
-import { SelectDropdown } from './SelectDropdown';
-
-export type CoursesFiltersValue = {
-  titles: string[];
-  levels: CourseLevel[];
-  teachers?: string[];
-  studios?: string[];
-  weekdays?: string[];
-  dateFrom?: string;
-  dateTo?: string;
-  timeFrom?: string;
-  timeTo?: string;
-  priceFrom?: number;
-  priceTo?: number;
-};
+import { FiltersStore } from 'store/FiltersStore';
+import { PickerInput } from './components/PickerInput';
+import { DateRangePicker } from './components/DateRangePicker';
+import { SelectDropdown } from 'components/common/SelectDropdown';
+import type { CoursesFiltersValue } from './types';
 
 type Props = {
   courses: CourseConfigItem[];
@@ -30,126 +19,71 @@ type Props = {
   onClose?: () => void;
 };
 
-type DraftState = {
-  titles: string[];
-  levels: CourseLevel[];
-  teachers: string[];
-  studios: string[];
-  weekdays: string[];
-  dateFrom: string;
-  dateTo: string;
-  timeFrom: string;
-  timeTo: string;
-  priceFrom: string;
-  priceTo: string;
-};
-
-function uniqSorted(values: string[]) {
-  return Array.from(new Set(values)).sort((a, b) => a.localeCompare(b, 'ru'));
-}
-
-const LEVELS_ORDER: CourseLevel[] = ['Beginner', 'Intermediate', 'Advanced'];
-
-function toDraft(value: CoursesFiltersValue): DraftState {
-  return {
-    titles: value.titles ?? [],
-    levels: value.levels ?? [],
-    teachers: value.teachers ?? [],
-    studios: value.studios ?? [],
-    weekdays: value.weekdays ?? [],
-    dateFrom: value.dateFrom ?? '',
-    dateTo: value.dateTo ?? '',
-    timeFrom: value.timeFrom ?? '',
-    timeTo: value.timeTo ?? '',
-    priceFrom: value.priceFrom === undefined ? '' : String(value.priceFrom),
-    priceTo: value.priceTo === undefined ? '' : String(value.priceTo),
-  };
-}
-
-function parseNumberOrUndef(v: string): number | undefined {
-  const n = Number(v);
-
-  return Number.isFinite(n) ? n : undefined;
-}
-
-function toApplied(draft: DraftState): CoursesFiltersValue {
-  const priceFrom = draft.priceFrom.trim() ? parseNumberOrUndef(draft.priceFrom) : undefined;
-  const priceTo = draft.priceTo.trim() ? parseNumberOrUndef(draft.priceTo) : undefined;
-
-  return {
-    titles: draft.titles,
-    levels: draft.levels,
-    teachers: draft.teachers.length > 0 ? draft.teachers : undefined,
-    studios: draft.studios.length > 0 ? draft.studios : undefined,
-    weekdays: draft.weekdays.length > 0 ? draft.weekdays : undefined,
-    dateFrom: draft.dateFrom || undefined,
-    dateTo: draft.dateTo || undefined,
-    timeFrom: draft.timeFrom || undefined,
-    timeTo: draft.timeTo || undefined,
-    priceFrom,
-    priceTo,
-  };
-}
-
-const WEEKDAYS: { value: string; label: string }[] = [
-  { value: 'monday', label: 'Понедельник' },
-  { value: 'tuesday', label: 'Вторник' },
-  { value: 'wednesday', label: 'Среда' },
-  { value: 'thursday', label: 'Четверг' },
-  { value: 'friday', label: 'Пятница' },
-  { value: 'saturday', label: 'Суббота' },
-  { value: 'sunday', label: 'Воскресенье' },
-];
-
-export const Filters: React.FC<Props> = ({ courses, value, onApply, onClose }) => {
-  const [draft, setDraft] = React.useState<DraftState>(() => toDraft(value));
+const Filters: React.FC<Props> = observer(({ courses, value, onApply, onClose }) => {
+  const store = useLocalStore(
+    () => new FiltersStore(courses, value, onApply, onClose),
+    [courses, onApply, onClose],
+  );
 
   React.useEffect(() => {
-    setDraft(toDraft(value));
-  }, [value]);
+    store.syncFromValue(value);
+  }, [store, value]);
 
-  const isCourseLevel = React.useCallback((v: string): v is CourseLevel => {
-    return LEVELS_ORDER.includes(v as CourseLevel);
-  }, []);
+  const { draft } = store;
 
-  const titleOptions = React.useMemo(() => {
-    return uniqSorted(courses.map((c) => c.title).filter(Boolean));
-  }, [courses]);
+  const handleToggleTitle = React.useCallback(
+    (t: string) => store.toggleTitle(t),
+    [store],
+  );
 
-  const teacherOptions = React.useMemo(() => {
-    return uniqSorted(courses.map((c) => c.teacher).filter(Boolean));
-  }, [courses]);
+  const handleLevelsChange = React.useCallback(
+    (next: string[]) => store.setLevels(next),
+    [store],
+  );
 
-  const levelOptions = React.useMemo(() => {
-    const set = new Set<CourseLevel>();
+  const handleDateRangeChange = React.useCallback(
+    ({ from, to }: { from: string; to: string }) => store.setDateRange(from, to),
+    [store],
+  );
 
-    courses.forEach((c) => set.add(c.level));
+  const handleTimeFromChange = React.useCallback(
+    (v: string) => store.setTimeFrom(v),
+    [store],
+  );
 
-    return LEVELS_ORDER.filter((x) => set.has(x));
-  }, [courses]);
+  const handleTimeToChange = React.useCallback(
+    (v: string) => store.setTimeTo(v),
+    [store],
+  );
 
-  const toggleTitle = React.useCallback((title: string) => {
-    setDraft((prev) => {
-      const next = new Set(prev.titles);
+  const handleWeekdaysChange = React.useCallback(
+    (next: string[]) => store.setWeekdays(next),
+    [store],
+  );
 
-      if (next.has(title)) {
-        next.delete(title);
-      } else {
-        next.add(title);
-      }
+  const handleTeachersChange = React.useCallback(
+    (v: string[]) => store.setTeachers(v),
+    [store],
+  );
 
-      return { ...prev, titles: Array.from(next) };
-    });
-  }, []);
+  const handleStudiosChange = React.useCallback(
+    (v: string[]) => store.setStudios(v),
+    [store],
+  );
 
-  const onReset = React.useCallback(() => {
-    onApply({ titles: [], levels: [] });
-  }, [onApply]);
+  const handlePriceFromChange = React.useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => store.setPriceFrom(e.target.value),
+    [store],
+  );
 
-  const onSubmit = React.useCallback(() => {
-    onApply(toApplied(draft));
-    onClose?.();
-  }, [draft, onApply, onClose]);
+  const handlePriceToChange = React.useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => store.setPriceTo(e.target.value),
+    [store],
+  );
+
+  const handleReset = React.useCallback(() => store.reset(), [store]);
+
+  const handleSubmit = React.useCallback(() => store.submit(), [store]);
 
   return (
     <div className={s.root}>
@@ -169,13 +103,13 @@ export const Filters: React.FC<Props> = ({ courses, value, onApply, onClose }) =
       <div className={s.section}>
         <label className={s.label}>Тип танца</label>
         <div className={s.options}>
-          {titleOptions.map((t) => (
+          {store.titleOptions.map((t) => (
             <button
               key={t}
               type="button"
               className={s.optionBtn}
               data-active={draft.titles.includes(t)}
-              onClick={() => toggleTitle(t)}
+              onClick={() => handleToggleTitle(t)}
             >
               {t}
             </button>
@@ -189,13 +123,8 @@ export const Filters: React.FC<Props> = ({ courses, value, onApply, onClose }) =
           value={draft.levels}
           placeholder="Выберите уровень"
           clearLabel="Выберите уровень"
-          options={levelOptions.map((lvl) => ({ value: lvl, label: COURSE_LEVEL_LABELS[lvl] }))}
-          onChange={(next) =>
-            setDraft((p) => ({
-              ...p,
-              levels: next.filter(isCourseLevel),
-            }))
-          }
+          options={store.levelOptions}
+          onChange={handleLevelsChange}
           searchable
         />
       </div>
@@ -205,7 +134,7 @@ export const Filters: React.FC<Props> = ({ courses, value, onApply, onClose }) =
           <DateRangePicker
             from={draft.dateFrom}
             to={draft.dateTo}
-            onChange={({ from, to }) => setDraft((p) => ({ ...p, dateFrom: from, dateTo: to }))}
+            onChange={handleDateRangeChange}
           />
           <div className={s.timeRange}>
             <div className={s.rangeInline}>
@@ -214,7 +143,7 @@ export const Filters: React.FC<Props> = ({ courses, value, onApply, onClose }) =
                 <PickerInput
                   type="time"
                   value={draft.timeFrom}
-                  onChange={(v) => setDraft((p) => ({ ...p, timeFrom: v }))}
+                  onChange={handleTimeFromChange}
                 />
               </div>
             </div>
@@ -224,7 +153,7 @@ export const Filters: React.FC<Props> = ({ courses, value, onApply, onClose }) =
                 <PickerInput
                   type="time"
                   value={draft.timeTo}
-                  onChange={(v) => setDraft((p) => ({ ...p, timeTo: v }))}
+                  onChange={handleTimeToChange}
                 />
               </div>
             </div>
@@ -237,10 +166,10 @@ export const Filters: React.FC<Props> = ({ courses, value, onApply, onClose }) =
         <SelectDropdown
           mode="multi"
           value={draft.weekdays}
-          options={WEEKDAYS}
+          options={store.weekdayOptions}
           placeholder="Выберите день"
           clearLabel="Выберите день"
-          onChange={(next) => setDraft((p) => ({ ...p, weekdays: next }))}
+          onChange={handleWeekdaysChange}
           searchable
         />
       </div>
@@ -251,8 +180,8 @@ export const Filters: React.FC<Props> = ({ courses, value, onApply, onClose }) =
           value={draft.teachers}
           placeholder="Выберите преподавателя"
           clearLabel="Выберите преподавателя"
-          options={teacherOptions.map((t) => ({ value: t, label: t }))}
-          onChange={(v) => setDraft((p) => ({ ...p, teachers: v }))}
+          options={store.teacherOptions}
+          onChange={handleTeachersChange}
           searchable
         />
       </div>
@@ -263,11 +192,8 @@ export const Filters: React.FC<Props> = ({ courses, value, onApply, onClose }) =
           value={draft.studios}
           placeholder="Выберите студию"
           clearLabel="Выберите студию"
-          options={['ТанцХаб', 'DanceLab', 'Студия движения', 'Арт-пространство', 'Грация'].map((x) => ({
-            value: x,
-            label: x,
-          }))}
-          onChange={(v) => setDraft((p) => ({ ...p, studios: v }))}
+          options={store.studioOptions}
+          onChange={handleStudiosChange}
           searchable
         />
       </div>
@@ -280,7 +206,7 @@ export const Filters: React.FC<Props> = ({ courses, value, onApply, onClose }) =
             placeholder="от"
             min={0}
             value={draft.priceFrom}
-            onChange={(e) => setDraft((p) => ({ ...p, priceFrom: e.target.value }))}
+            onChange={handlePriceFromChange}
           />
           <span className={s.priceMeta}>-</span>
           <input
@@ -289,21 +215,23 @@ export const Filters: React.FC<Props> = ({ courses, value, onApply, onClose }) =
             placeholder="до"
             min={0}
             value={draft.priceTo}
-            onChange={(e) => setDraft((p) => ({ ...p, priceTo: e.target.value }))}
+            onChange={handlePriceToChange}
           />
-          <span className={s.priceMeta}>руб.</span>
+          <span className={s.priceMeta}>руб</span>
         </div>
       </div>
       <div className={s.actions}>
-        <Button mode="dark" type="button" onClick={onReset}>
+        <Button mode="dark" type="button" onClick={handleReset}>
           Сбросить фильтры
         </Button>
-        <Button mode="purple" type="button" onClick={onSubmit}>
+        <Button mode="purple" type="button" onClick={handleSubmit}>
           Применить фильтры
         </Button>
       </div>
     </div>
   );
-};
+});
+
+export type { CoursesFiltersValue };
 
 export default React.memo(Filters);

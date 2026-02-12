@@ -1,0 +1,37 @@
+@import "styles/mixins";
+
+.item {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 10px;
+  border-radius: 10px;
+  border: 1px solid transparent;
+  background: transparent;
+  color: $color-white;
+  cursor: pointer;
+  text-align: left;
+
+  &[data-selected="true"] {
+    background: rgba($color-accent, 0.16);
+    border-color: rgba($color-accent, 0.45);
+  }
+
+  @include hover {
+    background: rgba($color-white, 0.06);
+  }
+
+  &:focus-visible {
+    outline: none;
+    border-color: $color-accent;
+  }
+}
+
+.check {
+  width: 18px;
+  display: inline-flex;
+  justify-content: center;
+  color: $color-accent;
+  font-weight: 700;
+}
