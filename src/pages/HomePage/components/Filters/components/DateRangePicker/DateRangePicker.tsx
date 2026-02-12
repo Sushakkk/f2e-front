@@ -1,10 +1,10 @@
 import * as React from 'react';
 
-import { CalendarGrid, RangeTrigger } from './components';
-import type { ActiveField, DateRangeValue } from './types';
 import { clampRange, fromIsoDate, startOfMonth, toIsoDate } from 'utils/dateUtils';
 
 import s from './DateRangePicker.module.scss';
+import { CalendarGrid, RangeTrigger } from './components';
+import type { ActiveField, DateRangeValue } from './types';
 
 type Props = {
   from: string;
@@ -27,10 +27,12 @@ export const DateRangePicker: React.FC<Props> = ({ from, to, onChange }) => {
   const [month, setMonth] = React.useState(() => startOfMonth(fromDate ?? toDate ?? new Date()));
 
   React.useEffect(() => {
-    if (!open) return;
+    if (!open) {
+      return;
+    }
 
     setMonth(
-      startOfMonth((active === 'from' ? fromDate : toDate) ?? fromDate ?? toDate ?? new Date()),
+      startOfMonth((active === 'from' ? fromDate : toDate) ?? fromDate ?? toDate ?? new Date())
     );
   }, [open, active, fromDate, toDate]);
 
@@ -44,7 +46,9 @@ export const DateRangePicker: React.FC<Props> = ({ from, to, onChange }) => {
     }
 
     function onDocKeyDown(e: KeyboardEvent) {
-      if (e.key === 'Escape') setOpen(false);
+      if (e.key === 'Escape') {
+        setOpen(false);
+      }
     }
 
     document.addEventListener('mousedown', onDocMouseDown);
@@ -57,7 +61,9 @@ export const DateRangePicker: React.FC<Props> = ({ from, to, onChange }) => {
   }, []);
 
   React.useEffect(() => {
-    if (open) return;
+    if (open) {
+      return;
+    }
 
     requestAnimationFrame(() => {
       fromBtnRef.current?.blur();
@@ -79,7 +85,7 @@ export const DateRangePicker: React.FC<Props> = ({ from, to, onChange }) => {
       setActive(field);
       setOpen(true);
     },
-    [open, active],
+    [open, active]
   );
 
   const onPick = React.useCallback(
@@ -110,7 +116,7 @@ export const DateRangePicker: React.FC<Props> = ({ from, to, onChange }) => {
       });
       requestAnimationFrame(() => toBtnRef.current?.blur());
     },
-    [active, normalized.from, normalized.to, onChange],
+    [active, normalized.from, normalized.to, onChange]
   );
 
   return (
@@ -124,14 +130,8 @@ export const DateRangePicker: React.FC<Props> = ({ from, to, onChange }) => {
         toBtnRef={toBtnRef}
         onToggle={toggleField}
       />
-
       {open && (
-        <CalendarGrid
-          month={month}
-          normalized={normalized}
-          onSetMonth={setMonth}
-          onPick={onPick}
-        />
+        <CalendarGrid month={month} normalized={normalized} onSetMonth={setMonth} onPick={onPick} />
       )}
     </div>
   );

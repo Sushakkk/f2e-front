@@ -2,7 +2,7 @@ import * as React from 'react';
 
 export function useClickOutside(
   rootRef: React.RefObject<HTMLElement | null>,
-  onClose: () => void,
+  onClose: () => void
 ): void {
   React.useEffect(() => {
     function onDocMouseDown(e: MouseEvent) {

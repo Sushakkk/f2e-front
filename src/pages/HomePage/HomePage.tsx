@@ -2,11 +2,13 @@ import cn from 'classnames';
 import { observer } from 'mobx-react';
 import * as React from 'react';
 
+import { FiltersStore } from 'store/FiltersStore';
+import { useLocalStore } from 'store/hooks/useLocalStore';
 import { useCoursesSearch } from 'utils/useCoursesSearch';
 
 import s from './HomePage.module.scss';
 import { Card, Filters, Recommendations, SearchBar } from './components';
-import { COURSES_CONFIG, CourseConfigItem } from './config/cards';
+import { COURSES_CONFIG } from './config/cards';
 
 function useMediaQuery(query: string) {
   const [matches, setMatches] = React.useState(() => window.matchMedia(query).matches);
@@ -19,66 +21,43 @@ function useMediaQuery(query: string) {
 
     if (typeof mq.addEventListener === 'function') {
       mq.addEventListener('change', onChange);
+
       return () => mq.removeEventListener('change', onChange);
     }
 
     mq.addListener(onChange);
+
     return () => mq.removeListener(onChange);
   }, [query]);
 
   return matches;
 }
 
-function applyCoursesFilters(
-  courses: CourseConfigItem[],
-  filters: React.ComponentProps<typeof Filters>['value']
-) {
-  const titles = filters.titles ?? [];
-  const levels = filters.levels ?? [];
-  const teachers =
-    (filters as unknown as { teachers?: string[]; teacher?: string }).teachers ??
-    ((filters as unknown as { teacher?: string }).teacher
-      ? [(filters as unknown as { teacher?: string }).teacher as string]
-      : []);
-  const priceFrom = filters.priceFrom;
-  const priceTo = filters.priceTo;
-
-  return courses.filter((course) => {
-    if (titles.length > 0 && !titles.includes(course.title)) {
-      return false;
-    }
-
-    if (levels.length > 0 && !levels.includes(course.level)) {
-      return false;
-    }
-
-    if (teachers.length > 0 && !teachers.includes(course.teacher)) {
-      return false;
-    }
-
-    if (priceFrom !== undefined && course.price < priceFrom) {
-      return false;
-    }
-
-    if (priceTo !== undefined && course.price > priceTo) {
-      return false;
-    }
-
-    return true;
-  });
-}
-
 const HomePage: React.FC = () => {
   const isMobile = useMediaQuery('(max-width: 992px)');
   const [isFiltersOpen, setIsFiltersOpen] = React.useState(false);
-  const [filters, setFilters] = React.useState<React.ComponentProps<typeof Filters>['value']>({
-    titles: [],
-    levels: [],
-  });
+
+  const handleClose = React.useCallback(() => setIsFiltersOpen(false), []);
+
+  const filtersStore = useLocalStore(
+    () =>
+      new FiltersStore(
+        COURSES_CONFIG,
+        { titles: [], levels: [] },
+        isMobile ? handleClose : undefined
+      ),
+    [handleClose]
+  );
+
+  const sidebarRef = React.useRef<HTMLElement | null>(null);
 
   React.useEffect(() => {
     if (!isMobile || !isFiltersOpen) {
       return () => undefined;
+    }
+
+    if (sidebarRef.current) {
+      sidebarRef.current.scrollTop = 0;
     }
 
     const prevHtmlOverflow = document.documentElement.style.overflow;
@@ -93,11 +72,9 @@ const HomePage: React.FC = () => {
     };
   }, [isFiltersOpen]);
 
-  const coursesWithFilters = React.useMemo(() => {
-    return applyCoursesFilters(COURSES_CONFIG, filters);
-  }, [filters]);
-
-  const { search, setSearch, filteredCourses, isEmpty } = useCoursesSearch(coursesWithFilters);
+  const { search, setSearch, filteredCourses, isEmpty } = useCoursesSearch(
+    filtersStore.filteredCourses
+  );
   const isSingleCard = !isEmpty && filteredCourses.length === 1;
 
   return (
@@ -119,16 +96,12 @@ const HomePage: React.FC = () => {
           {isEmpty && <div className={s.empty}>Ничего не найдено</div>}
         </div>
         <aside
+          ref={sidebarRef}
           className={cn(s.sidebar, isMobile && (isFiltersOpen ? s.sidebarOpen : s.sidebarClosed))}
           aria-label="Фильтры"
           aria-hidden={isMobile ? !isFiltersOpen : false}
         >
-          <Filters
-            courses={COURSES_CONFIG}
-            value={filters}
-            onClose={isMobile ? () => setIsFiltersOpen(false) : undefined}
-            onApply={(v: React.ComponentProps<typeof Filters>['value']) => setFilters(v)}
-          />
+          <Filters store={filtersStore} onClose={isMobile ? handleClose : undefined} />
         </aside>
       </div>
     </div>

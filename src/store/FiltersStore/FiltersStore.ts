@@ -1,10 +1,5 @@
 import { action, computed, makeObservable, observable, IReactionDisposer } from 'mobx';
 
-import { CourseConfigItem, CourseLevel } from 'pages/HomePage/config/cards';
-import { COURSE_LEVEL_LABELS } from 'pages/HomePage/config/levels';
-import type { CoursesFiltersValue, DraftState } from 'pages/HomePage/components/Filters/types';
-import { ILocalStore } from 'store/interfaces';
-
 import {
   EMPTY_FILTERS,
   LEVELS_ORDER,
@@ -14,29 +9,31 @@ import {
   toApplied,
   uniqSorted,
 } from 'pages/HomePage/components/Filters/config';
+import type { CoursesFiltersValue, DraftState } from 'pages/HomePage/components/Filters/types';
+import { CourseConfigItem, CourseLevel } from 'pages/HomePage/config/cards';
+import { COURSE_LEVEL_LABELS } from 'pages/HomePage/config/levels';
+import { ILocalStore } from 'store/interfaces';
+import { fromIsoDate, parseDDMM, rangesOverlap } from 'utils/dateUtils';
 
 export class FiltersStore implements ILocalStore {
   draft: DraftState;
+  applied: CoursesFiltersValue;
 
   private _courses: CourseConfigItem[];
-  private _onApply: (v: CoursesFiltersValue) => void;
   private _onClose?: () => void;
   private _disposers: IReactionDisposer[] = [];
 
-  constructor(
-    courses: CourseConfigItem[],
-    value: CoursesFiltersValue,
-    onApply: (v: CoursesFiltersValue) => void,
-    onClose?: () => void,
-  ) {
+  constructor(courses: CourseConfigItem[], value: CoursesFiltersValue, onClose?: () => void) {
     this._courses = courses;
-    this._onApply = onApply;
     this._onClose = onClose;
     this.draft = toDraft(value);
+    this.applied = value;
 
     makeObservable<this, '_courses'>(this, {
       draft: observable,
+      applied: observable.ref,
       _courses: observable.ref,
+      filteredCourses: computed,
       titleOptions: computed,
       teacherOptions: computed,
       levelOptions: computed,
@@ -56,6 +53,57 @@ export class FiltersStore implements ILocalStore {
       setPriceTo: action,
       reset: action,
       submit: action,
+    });
+  }
+
+  get filteredCourses(): CourseConfigItem[] {
+    const filters = this.applied;
+    const courses = this._courses;
+
+    const titles = filters.titles ?? [];
+    const levels = filters.levels ?? [];
+    const teachers = filters.teachers ?? [];
+    const priceFrom = filters.priceFrom;
+    const priceTo = filters.priceTo;
+
+    const filterDateFrom = fromIsoDate(filters.dateFrom ?? '');
+    const filterDateTo = fromIsoDate(filters.dateTo ?? '');
+    const hasDateFilter = filterDateFrom !== null || filterDateTo !== null;
+
+    const referenceYear =
+      filterDateFrom?.getFullYear() ?? filterDateTo?.getFullYear() ?? new Date().getFullYear();
+
+    return courses.filter((course) => {
+      if (titles.length > 0 && !titles.includes(course.title)) {
+        return false;
+      }
+
+      if (levels.length > 0 && !levels.includes(course.level)) {
+        return false;
+      }
+
+      if (teachers.length > 0 && !teachers.includes(course.teacher)) {
+        return false;
+      }
+
+      if (priceFrom !== undefined && course.price < priceFrom) {
+        return false;
+      }
+
+      if (priceTo !== undefined && course.price > priceTo) {
+        return false;
+      }
+
+      if (hasDateFilter) {
+        const courseStart = parseDDMM(course.dateFrom, referenceYear);
+        const courseEnd = parseDDMM(course.dateTo, referenceYear);
+
+        if (!rangesOverlap(courseStart, courseEnd, filterDateFrom, filterDateTo)) {
+          return false;
+        }
+      }
+
+      return true;
     });
   }
 
@@ -91,6 +139,7 @@ export class FiltersStore implements ILocalStore {
 
   syncFromValue(value: CoursesFiltersValue): void {
     this.draft = toDraft(value);
+    this.applied = value;
   }
 
   setDraft(patch: Partial<DraftState>): void {
@@ -149,11 +198,12 @@ export class FiltersStore implements ILocalStore {
   }
 
   reset(): void {
-    this._onApply(EMPTY_FILTERS);
+    this.applied = EMPTY_FILTERS;
+    this.draft = toDraft(EMPTY_FILTERS);
   }
 
   submit(): void {
-    this._onApply(toApplied(this.draft));
+    this.applied = toApplied(this.draft);
     this._onClose?.();
   }
 

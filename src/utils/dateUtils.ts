@@ -7,18 +7,24 @@ export function toIsoDate(d: Date): string {
 }
 
 export function fromIsoDate(value: string): Date | null {
-  if (!value) return null;
+  if (!value) {
+    return null;
+  }
 
   const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(value);
 
-  if (!m) return null;
+  if (!m) {
+    return null;
+  }
 
   const y = Number(m[1]);
   const mo = Number(m[2]) - 1;
   const day = Number(m[3]);
   const d = new Date(y, mo, day);
 
-  if (d.getFullYear() !== y || d.getMonth() !== mo || d.getDate() !== day) return null;
+  if (d.getFullYear() !== y || d.getMonth() !== mo || d.getDate() !== day) {
+    return null;
+  }
 
   return d;
 }
@@ -26,7 +32,9 @@ export function fromIsoDate(value: string): Date | null {
 export function formatRu(value: string): string {
   const d = fromIsoDate(value);
 
-  if (!d) return '';
+  if (!d) {
+    return '';
+  }
 
   return `${pad2(d.getDate())}.${pad2(d.getMonth() + 1)}.${d.getFullYear()}`;
 }
@@ -49,10 +57,49 @@ export function addMonths(d: Date, delta: number): Date {
 
 export function clampRange(
   from: Date | null,
-  to: Date | null,
+  to: Date | null
 ): { from: Date | null; to: Date | null } {
-  if (!from || !to) return { from, to };
-  if (to < from) return { from: to, to: from };
+  if (!from || !to) {
+    return { from, to };
+  }
+
+  if (to < from) {
+    return { from: to, to: from };
+  }
 
   return { from, to };
+}
+
+export function parseDDMM(ddmm: string, referenceYear: number): Date | null {
+  const parts = ddmm.split('.');
+
+  if (parts.length !== 2) {
+    return null;
+  }
+
+  const day = parseInt(parts[0], 10);
+  const month = parseInt(parts[1], 10) - 1;
+
+  if (isNaN(day) || isNaN(month)) {
+    return null;
+  }
+
+  return new Date(referenceYear, month, day);
+}
+
+export function rangesOverlap(
+  startA: Date | null,
+  endA: Date | null,
+  startB: Date | null,
+  endB: Date | null
+): boolean {
+  if (startA && endB && startA > endB) {
+    return false;
+  }
+
+  if (startB && endA && startB > endA) {
+    return false;
+  }
+
+  return true;
 }

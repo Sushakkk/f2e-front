@@ -1,9 +1,10 @@
 import * as React from 'react';
 
-import { WEEKDAY_LABELS } from '../../config';
-import type { NormalizedRange } from '../../types';
 import { addMonths, isSameDay, toIsoDate } from 'utils/dateUtils';
 import { useCalendar } from 'utils/useCalendar';
+
+import { WEEKDAY_LABELS } from '../../config';
+import type { NormalizedRange } from '../../types';
 
 import s from './CalendarGrid.module.scss';
 
@@ -19,13 +20,10 @@ const CalendarGrid: React.FC<Props> = ({ month, normalized, onSetMonth, onPick }
 
   const handlePrevMonth = React.useCallback(
     () => onSetMonth((m) => addMonths(m, -1)),
-    [onSetMonth],
+    [onSetMonth]
   );
 
-  const handleNextMonth = React.useCallback(
-    () => onSetMonth((m) => addMonths(m, 1)),
-    [onSetMonth],
-  );
+  const handleNextMonth = React.useCallback(() => onSetMonth((m) => addMonths(m, 1)), [onSetMonth]);
 
   return (
     <div className={s.root} role="dialog" aria-label="Выбор диапазона дат">
@@ -38,7 +36,6 @@ const CalendarGrid: React.FC<Props> = ({ month, normalized, onSetMonth, onPick }
           →
         </button>
       </div>
-
       <div className={s.weekdays}>
         {WEEKDAY_LABELS.map((w) => (
           <div key={w} className={s.weekday}>
@@ -46,7 +43,6 @@ const CalendarGrid: React.FC<Props> = ({ month, normalized, onSetMonth, onPick }
           </div>
         ))}
       </div>
-
       <div className={s.grid}>
         {days.map((d, idx) => {
           if (!d) {

@@ -1,9 +1,10 @@
 import * as React from 'react';
 
+import { useClickOutside } from 'utils/useClickOutside';
+
 import s from './SelectDropdown.module.scss';
 import { SelectMenu, SelectTrigger } from './components';
 import type { SelectDropdownProps } from './types';
-import { useClickOutside } from 'utils/useClickOutside';
 
 function uniq(values: string[]): string[] {
   return Array.from(new Set(values));
@@ -23,6 +24,7 @@ const SelectDropdown: React.FC<SelectDropdownProps> = (props) => {
   const [query, setQuery] = React.useState('');
 
   const close = React.useCallback(() => setOpen(false), []);
+
   useClickOutside(rootRef, close);
 
   const isMulti = props.mode === 'multi';
@@ -41,8 +43,13 @@ const SelectDropdown: React.FC<SelectDropdownProps> = (props) => {
       return props.value || '';
     }
 
-    if (props.value.length === 0) return '';
-    if (props.value.length === 1) return labelByValue.get(props.value[0]) ?? '1 выбран';
+    if (props.value.length === 0) {
+      return '';
+    }
+
+    if (props.value.length === 1) {
+      return labelByValue.get(props.value[0]) ?? '1 выбран';
+    }
 
     if (props.value.length <= 3) {
       return props.value
@@ -57,10 +64,12 @@ const SelectDropdown: React.FC<SelectDropdownProps> = (props) => {
   const filteredOptions = React.useMemo(() => {
     const q = (isMulti ? query : props.value).trim();
 
-    if (!searchable || !q) return options;
+    if (!searchable || !q) {
+      return options;
+    }
 
     return options.filter(
-      (o) => includesInsensitive(o.label, q) || includesInsensitive(o.value, q),
+      (o) => includesInsensitive(o.label, q) || includesInsensitive(o.value, q)
     );
   }, [isMulti, options, props.value, query, searchable]);
 
@@ -81,17 +90,13 @@ const SelectDropdown: React.FC<SelectDropdownProps> = (props) => {
         setOpen(false);
       }
     },
-    [isMulti, props],
+    [isMulti, props]
   );
 
-  const handleClear = React.useCallback(() => {
-    if (isMulti) {
-      props.onChange([]);
-    }
-  }, [isMulti, props]);
-
   const handleToggle = React.useCallback(() => {
-    if (isMulti) setQuery('');
+    if (isMulti) {
+      setQuery('');
+    }
 
     setOpen((v) => {
       const next = !v;
@@ -112,12 +117,15 @@ const SelectDropdown: React.FC<SelectDropdownProps> = (props) => {
         requestAnimationFrame(() => inputRef.current?.blur());
       }
     },
-    [open],
+    [open]
   );
 
   const handleInputFocus = React.useCallback(() => {
     setOpen(true);
-    if (isMulti) setQuery('');
+
+    if (isMulti) {
+      setQuery('');
+    }
   }, [isMulti]);
 
   const handleInputChange = React.useCallback(
@@ -130,15 +138,11 @@ const SelectDropdown: React.FC<SelectDropdownProps> = (props) => {
 
       setOpen(true);
     },
-    [isMulti, props],
+    [isMulti, props]
   );
 
   const triggerDisplayValue = isMulti ? (open ? query : summary) : props.value;
-  const triggerPlaceholder = isMulti
-    ? open
-      ? summary || placeholder
-      : placeholder
-    : placeholder;
+  const triggerPlaceholder = isMulti ? (open ? summary || placeholder : placeholder) : placeholder;
 
   return (
     <div ref={rootRef} className={s.root}>
@@ -163,14 +167,11 @@ const SelectDropdown: React.FC<SelectDropdownProps> = (props) => {
           onToggle={handleToggle}
         />
       )}
-
       {open && (
         <SelectMenu
           isMulti={isMulti}
           options={filteredOptions}
           selectedValues={selectedValues}
-          clearLabel={isMulti ? (props as { clearLabel?: string }).clearLabel ?? placeholder : undefined}
-          onClear={isMulti ? handleClear : undefined}
           onSelect={handleSelect}
         />
       )}

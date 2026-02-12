@@ -1,8 +1,9 @@
 import * as React from 'react';
 
-import s from './SelectMenu.module.scss';
-import { SelectOption } from '../SelectOption';
 import type { SelectOption as SelectOptionType } from '../../types';
+import { SelectOption } from '../SelectOption';
+
+import s from './SelectMenu.module.scss';
 
 type Props = {
   isMulti: boolean;
@@ -30,7 +31,6 @@ const SelectMenu: React.FC<Props> = ({
           onClick={onClear}
         />
       )}
-
       {options.map((o) => (
         <SelectOption
           key={o.value}
@@ -39,7 +39,6 @@ const SelectMenu: React.FC<Props> = ({
           onClick={() => onSelect(o.value)}
         />
       ))}
-
       {options.length === 0 && (
         <SelectOption label="Ничего не найдено" selected={false} onClick={() => {}} disabled />
       )}

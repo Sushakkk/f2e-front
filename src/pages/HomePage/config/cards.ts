@@ -9,8 +9,9 @@ import courseImg11 from '../img/photo-1594736797933-d0501ba2fe65.jpg';
 import courseImg1 from '../img/photo-1599058917212-d750089bc07e.jpg';
 import courseImg8 from '../img/photo-1599058918144-1ffabb6ab9a0.jpg';
 
-export type { CourseLevel } from './levels';
 import type { CourseLevel } from './levels';
+
+export type { CourseLevel } from './levels';
 
 export type CourseConfigItem = {
   id: number;

@@ -16,4 +16,3 @@ export const COURSE_LEVEL_OPTIONS = COURSE_LEVELS.map((lvl) => ({
   value: lvl,
   label: COURSE_LEVEL_LABELS[lvl],
 }));
-

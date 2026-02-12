@@ -1,4 +1,5 @@
 import { CourseLevel } from 'pages/HomePage/config/cards';
+
 import type { CoursesFiltersValue, DraftState } from './types';
 
 export type { CoursesFiltersValue, DraftState };

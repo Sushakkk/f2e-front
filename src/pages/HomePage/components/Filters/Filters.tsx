@@ -2,83 +2,52 @@ import { observer } from 'mobx-react';
 import * as React from 'react';
 
 import { Button } from 'components/common';
-import { CourseConfigItem } from 'pages/HomePage/config/cards';
-import { useLocalStore } from 'store/hooks/useLocalStore';
+import { SelectDropdown } from 'components/common/SelectDropdown';
+import { FiltersStore } from 'store/FiltersStore';
 
 import s from './Filters.module.scss';
-import { FiltersStore } from 'store/FiltersStore';
-import { PickerInput } from './components/PickerInput';
 import { DateRangePicker } from './components/DateRangePicker';
-import { SelectDropdown } from 'components/common/SelectDropdown';
+import { PickerInput } from './components/PickerInput';
 import type { CoursesFiltersValue } from './types';
 
 type Props = {
-  courses: CourseConfigItem[];
-  value: CoursesFiltersValue;
-  onApply: (v: CoursesFiltersValue) => void;
+  store: FiltersStore;
   onClose?: () => void;
 };
 
-const Filters: React.FC<Props> = observer(({ courses, value, onApply, onClose }) => {
-  const store = useLocalStore(
-    () => new FiltersStore(courses, value, onApply, onClose),
-    [courses, onApply, onClose],
-  );
-
-  React.useEffect(() => {
-    store.syncFromValue(value);
-  }, [store, value]);
-
+const Filters: React.FC<Props> = observer(({ store, onClose }) => {
   const { draft } = store;
 
-  const handleToggleTitle = React.useCallback(
-    (t: string) => store.toggleTitle(t),
-    [store],
-  );
+  const handleToggleTitle = React.useCallback((t: string) => store.toggleTitle(t), [store]);
 
-  const handleLevelsChange = React.useCallback(
-    (next: string[]) => store.setLevels(next),
-    [store],
-  );
+  const handleLevelsChange = React.useCallback((next: string[]) => store.setLevels(next), [store]);
 
   const handleDateRangeChange = React.useCallback(
     ({ from, to }: { from: string; to: string }) => store.setDateRange(from, to),
-    [store],
+    [store]
   );
 
-  const handleTimeFromChange = React.useCallback(
-    (v: string) => store.setTimeFrom(v),
-    [store],
-  );
+  const handleTimeFromChange = React.useCallback((v: string) => store.setTimeFrom(v), [store]);
 
-  const handleTimeToChange = React.useCallback(
-    (v: string) => store.setTimeTo(v),
-    [store],
-  );
+  const handleTimeToChange = React.useCallback((v: string) => store.setTimeTo(v), [store]);
 
   const handleWeekdaysChange = React.useCallback(
     (next: string[]) => store.setWeekdays(next),
-    [store],
+    [store]
   );
 
-  const handleTeachersChange = React.useCallback(
-    (v: string[]) => store.setTeachers(v),
-    [store],
-  );
+  const handleTeachersChange = React.useCallback((v: string[]) => store.setTeachers(v), [store]);
 
-  const handleStudiosChange = React.useCallback(
-    (v: string[]) => store.setStudios(v),
-    [store],
-  );
+  const handleStudiosChange = React.useCallback((v: string[]) => store.setStudios(v), [store]);
 
   const handlePriceFromChange = React.useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => store.setPriceFrom(e.target.value),
-    [store],
+    [store]
   );
 
   const handlePriceToChange = React.useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => store.setPriceTo(e.target.value),
-    [store],
+    [store]
   );
 
   const handleReset = React.useCallback(() => store.reset(), [store]);
@@ -122,7 +91,6 @@ const Filters: React.FC<Props> = observer(({ courses, value, onApply, onClose })
           mode="multi"
           value={draft.levels}
           placeholder="Выберите уровень"
-          clearLabel="Выберите уровень"
           options={store.levelOptions}
           onChange={handleLevelsChange}
           searchable
@@ -140,27 +108,18 @@ const Filters: React.FC<Props> = observer(({ courses, value, onApply, onClose })
             <div className={s.rangeInline}>
               <span className={s.rangeInlineLabel}>с</span>
               <div className={s.rangeInlineField}>
-                <PickerInput
-                  type="time"
-                  value={draft.timeFrom}
-                  onChange={handleTimeFromChange}
-                />
+                <PickerInput type="time" value={draft.timeFrom} onChange={handleTimeFromChange} />
               </div>
             </div>
             <div className={s.rangeInline}>
               <span className={s.rangeInlineLabel}>по</span>
               <div className={s.rangeInlineField}>
-                <PickerInput
-                  type="time"
-                  value={draft.timeTo}
-                  onChange={handleTimeToChange}
-                />
+                <PickerInput type="time" value={draft.timeTo} onChange={handleTimeToChange} />
               </div>
             </div>
           </div>
         </div>
       </div>
-
       <div className={s.section}>
         <label className={s.label}>День</label>
         <SelectDropdown
@@ -168,7 +127,6 @@ const Filters: React.FC<Props> = observer(({ courses, value, onApply, onClose })
           value={draft.weekdays}
           options={store.weekdayOptions}
           placeholder="Выберите день"
-          clearLabel="Выберите день"
           onChange={handleWeekdaysChange}
           searchable
         />
@@ -179,7 +137,6 @@ const Filters: React.FC<Props> = observer(({ courses, value, onApply, onClose })
           mode="multi"
           value={draft.teachers}
           placeholder="Выберите преподавателя"
-          clearLabel="Выберите преподавателя"
           options={store.teacherOptions}
           onChange={handleTeachersChange}
           searchable
@@ -191,7 +148,6 @@ const Filters: React.FC<Props> = observer(({ courses, value, onApply, onClose })
           mode="multi"
           value={draft.studios}
           placeholder="Выберите студию"
-          clearLabel="Выберите студию"
           options={store.studioOptions}
           onChange={handleStudiosChange}
           searchable

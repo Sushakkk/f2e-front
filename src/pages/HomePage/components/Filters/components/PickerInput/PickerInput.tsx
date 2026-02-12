@@ -1,9 +1,8 @@
 import * as React from 'react';
 
+import s from './PickerInput.module.scss';
 import { PICKER_ICONS, PICKER_LABELS } from './config';
 import type { InputWithShowPicker, PickerInputProps } from './types';
-
-import s from './PickerInput.module.scss';
 
 export const PickerInput: React.FC<PickerInputProps> = ({ type, value, onChange }) => {
   const ref = React.useRef<HTMLInputElement | null>(null);
@@ -12,7 +11,9 @@ export const PickerInput: React.FC<PickerInputProps> = ({ type, value, onChange 
   const openPicker = React.useCallback(() => {
     const el = ref.current;
 
-    if (!el) return;
+    if (!el) {
+      return;
+    }
 
     const maybeShowPicker = (el as InputWithShowPicker).showPicker;
 
@@ -37,7 +38,7 @@ export const PickerInput: React.FC<PickerInputProps> = ({ type, value, onChange 
 
   const handleChange = React.useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => onChange(e.target.value),
-    [onChange],
+    [onChange]
   );
 
   const handleInputPointerDown = React.useCallback(
@@ -48,7 +49,7 @@ export const PickerInput: React.FC<PickerInputProps> = ({ type, value, onChange 
         closePicker();
       }
     },
-    [closePicker],
+    [closePicker]
   );
 
   const handleInputClick = React.useCallback(() => {
@@ -73,7 +74,7 @@ export const PickerInput: React.FC<PickerInputProps> = ({ type, value, onChange 
 
       e.preventDefault();
     },
-    [closePicker],
+    [closePicker]
   );
 
   const handleBtnClick = React.useCallback(() => {
