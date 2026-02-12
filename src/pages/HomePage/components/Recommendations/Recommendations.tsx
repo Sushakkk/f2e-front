@@ -1,15 +1,16 @@
-import React from 'react';
 import cn from 'classnames';
-
-import { Swiper, SwiperSlide } from 'swiper/react';
+import React from 'react';
 import { Autoplay, EffectCoverflow, Navigation } from 'swiper/modules';
+import { Swiper, SwiperSlide } from 'swiper/react';
 
 import 'swiper/css';
 import 'swiper/css/effect-coverflow';
 import 'swiper/css/navigation';
 
-import s from './Recommendations.module.scss';
 import { CourseConfigItem } from 'pages/HomePage/config/cards';
+import { formatCourseLevel } from 'pages/HomePage/config/levels';
+
+import s from './Recommendations.module.scss';
 
 type Props = {
   items: CourseConfigItem[];
@@ -29,7 +30,7 @@ export const Recommendations: React.FC<Props> = ({ items, className }) => {
         navigation
         slidesPerView={1}
         breakpoints={{
-          1024: {
+          [1024]: {
             slidesPerView: 2,
           },
         }}
@@ -58,6 +59,19 @@ export const Recommendations: React.FC<Props> = ({ items, className }) => {
                 loading="lazy"
                 decoding="async"
               />
+              <div className={s.level}>{formatCourseLevel(it.level)}</div>
+              <div className={s.overlay}>
+                <div className={s.title}>{it.title}</div>
+                {it.teacher && <div className={s.subtitle}>{it.teacher}</div>}
+                <div className={s.bottom}>
+                  {it.dateFrom && it.dateTo && (
+                    <div className={s.subtitle}>
+                      {it.dateFrom} - {it.dateTo}
+                    </div>
+                  )}
+                  {it.price && <div className={s.price}>{it.price.toLocaleString()} ₽</div>}
+                </div>
+              </div>
             </div>
           </SwiperSlide>
         ))}

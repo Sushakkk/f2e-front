@@ -5,20 +5,83 @@
   @include page;
 }
 
+.content {
+  margin-top: 30px;
+  display: flex;
+  align-items: start;
+
+  @include mobile {
+    margin-top: 24px;
+    flex-direction: column;
+  }
+}
+
+.sidebar {
+  min-width: 0;
+  flex: 0 0 auto;
+  width: 356px;
+  overflow: hidden;
+  margin-left: 20px;
+
+  @include tablet {
+    position: fixed;
+    inset: 0;
+    z-index: 1000;
+    background: $color-bg-secondary;
+    overflow: auto;
+    -webkit-overflow-scrolling: touch;
+    width: 100%;
+    transition:
+      opacity 220ms ease,
+      transform 220ms ease;
+    margin-left: 0;
+    will-change: opacity, transform;
+  }
+}
+
+.sidebarOpen {
+  @include tablet {
+    opacity: 1;
+    transform: translateX(0);
+  }
+
+  @include tablet {
+    transform: translateX(0);
+  }
+}
+
+.sidebarClosed {
+  @include tablet {
+    opacity: 0;
+    transform: translateX(100%);
+    pointer-events: none;
+  }
+}
+
+.main {
+  width: 100%;
+  flex: 1 1 auto;
+}
 
 .cards {
-  margin-top: 30px;
   display: grid;
   gap: 20px;
 
-
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
 
   align-items: stretch;
 
+  @include mobile {
+    grid-template-columns: 1fr;
+  }
+}
+
+.cardsSingle {
+  justify-content: start;
+
+  grid-template-columns: minmax(280px, 360px);
 
   @include mobile {
-   margin-top: 24px;
     grid-template-columns: 1fr;
   }
 }

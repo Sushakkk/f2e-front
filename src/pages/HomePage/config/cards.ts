@@ -1,6 +1,8 @@
-import { withUnsplashParams } from './unsplash';
+import { courseImages } from 'assets/images/courses';
 
-export type CourseLevel = 'Beginner' | 'Intermediate' | 'Advanced';
+import type { CourseLevel } from './levels';
+
+export type { CourseLevel } from './levels';
 
 export type CourseConfigItem = {
   id: number;
@@ -11,32 +13,40 @@ export type CourseConfigItem = {
   dateTo: string;
   price: number;
   image: string;
+  studio: string;
+  weekdays: string[];
+  timeFrom: string;
+  timeTo: string;
 };
 
 export const COURSES_CONFIG: CourseConfigItem[] = [
   {
     id: 1,
-    title: 'High heels',
+    title: 'High Heels',
     teacher: 'Карпова Ксения',
     level: 'Intermediate',
     dateFrom: '22.09',
     dateTo: '30.09',
     price: 10000,
-    image: withUnsplashParams(
-      'https://images.unsplash.com/photo-1599058917212-d750089bc07e'
-    ),
+    image: courseImages.highHeels1,
+    studio: 'ТанцХаб',
+    weekdays: ['monday', 'wednesday', 'friday'],
+    timeFrom: '19:00',
+    timeTo: '20:30',
   },
   {
     id: 2,
-    title: 'High heels',
+    title: 'High Heels',
     teacher: 'Иванова Мария',
     level: 'Beginner',
     dateFrom: '01.10',
     dateTo: '10.10',
     price: 8000,
-    image: withUnsplashParams(
-      'https://images.unsplash.com/photo-1547153760-18fc86324498'
-    ),
+    image: courseImages.highHeels2,
+    studio: 'DanceLab',
+    weekdays: ['tuesday', 'thursday'],
+    timeFrom: '18:00',
+    timeTo: '19:30',
   },
   {
     id: 3,
@@ -46,9 +56,11 @@ export const COURSES_CONFIG: CourseConfigItem[] = [
     dateFrom: '05.10',
     dateTo: '20.10',
     price: 9500,
-    image: withUnsplashParams(
-      'https://images.unsplash.com/photo-1524594152303-9fd13543fe6e'
-    ),
+    image: courseImages.contemporary,
+    studio: 'Студия движения',
+    weekdays: ['monday', 'wednesday'],
+    timeFrom: '17:00',
+    timeTo: '18:30',
   },
   {
     id: 4,
@@ -58,9 +70,11 @@ export const COURSES_CONFIG: CourseConfigItem[] = [
     dateFrom: '12.10',
     dateTo: '22.10',
     price: 7000,
-    image: withUnsplashParams(
-      'https://images.unsplash.com/photo-1518611012118-696072aa579a'
-    ),
+    image: courseImages.jazzFunk,
+    studio: 'Арт-пространство',
+    weekdays: ['tuesday', 'thursday', 'saturday'],
+    timeFrom: '12:00',
+    timeTo: '13:30',
   },
   {
     id: 5,
@@ -70,21 +84,25 @@ export const COURSES_CONFIG: CourseConfigItem[] = [
     dateFrom: '15.10',
     dateTo: '31.10',
     price: 12000,
-    image: withUnsplashParams(
-      'https://images.unsplash.com/photo-1508704019882-f9cf40e475b4'
-    ),
+    image: courseImages.vogue,
+    studio: 'Грация',
+    weekdays: ['wednesday', 'friday'],
+    timeFrom: '20:00',
+    timeTo: '21:30',
   },
   {
     id: 6,
-    title: 'Hip-hop',
+    title: 'Hip-Hop',
     teacher: 'Павлова Елена',
     level: 'Intermediate',
     dateFrom: '18.10',
     dateTo: '28.10',
     price: 9000,
-    image: withUnsplashParams(
-      'https://images.unsplash.com/photo-1520975916090-3105956dac38'
-    ),
+    image: courseImages.hipHop,
+    studio: 'ТанцХаб',
+    weekdays: ['monday', 'thursday'],
+    timeFrom: '18:00',
+    timeTo: '19:30',
   },
   {
     id: 7,
@@ -94,21 +112,25 @@ export const COURSES_CONFIG: CourseConfigItem[] = [
     dateFrom: '20.10',
     dateTo: '30.10',
     price: 7500,
-    image: withUnsplashParams(
-      'https://images.unsplash.com/photo-1547153760-18fc86324498'
-    ),
+    image: courseImages.dancehall,
+    studio: 'DanceLab',
+    weekdays: ['tuesday', 'saturday'],
+    timeFrom: '14:00',
+    timeTo: '15:30',
   },
   {
     id: 8,
-    title: 'Frame up',
+    title: 'Frame Up',
     teacher: 'Карпова Ксения',
     level: 'Advanced',
     dateFrom: '25.10',
     dateTo: '05.11',
     price: 13000,
-    image: withUnsplashParams(
-      'https://images.unsplash.com/photo-1599058918144-1ffabb6ab9a0'
-    ),
+    image: courseImages.frameUp,
+    studio: 'Арт-пространство',
+    weekdays: ['monday', 'wednesday', 'friday'],
+    timeFrom: '20:00',
+    timeTo: '21:30',
   },
   {
     id: 9,
@@ -118,44 +140,167 @@ export const COURSES_CONFIG: CourseConfigItem[] = [
     dateFrom: '02.11',
     dateTo: '12.11',
     price: 6000,
-    image: withUnsplashParams(
-      'https://images.unsplash.com/photo-1508214751196-bcfd4ca60f91'
-    ),
+    image: courseImages.stretching,
+    studio: 'Студия движения',
+    weekdays: ['tuesday', 'thursday', 'saturday'],
+    timeFrom: '10:00',
+    timeTo: '11:30',
   },
   {
     id: 10,
-    title: 'Lady style',
+    title: 'Lady Style',
     teacher: 'Соколова Полина',
     level: 'Intermediate',
     dateFrom: '05.11',
     dateTo: '18.11',
     price: 9000,
-    image: withUnsplashParams(
-      'https://images.unsplash.com/photo-1518837695005-2083093ee35b'
-    ),
+    image: courseImages.ladyStyle,
+    studio: 'Грация',
+    weekdays: ['monday', 'wednesday'],
+    timeFrom: '19:00',
+    timeTo: '20:30',
   },
   {
     id: 11,
-    title: 'Heels choreography',
+    title: 'Heels Choreography',
     teacher: 'Карпова Ксения',
     level: 'Advanced',
     dateFrom: '10.11',
     dateTo: '25.11',
     price: 14000,
-    image: withUnsplashParams(
-      'https://images.unsplash.com/photo-1594736797933-d0501ba2fe65'
-    ),
+    image: courseImages.heelsChoreography,
+    studio: 'ТанцХаб',
+    weekdays: ['tuesday', 'friday'],
+    timeFrom: '20:00',
+    timeTo: '21:30',
+  },
+
+  {
+    id: 13,
+    title: 'K-Pop',
+    teacher: 'Чжан Лина',
+    level: 'Intermediate',
+    dateFrom: '01.12',
+    dateTo: '15.12',
+    price: 9500,
+    image: courseImages.kPop,
+    studio: 'DanceLab',
+    weekdays: ['wednesday', 'saturday'],
+    timeFrom: '15:00',
+    timeTo: '16:30',
   },
   {
-    id: 12,
-    title: 'Body movement',
-    teacher: 'Романова Алина',
+    id: 14,
+    title: 'Afro Dance',
+    teacher: 'Абдуллаев Тимур',
     level: 'Beginner',
-    dateFrom: '15.11',
-    dateTo: '30.11',
-    price: 7000,
-    image: withUnsplashParams(
-      'https://images.unsplash.com/photo-1508214751196-bcfd4ca60f91'
-    ),
+    dateFrom: '03.12',
+    dateTo: '18.12',
+    price: 8500,
+    image: courseImages.afroDance,
+    studio: 'Арт-пространство',
+    weekdays: ['monday', 'thursday'],
+    timeFrom: '16:00',
+    timeTo: '17:30',
+  },
+  {
+    id: 15,
+    title: 'Waacking',
+    teacher: 'Громова Юлия',
+    level: 'Advanced',
+    dateFrom: '05.12',
+    dateTo: '20.12',
+    price: 12000,
+    image: courseImages.waacking,
+    studio: 'Грация',
+    weekdays: ['tuesday', 'friday'],
+    timeFrom: '19:00',
+    timeTo: '20:30',
+  },
+
+  {
+    id: 18,
+    title: 'House Dance',
+    teacher: 'Беляева София',
+    level: 'Intermediate',
+    dateFrom: '15.12',
+    dateTo: '30.12',
+    price: 9000,
+    image: courseImages.houseDance,
+    studio: 'Студия движения',
+    weekdays: ['wednesday', 'friday'],
+    timeFrom: '18:00',
+    timeTo: '19:30',
+  },
+  {
+    id: 19,
+    title: 'Breakdance',
+    teacher: 'Наумов Максим',
+    level: 'Advanced',
+    dateFrom: '05.01',
+    dateTo: '20.01',
+    price: 13000,
+    image: courseImages.breakdance,
+    studio: 'ТанцХаб',
+    weekdays: ['monday', 'wednesday', 'saturday'],
+    timeFrom: '17:00',
+    timeTo: '18:30',
+  },
+  {
+    id: 20,
+    title: 'Twerk',
+    teacher: 'Лазарева Виктория',
+    level: 'Beginner',
+    dateFrom: '08.01',
+    dateTo: '23.01',
+    price: 8500,
+    image: courseImages.twerk,
+    studio: 'DanceLab',
+    weekdays: ['tuesday', 'thursday'],
+    timeFrom: '20:00',
+    timeTo: '21:30',
+  },
+  {
+    id: 21,
+    title: 'Salsa',
+    teacher: 'Гарсия Марко',
+    level: 'Beginner',
+    dateFrom: '10.01',
+    dateTo: '25.01',
+    price: 8000,
+    image: courseImages.salsa,
+    studio: 'Арт-пространство',
+    weekdays: ['wednesday', 'friday', 'sunday'],
+    timeFrom: '19:00',
+    timeTo: '20:30',
+  },
+  {
+    id: 22,
+    title: 'Bachata',
+    teacher: 'Рамирес Луис',
+    level: 'Intermediate',
+    dateFrom: '12.01',
+    dateTo: '27.01',
+    price: 9000,
+    image: courseImages.bachata,
+    studio: 'Грация',
+    weekdays: ['thursday', 'saturday'],
+    timeFrom: '19:00',
+    timeTo: '20:30',
+  },
+
+  {
+    id: 24,
+    title: 'Choreo Class',
+    teacher: 'Карпова Ксения',
+    level: 'Intermediate',
+    dateFrom: '18.01',
+    dateTo: '02.02',
+    price: 10000,
+    image: courseImages.choreoClass,
+    studio: 'Студия движения',
+    weekdays: ['monday', 'wednesday'],
+    timeFrom: '20:00',
+    timeTo: '21:30',
   },
 ];
