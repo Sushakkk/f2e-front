@@ -1,15 +1,15 @@
-import React from 'react';
 import cn from 'classnames';
-
-import { Swiper, SwiperSlide } from 'swiper/react';
+import React from 'react';
 import { Autoplay, EffectCoverflow, Navigation } from 'swiper/modules';
+import { Swiper, SwiperSlide } from 'swiper/react';
 
 import 'swiper/css';
 import 'swiper/css/effect-coverflow';
 import 'swiper/css/navigation';
 
-import s from './Recommendations.module.scss';
 import { CourseConfigItem } from 'pages/HomePage/config/cards';
+
+import s from './Recommendations.module.scss';
 
 type Props = {
   items: CourseConfigItem[];
@@ -29,7 +29,7 @@ export const Recommendations: React.FC<Props> = ({ items, className }) => {
         navigation
         slidesPerView={1}
         breakpoints={{
-          1024: {
+          [1024]: {
             slidesPerView: 2,
           },
         }}

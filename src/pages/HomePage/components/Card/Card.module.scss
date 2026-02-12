@@ -1,77 +1,68 @@
 @import "styles/mixins";
 
-
 .card {
-
-
   cursor: pointer;
   position: relative;
 
-background: $color-bg-secondary;
-border: 2px solid $color-accent;
-border-radius: 23px;
-display: flex;
-align-items: center;
-gap: 16px;
-flex-direction: column;
-overflow: hidden;
+  background: $color-bg-secondary;
+  border: 2px solid $color-accent;
+  border-radius: 23px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-direction: column;
+  overflow: hidden;
 
-@include mobile{
+  @include mobile {
     flex-direction: row;
     padding: 10px;
-
-}
-
+  }
 }
 
 .imageWrapper {
   position: relative;
-  width:100%;
+  width: 100%;
   height: 180px;
   flex-shrink: 0;
   overflow: hidden;
 
-  @include mobile{
-      width: 110px;
-  height: 110px;
+  @include mobile {
+    width: 110px;
+    height: 110px;
     border-radius: 20px;
   }
 
-
   img {
-     width: 100%;
-  height: 100%;
-  object-fit: cover;
-  display: block;
-  position: relative;
-  z-index: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    position: relative;
+    z-index: 0;
   }
   @include gradient;
 }
-
 
 .content {
   display: flex;
   width: 100%;
   align-items: flex-start;
   flex-direction: column;
-     gap: 6px;
-     padding: 16px;
-     padding-top: 0;
+  gap: 6px;
+  padding: 16px;
+  padding-top: 0;
 
-     @include mobile{
-        padding: 0;
-     }
+  @include mobile {
+    padding: 0;
+  }
 }
 
-
-.container{
-      width: 100%;
-    display: flex;
-    gap: 6px;
-    justify-content: space-between;
-    align-items: center;
-
+.container {
+  width: 100%;
+  display: flex;
+  gap: 6px;
+  justify-content: space-between;
+  align-items: center;
 }
 
 .level {
@@ -79,53 +70,33 @@ overflow: hidden;
   top: -2px;
   right: 20px;
 
+  font-size: 12px;
+  line-height: 15px;
 
- 
-font-size: 12px;
-line-height: 15px;
+  padding: 2px 8px;
 
+  background: $color-bg-tertiary;
+  border: 2px solid $color-accent;
+  border-radius: 0px 0px 6px 6px;
 
-
-
-
-
- 
-padding: 2px 8px;
-
-background: $color-bg-tertiary;
-border: 2px solid $color-accent;
-border-radius: 0px 0px 6px 6px;
-
-z-index: 1;
-
+  z-index: 1;
 }
 
-
-
-
-
 .title {
-
-font-weight: 500;
-font-size: 20px;
-line-height: 24px;
+  font-weight: 500;
+  font-size: 20px;
+  line-height: 24px;
 }
 
 .subtitle {
-font-size: 14px;
-color: $color-white-secondary;
-
+  font-size: 14px;
+  color: $color-white-secondary;
 }
 
-
 .price {
- 
-font-weight: 600;
-font-size: 18px;
+  font-weight: 600;
+  font-size: 18px;
 
-flex-shrink: 0;
-margin-bottom: 2px;
-
-
-
+  flex-shrink: 0;
+  margin-bottom: 2px;
 }

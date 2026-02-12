@@ -5,30 +5,20 @@
 }
 
 .swiper {
-
-
   --swiper-navigation-color: transparent;
-
-
 }
 
 :global(.swiper-slide) {
   height: auto;
   display: flex;
-
 }
 
 .card {
-
-
-
   overflow: hidden;
   transform: translateZ(0);
   border-radius: 16px;
 
-
   aspect-ratio: 16 / 9;
-
 
   @include gradient;
 }
@@ -39,4 +29,3 @@
   height: 100%;
   object-fit: cover;
 }
-

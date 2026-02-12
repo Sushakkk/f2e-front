@@ -1,0 +1,107 @@
+import * as React from 'react';
+
+import s from './Filters.module.scss';
+
+type Props = {
+  type: 'date' | 'time';
+  value: string;
+  onChange: (v: string) => void;
+};
+
+export const PickerInput: React.FC<Props> = ({ type, value, onChange }) => {
+  const ref = React.useRef<HTMLInputElement | null>(null);
+  const suppressNextClickRef = React.useRef(false);
+
+  const openPicker = React.useCallback(() => {
+    const el = ref.current;
+    if (!el) return;
+
+    // Chromium has showPicker(); iOS/Safari opens on focus/click
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const maybeShowPicker = (el as any).showPicker as undefined | (() => void);
+    if (maybeShowPicker) {
+      maybeShowPicker.call(el);
+      return;
+    }
+    // If showPicker is not supported, rely on native browser behavior.
+  }, []);
+
+  const closePicker = React.useCallback(() => {
+    suppressNextClickRef.current = true;
+    ref.current?.blur();
+    // In some browsers click may not fire after preventDefault; ensure flag clears.
+    window.setTimeout(() => {
+      suppressNextClickRef.current = false;
+    }, 0);
+  }, []);
+
+  return (
+    <div className={s.pickerField}>
+      <input
+        ref={ref}
+        type={type}
+        className={`${s.input} ${s.pickerInput}`}
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        onPointerDown={(e) => {
+          // Toggle close + remove focus highlight on second click.
+          if (document.activeElement === ref.current) {
+            e.preventDefault();
+            e.stopPropagation();
+            closePicker();
+          }
+        }}
+        onClick={() => {
+          if (suppressNextClickRef.current) {
+            suppressNextClickRef.current = false;
+            return;
+          }
+          openPicker();
+        }}
+      />
+      <button
+        type="button"
+        className={s.pickerBtn}
+        onPointerDown={(e) => {
+          // Keep focus on input on first click, but allow "second click" to blur/close.
+          if (document.activeElement === ref.current) {
+            e.preventDefault();
+            e.stopPropagation();
+            closePicker();
+            return;
+          }
+          e.preventDefault();
+        }}
+        onClick={() => {
+          if (suppressNextClickRef.current) {
+            suppressNextClickRef.current = false;
+            return;
+          }
+          openPicker();
+        }}
+        aria-label={type === 'date' ? 'Выбрать дату' : 'Выбрать время'}
+      >
+        {type === 'date' ? calendarSvg : clockSvg}
+      </button>
+    </div>
+  );
+};
+
+const calendarSvg = (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
+    <line x1="16" y1="2" x2="16" y2="6" />
+    <line x1="8" y1="2" x2="8" y2="6" />
+    <line x1="3" y1="10" x2="21" y2="10" />
+  </svg>
+);
+
+const clockSvg = (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <circle cx="12" cy="12" r="9" />
+    <polyline points="12 7 12 12 15 15" />
+  </svg>
+);
+
+export default React.memo(PickerInput);
+

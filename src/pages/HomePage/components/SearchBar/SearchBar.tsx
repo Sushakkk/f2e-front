@@ -4,13 +4,19 @@ import s from './SearchBar.module.scss';
 import FilterIcon from './img/filter.svg?react';
 import SearchIcon from './img/search.svg?react';
 
-type Props = {
+export type SearchBarProps = {
   value: string;
   onChange: (v: string) => void;
-  // onOpenFilters: () => void;
+  onToggleFilters?: () => void;
+  isFiltersOpen?: boolean;
 };
 
-const SearchBar: React.FC<Props> = ({ value, onChange }) => {
+const SearchBar: React.FC<SearchBarProps> = ({
+  value,
+  onChange,
+  onToggleFilters,
+  isFiltersOpen,
+}) => {
   const inputRef = React.useRef<HTMLInputElement | null>(null);
 
   const onClear = React.useCallback(() => {
@@ -28,7 +34,7 @@ const SearchBar: React.FC<Props> = ({ value, onChange }) => {
           className={s.input}
           value={value}
           onChange={(e) => onChange(e.target.value)}
-          placeholder="Search"
+          placeholder="Поиск"
         />
         {value.length > 0 && (
           <button
@@ -44,12 +50,15 @@ const SearchBar: React.FC<Props> = ({ value, onChange }) => {
           </button>
         )}
       </div>
-      <FilterIcon
+      <button
         className={s.filtersBtn}
         type="button"
-        // onClick={onOpenFilters}
+        onClick={onToggleFilters}
         aria-label="Открыть фильтры"
-      />
+        aria-expanded={isFiltersOpen}
+      >
+        <FilterIcon aria-hidden="true" />
+      </button>
     </div>
   );
 };

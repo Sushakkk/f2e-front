@@ -16,4 +16,3 @@ export const withUnsplashParams = (url: string, query = UNSPLASH_DEFAULT_QUERY) 
 
   return `${url}?${query}`;
 };
-
