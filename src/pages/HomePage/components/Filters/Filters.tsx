@@ -1,5 +1,6 @@
 import * as React from 'react';
 
+import { Button } from 'components/common';
 import { CourseConfigItem, CourseLevel } from 'pages/HomePage/config/cards';
 import { COURSE_LEVEL_LABELS } from 'pages/HomePage/config/levels';
 
@@ -143,8 +144,7 @@ export const Filters: React.FC<Props> = ({ courses, value, onApply, onClose }) =
 
   const onReset = React.useCallback(() => {
     onApply({ titles: [], levels: [] });
-    onClose?.();
-  }, [onApply, onClose]);
+  }, [onApply]);
 
   const onSubmit = React.useCallback(() => {
     onApply(toApplied(draft));
@@ -187,8 +187,8 @@ export const Filters: React.FC<Props> = ({ courses, value, onApply, onClose }) =
         <SelectDropdown
           mode="multi"
           value={draft.levels}
-          placeholder="Любой уровень"
-          clearLabel="Любой уровень"
+          placeholder="Выберите уровень"
+          clearLabel="Выберите уровень"
           options={levelOptions.map((lvl) => ({ value: lvl, label: COURSE_LEVEL_LABELS[lvl] }))}
           onChange={(next) =>
             setDraft((p) => ({
@@ -233,13 +233,13 @@ export const Filters: React.FC<Props> = ({ courses, value, onApply, onClose }) =
       </div>
 
       <div className={s.section}>
-        <label className={s.label}>Дни</label>
+        <label className={s.label}>День</label>
         <SelectDropdown
           mode="multi"
           value={draft.weekdays}
           options={WEEKDAYS}
-          placeholder="Любые дни"
-          clearLabel="Любые дни"
+          placeholder="Выберите день"
+          clearLabel="Выберите день"
           onChange={(next) => setDraft((p) => ({ ...p, weekdays: next }))}
           searchable
         />
@@ -249,8 +249,8 @@ export const Filters: React.FC<Props> = ({ courses, value, onApply, onClose }) =
         <SelectDropdown
           mode="multi"
           value={draft.teachers}
-          placeholder="Любые преподаватели"
-          clearLabel="Любые преподаватели"
+          placeholder="Выберите преподавателя"
+          clearLabel="Выберите преподавателя"
           options={teacherOptions.map((t) => ({ value: t, label: t }))}
           onChange={(v) => setDraft((p) => ({ ...p, teachers: v }))}
           searchable
@@ -261,8 +261,8 @@ export const Filters: React.FC<Props> = ({ courses, value, onApply, onClose }) =
         <SelectDropdown
           mode="multi"
           value={draft.studios}
-          placeholder="Любые студии"
-          clearLabel="Любые студии"
+          placeholder="Выберите студию"
+          clearLabel="Выберите студию"
           options={['ТанцХаб', 'DanceLab', 'Студия движения', 'Арт-пространство', 'Грация'].map((x) => ({
             value: x,
             label: x,
@@ -295,12 +295,12 @@ export const Filters: React.FC<Props> = ({ courses, value, onApply, onClose }) =
         </div>
       </div>
       <div className={s.actions}>
-        <button type="button" className={`${s.btn} ${s.resetBtn}`} onClick={onReset}>
+        <Button mode="dark" type="button" onClick={onReset}>
           Сбросить фильтры
-        </button>
-        <button type="button" className={`${s.btn} ${s.applyBtn}`} onClick={onSubmit}>
+        </Button>
+        <Button mode="purple" type="button" onClick={onSubmit}>
           Применить фильтры
-        </button>
+        </Button>
       </div>
     </div>
   );

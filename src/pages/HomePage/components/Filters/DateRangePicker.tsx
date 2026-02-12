@@ -24,7 +24,6 @@ function fromIsoDate(value: string): Date | null {
   const mo = Number(m[2]) - 1;
   const day = Number(m[3]);
   const d = new Date(y, mo, day);
-  // validate (JS Date autocorrects)
   if (d.getFullYear() !== y || d.getMonth() !== mo || d.getDate() !== day) return null;
   return d;
 }
@@ -92,7 +91,6 @@ export const DateRangePicker: React.FC<Props> = ({ from, to, onChange }) => {
 
   React.useEffect(() => {
     if (open) return;
-    // When closed, remove focus highlight from fields.
     requestAnimationFrame(() => {
       fromBtnRef.current?.blur();
       toBtnRef.current?.blur();
@@ -106,12 +104,10 @@ export const DateRangePicker: React.FC<Props> = ({ from, to, onChange }) => {
         const nextTo = normalized.to && normalized.to < nextFrom ? null : normalized.to;
         onChange({ from: toIsoDate(nextFrom), to: nextTo ? toIsoDate(nextTo) : '' });
         setActive('to');
-        // remove focus highlight from the field after selecting
         requestAnimationFrame(() => fromBtnRef.current?.blur());
         return;
       }
 
-      // active === 'to'
       if (!normalized.from) {
         onChange({ from: toIsoDate(picked), to: '' });
         setActive('to');
@@ -121,7 +117,6 @@ export const DateRangePicker: React.FC<Props> = ({ from, to, onChange }) => {
 
       const next = clampRange(normalized.from, picked);
       onChange({ from: next.from ? toIsoDate(next.from) : '', to: next.to ? toIsoDate(next.to) : '' });
-      // keep the calendar open; user closes by clicking the field again
       requestAnimationFrame(() => toBtnRef.current?.blur());
     },
     [active, normalized.from, normalized.to, onChange]
@@ -134,7 +129,6 @@ export const DateRangePicker: React.FC<Props> = ({ from, to, onChange }) => {
   const days = React.useMemo(() => {
     const first = startOfMonth(month);
     const daysInMonth = new Date(first.getFullYear(), first.getMonth() + 1, 0).getDate();
-    // Monday-first offset
     const offset = (first.getDay() + 6) % 7;
 
     const cells: Array<Date | null> = [];

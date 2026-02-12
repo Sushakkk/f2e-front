@@ -8,13 +8,33 @@ import s from './HomePage.module.scss';
 import { Card, Filters, Recommendations, SearchBar } from './components';
 import { COURSES_CONFIG, CourseConfigItem } from './config/cards';
 
+function useMediaQuery(query: string) {
+  const [matches, setMatches] = React.useState(() => window.matchMedia(query).matches);
+
+  React.useEffect(() => {
+    const mq = window.matchMedia(query);
+    const onChange = () => setMatches(mq.matches);
+
+    onChange();
+
+    if (typeof mq.addEventListener === 'function') {
+      mq.addEventListener('change', onChange);
+      return () => mq.removeEventListener('change', onChange);
+    }
+
+    mq.addListener(onChange);
+    return () => mq.removeListener(onChange);
+  }, [query]);
+
+  return matches;
+}
+
 function applyCoursesFilters(
   courses: CourseConfigItem[],
   filters: React.ComponentProps<typeof Filters>['value']
 ) {
   const titles = filters.titles ?? [];
   const levels = filters.levels ?? [];
-  // Keep compatibility with older filter shape (teacher vs teachers) to avoid dev-server TS cache issues.
   const teachers =
     (filters as unknown as { teachers?: string[]; teacher?: string }).teachers ??
     ((filters as unknown as { teacher?: string }).teacher
@@ -49,6 +69,7 @@ function applyCoursesFilters(
 }
 
 const HomePage: React.FC = () => {
+  const isMobile = useMediaQuery('(max-width: 992px)');
   const [isFiltersOpen, setIsFiltersOpen] = React.useState(false);
   const [filters, setFilters] = React.useState<React.ComponentProps<typeof Filters>['value']>({
     titles: [],
@@ -56,15 +77,7 @@ const HomePage: React.FC = () => {
   });
 
   React.useEffect(() => {
-    // eslint wants consistent return; use no-op cleanup by default
-    if (!isFiltersOpen) {
-      return () => undefined;
-    }
-
-    // lock scroll only on mobile where filters are full-screen overlay
-    const mq = window.matchMedia('(max-width: 768px)');
-
-    if (!mq.matches) {
+    if (!isMobile || !isFiltersOpen) {
       return () => undefined;
     }
 
@@ -85,6 +98,7 @@ const HomePage: React.FC = () => {
   }, [filters]);
 
   const { search, setSearch, filteredCourses, isEmpty } = useCoursesSearch(coursesWithFilters);
+  const isSingleCard = !isEmpty && filteredCourses.length === 1;
 
   return (
     <div className={s.page}>
@@ -92,12 +106,12 @@ const HomePage: React.FC = () => {
       <SearchBar
         value={search}
         onChange={setSearch}
-        isFiltersOpen={isFiltersOpen}
-        onToggleFilters={() => setIsFiltersOpen((v) => !v)}
+        isFiltersOpen={isMobile ? isFiltersOpen : undefined}
+        onToggleFilters={isMobile ? () => setIsFiltersOpen((v) => !v) : undefined}
       />
       <div className={s.content}>
         <div className={s.main}>
-          <div className={s.cards}>
+          <div className={cn(s.cards, isSingleCard && s.cardsSingle)}>
             {filteredCourses.map((item) => (
               <Card key={item.id} item={item} />
             ))}
@@ -105,14 +119,14 @@ const HomePage: React.FC = () => {
           {isEmpty && <div className={s.empty}>Ничего не найдено</div>}
         </div>
         <aside
-          className={cn(s.sidebar, isFiltersOpen ? s.sidebarOpen : s.sidebarClosed)}
+          className={cn(s.sidebar, isMobile && (isFiltersOpen ? s.sidebarOpen : s.sidebarClosed))}
           aria-label="Фильтры"
-          aria-hidden={!isFiltersOpen}
+          aria-hidden={isMobile ? !isFiltersOpen : false}
         >
           <Filters
             courses={COURSES_CONFIG}
             value={filters}
-            onClose={() => setIsFiltersOpen(false)}
+            onClose={isMobile ? () => setIsFiltersOpen(false) : undefined}
             onApply={(v: React.ComponentProps<typeof Filters>['value']) => setFilters(v)}
           />
         </aside>

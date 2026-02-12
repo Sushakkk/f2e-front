@@ -3,11 +3,23 @@ import * as React from 'react';
 
 import s from './Button.module.scss';
 
-type Props = React.ButtonHTMLAttributes<HTMLButtonElement>;
+export type ButtonMode = 'purple' | 'dark';
 
-const Button: React.FC<Props> = ({ children, className, ...props }) => {
+type Props = React.ButtonHTMLAttributes<HTMLButtonElement> & {
+  mode?: ButtonMode;
+};
+
+const Button: React.FC<Props> = ({ children, className, mode, ...props }) => {
   return (
-    <button {...props} className={cx(s.button, className)}>
+    <button
+      {...props}
+      className={cx(
+        s.button,
+        mode === 'purple' && s.button_purple,
+        mode === 'dark' && s.button_dark,
+        className
+      )}
+    >
       {children}
     </button>
   );

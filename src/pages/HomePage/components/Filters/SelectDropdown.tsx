@@ -124,12 +124,9 @@ export const SelectDropdown: React.FC<SelectDropdownProps> = (props) => {
             }
             value={isMulti ? (open ? query : summary) : props.value}
             onMouseDown={(e) => {
-              // Toggle close on second click (while focused).
-              // Use mousedown to see "open" state before focus handlers run.
               if (open) {
                 e.preventDefault();
                 setOpen(false);
-                // remove focus highlight
                 requestAnimationFrame(() => inputRef.current?.blur());
               }
             }}

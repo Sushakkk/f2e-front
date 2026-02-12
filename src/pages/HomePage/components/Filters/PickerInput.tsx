@@ -8,6 +8,8 @@ type Props = {
   onChange: (v: string) => void;
 };
 
+type InputWithShowPicker = HTMLInputElement & { showPicker?: () => void };
+
 export const PickerInput: React.FC<Props> = ({ type, value, onChange }) => {
   const ref = React.useRef<HTMLInputElement | null>(null);
   const suppressNextClickRef = React.useRef(false);
@@ -16,20 +18,18 @@ export const PickerInput: React.FC<Props> = ({ type, value, onChange }) => {
     const el = ref.current;
     if (!el) return;
 
-    // Chromium has showPicker(); iOS/Safari opens on focus/click
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const maybeShowPicker = (el as any).showPicker as undefined | (() => void);
+    const maybeShowPicker = (el as InputWithShowPicker).showPicker;
     if (maybeShowPicker) {
       maybeShowPicker.call(el);
       return;
     }
-    // If showPicker is not supported, rely on native browser behavior.
+    el.focus();
+    el.click();
   }, []);
 
   const closePicker = React.useCallback(() => {
     suppressNextClickRef.current = true;
     ref.current?.blur();
-    // In some browsers click may not fire after preventDefault; ensure flag clears.
     window.setTimeout(() => {
       suppressNextClickRef.current = false;
     }, 0);
@@ -44,7 +44,6 @@ export const PickerInput: React.FC<Props> = ({ type, value, onChange }) => {
         value={value}
         onChange={(e) => onChange(e.target.value)}
         onPointerDown={(e) => {
-          // Toggle close + remove focus highlight on second click.
           if (document.activeElement === ref.current) {
             e.preventDefault();
             e.stopPropagation();
@@ -63,7 +62,6 @@ export const PickerInput: React.FC<Props> = ({ type, value, onChange }) => {
         type="button"
         className={s.pickerBtn}
         onPointerDown={(e) => {
-          // Keep focus on input on first click, but allow "second click" to blur/close.
           if (document.activeElement === ref.current) {
             e.preventDefault();
             e.stopPropagation();

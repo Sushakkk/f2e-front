@@ -50,15 +50,17 @@ const SearchBar: React.FC<SearchBarProps> = ({
           </button>
         )}
       </div>
-      <button
-        className={s.filtersBtn}
-        type="button"
-        onClick={onToggleFilters}
-        aria-label="Открыть фильтры"
-        aria-expanded={isFiltersOpen}
-      >
-        <FilterIcon aria-hidden="true" />
-      </button>
+      {onToggleFilters && (
+        <button
+          className={s.filtersBtn}
+          type="button"
+          onClick={onToggleFilters}
+          aria-label="Открыть фильтры"
+          aria-expanded={isFiltersOpen}
+        >
+          <FilterIcon aria-hidden="true" />
+        </button>
+      )}
     </div>
   );
 };

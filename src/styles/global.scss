@@ -9,10 +9,10 @@
   border: none;
   text-decoration: none;
 
-  text-size-adjust: none; /* отключаем увеличение текста на мобильных устройствах */
-  -webkit-overflow-scrolling: touch; /* для плавной прокрутки в старых версиях ios */
-  -webkit-font-smoothing: antialiased; /* сглаживание шрифтов */
-  -webkit-tap-highlight-color: transparent; /* отключаем выделение зажатых элементов в некоторых мобильных браузерах, чтобы не конфликтовало со стилями :active */
+  text-size-adjust: none;
+  -webkit-overflow-scrolling: touch;
+  -webkit-font-smoothing: antialiased;
+  -webkit-tap-highlight-color: transparent;
 }
 
 html,
@@ -23,6 +23,7 @@ body {
   width: 100%;
   height: 100%;
   overflow-x: hidden;
+  scrollbar-gutter: stable;
 
   background: $color-black;
   color: $color-white;

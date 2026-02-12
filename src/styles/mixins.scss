@@ -58,11 +58,21 @@
   }
 }
 
+@mixin tablet {
+  @include media-down(md) {
+    @content;
+  }
+}
+
 @mixin hover {
   @media (hover: hover) and (pointer: fine) {
     &:hover {
       @content;
     }
+  }
+
+  &:active {
+    @content;
   }
 }
 @mixin gradient {
