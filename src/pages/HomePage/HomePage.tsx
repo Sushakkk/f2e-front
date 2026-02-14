@@ -3,12 +3,15 @@ import { observer } from 'mobx-react';
 import * as React from 'react';
 
 import { FiltersStore } from 'store/FiltersStore';
+import { PaginationStore } from 'store/PaginationStore';
+import { QueryStore, parseQueryFromURL } from 'store/QueryStore';
 import { useLocalStore } from 'store/hooks/useLocalStore';
 import { useCoursesSearch } from 'utils/useCoursesSearch';
 
 import s from './HomePage.module.scss';
-import { Card, Filters, Recommendations, SearchBar } from './components';
+import { Card, Filters, Pagination, Recommendations, SearchBar } from './components';
 import { COURSES_CONFIG } from './config/cards';
+import type { CourseConfigItem } from './config/cards';
 
 function useMediaQuery(query: string) {
   const [matches, setMatches] = React.useState(() => window.matchMedia(query).matches);
@@ -39,13 +42,11 @@ const HomePage: React.FC = () => {
 
   const handleClose = React.useCallback(() => setIsFiltersOpen(false), []);
 
+  // Parse URL query params once on mount
+  const queryParams = React.useRef(parseQueryFromURL()).current;
+
   const filtersStore = useLocalStore(
-    () =>
-      new FiltersStore(
-        COURSES_CONFIG,
-        { titles: [], levels: [] },
-        isMobile ? handleClose : undefined
-      ),
+    () => new FiltersStore(COURSES_CONFIG, queryParams.filters, isMobile ? handleClose : undefined),
     [handleClose]
   );
 
@@ -73,27 +74,80 @@ const HomePage: React.FC = () => {
   }, [isFiltersOpen]);
 
   const { search, setSearch, filteredCourses, isEmpty } = useCoursesSearch(
-    filtersStore.filteredCourses
+    filtersStore.filteredCourses,
+    300,
+    queryParams.search
   );
-  const isSingleCard = !isEmpty && filteredCourses.length === 1;
+
+  const paginationStore = useLocalStore(
+    () => new PaginationStore<CourseConfigItem>(isMobile ? 6 : 9)
+  );
+
+  // QueryStore: sync filters + page + search → URL
+  const queryStore = useLocalStore(
+    () => new QueryStore(filtersStore, paginationStore, queryParams.search)
+  );
+
+  // Wrap setSearch so it also updates QueryStore (for URL sync)
+  const handleSearchChange = React.useCallback(
+    (value: string) => {
+      setSearch(value);
+      queryStore.setSearch(value);
+    },
+    [setSearch, queryStore]
+  );
+
+  // Sync per-page count with screen size
+  React.useEffect(() => {
+    paginationStore.setPerPage(isMobile ? 6 : 9);
+  }, [isMobile, paginationStore]);
+
+  // Sync filtered courses into the pagination store
+  React.useEffect(() => {
+    paginationStore.setItems(filteredCourses);
+  }, [filteredCourses, paginationStore]);
+
+  // Restore page from URL after items are set (must come after setItems effect)
+  React.useEffect(() => {
+    if (queryParams.page > 1) {
+      paginationStore.setPage(queryParams.page);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const { paginatedItems, currentPage, totalPages, visiblePages } = paginationStore;
+  const isSingleCard = !isEmpty && paginatedItems.length === 1;
+
+  const handlePageChange = React.useCallback(
+    (page: number) => {
+      paginationStore.setPage(page);
+    },
+    [paginationStore]
+  );
 
   return (
     <div className={s.page}>
       <Recommendations items={COURSES_CONFIG} />
       <SearchBar
         value={search}
-        onChange={setSearch}
+        onChange={handleSearchChange}
         isFiltersOpen={isMobile ? isFiltersOpen : undefined}
         onToggleFilters={isMobile ? () => setIsFiltersOpen((v) => !v) : undefined}
       />
       <div className={s.content}>
         <div className={s.main}>
           <div className={cn(s.cards, isSingleCard && s.cardsSingle)}>
-            {filteredCourses.map((item) => (
+            {paginatedItems.map((item) => (
               <Card key={item.id} item={item} />
             ))}
           </div>
           {isEmpty && <div className={s.empty}>Ничего не найдено</div>}
+          <Pagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            visiblePages={visiblePages}
+            onPageChange={handlePageChange}
+          />
         </div>
         <aside
           ref={sidebarRef}

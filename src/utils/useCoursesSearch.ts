@@ -24,8 +24,8 @@ function courseMatchesSearch(course: (typeof COURSES_CONFIG)[number], searchValu
 /**
  * Хук поиска по курсам с debounce
  */
-export function useCoursesSearch(courses = COURSES_CONFIG, debounceMs = 300) {
-  const [search, setSearch] = React.useState('');
+export function useCoursesSearch(courses = COURSES_CONFIG, debounceMs = 300, initialSearch = '') {
+  const [search, setSearch] = React.useState(initialSearch);
 
   const debouncedSearch = useDebouncedValue(search, debounceMs);
 

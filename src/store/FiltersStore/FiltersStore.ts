@@ -13,7 +13,7 @@ import type { CoursesFiltersValue, DraftState } from 'pages/HomePage/components/
 import { CourseConfigItem, CourseLevel } from 'pages/HomePage/config/cards';
 import { COURSE_LEVEL_LABELS } from 'pages/HomePage/config/levels';
 import { ILocalStore } from 'store/interfaces';
-import { fromIsoDate, parseDDMM, rangesOverlap } from 'utils/dateUtils';
+import { fromIsoDate, parseDDMM } from 'utils/dateUtils';
 
 export class FiltersStore implements ILocalStore {
   draft: DraftState;
@@ -41,6 +41,7 @@ export class FiltersStore implements ILocalStore {
       weekdayOptions: computed,
       syncFromValue: action,
       setDraft: action,
+      setTitles: action,
       toggleTitle: action,
       setLevels: action,
       setTeachers: action,
@@ -118,7 +119,12 @@ export class FiltersStore implements ILocalStore {
         const courseStart = parseDDMM(course.dateFrom, referenceYear);
         const courseEnd = parseDDMM(course.dateTo, referenceYear);
 
-        if (!rangesOverlap(courseStart, courseEnd, filterDateFrom, filterDateTo)) {
+        // Дата курса должна полностью входить в выбранный диапазон
+        if (filterDateFrom && courseStart && courseStart < filterDateFrom) {
+          return false;
+        }
+
+        if (filterDateTo && courseEnd && courseEnd > filterDateTo) {
           return false;
         }
       }
@@ -127,8 +133,11 @@ export class FiltersStore implements ILocalStore {
     });
   }
 
-  get titleOptions(): string[] {
-    return uniqSorted(this._courses.map((c) => c.title).filter(Boolean));
+  get titleOptions(): { value: string; label: string }[] {
+    return uniqSorted(this._courses.map((c) => c.title).filter(Boolean)).map((t) => ({
+      value: t,
+      label: t,
+    }));
   }
 
   get teacherOptions(): { value: string; label: string }[] {
@@ -160,6 +169,10 @@ export class FiltersStore implements ILocalStore {
 
   setDraft(patch: Partial<DraftState>): void {
     this.draft = { ...this.draft, ...patch };
+  }
+
+  setTitles(titles: string[]): void {
+    this.draft = { ...this.draft, titles };
   }
 
   toggleTitle(title: string): void {

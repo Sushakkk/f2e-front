@@ -18,7 +18,7 @@ type Props = {
 const Filters: React.FC<Props> = observer(({ store, onClose }) => {
   const { draft } = store;
 
-  const handleToggleTitle = React.useCallback((t: string) => store.toggleTitle(t), [store]);
+  const handleTitlesChange = React.useCallback((v: string[]) => store.setTitles(v), [store]);
 
   const handleLevelsChange = React.useCallback((next: string[]) => store.setLevels(next), [store]);
 
@@ -71,19 +71,14 @@ const Filters: React.FC<Props> = observer(({ store, onClose }) => {
       </div>
       <div className={s.section}>
         <label className={s.label}>Тип танца</label>
-        <div className={s.options}>
-          {store.titleOptions.map((t) => (
-            <button
-              key={t}
-              type="button"
-              className={s.optionBtn}
-              data-active={draft.titles.includes(t)}
-              onClick={() => handleToggleTitle(t)}
-            >
-              {t}
-            </button>
-          ))}
-        </div>
+        <SelectDropdown
+          mode="multi"
+          value={draft.titles}
+          placeholder="Выберите тип танца"
+          options={store.titleOptions}
+          onChange={handleTitlesChange}
+          searchable
+        />
       </div>
       <div className={s.section}>
         <label className={s.label}>Уровень подготовки</label>
