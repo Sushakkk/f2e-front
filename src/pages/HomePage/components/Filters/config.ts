@@ -25,7 +25,7 @@ export const STUDIOS: string[] = [
 ];
 
 export const EMPTY_FILTERS: CoursesFiltersValue = {
-  titles: [],
+  types: [],
   levels: [],
 };
 
@@ -41,7 +41,7 @@ export function parseNumberOrUndef(v: string): number | undefined {
 
 export function toDraft(value: CoursesFiltersValue): DraftState {
   return {
-    titles: value.titles ?? [],
+    types: value.types ?? [],
     levels: value.levels ?? [],
     teachers: value.teachers ?? [],
     studios: value.studios ?? [],
@@ -60,7 +60,7 @@ export function toApplied(draft: DraftState): CoursesFiltersValue {
   const priceTo = draft.priceTo.trim() ? parseNumberOrUndef(draft.priceTo) : undefined;
 
   return {
-    titles: draft.titles,
+    types: draft.types,
     levels: draft.levels,
     teachers: draft.teachers.length > 0 ? draft.teachers : undefined,
     studios: draft.studios.length > 0 ? draft.studios : undefined,

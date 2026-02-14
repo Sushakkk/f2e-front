@@ -7,7 +7,7 @@ import { FiltersStore } from 'store/FiltersStore';
 
 import s from './Filters.module.scss';
 import { DateRangePicker } from './components/DateRangePicker';
-import { PickerInput } from './components/PickerInput';
+import { TimeInput } from './components/TimeInput';
 import type { CoursesFiltersValue } from './types';
 
 type Props = {
@@ -18,7 +18,7 @@ type Props = {
 const Filters: React.FC<Props> = observer(({ store, onClose }) => {
   const { draft } = store;
 
-  const handleToggleTitle = React.useCallback((t: string) => store.toggleTitle(t), [store]);
+  const handleTypesChange = React.useCallback((v: string[]) => store.setTypes(v), [store]);
 
   const handleLevelsChange = React.useCallback((next: string[]) => store.setLevels(next), [store]);
 
@@ -71,19 +71,14 @@ const Filters: React.FC<Props> = observer(({ store, onClose }) => {
       </div>
       <div className={s.section}>
         <label className={s.label}>Тип танца</label>
-        <div className={s.options}>
-          {store.titleOptions.map((t) => (
-            <button
-              key={t}
-              type="button"
-              className={s.optionBtn}
-              data-active={draft.titles.includes(t)}
-              onClick={() => handleToggleTitle(t)}
-            >
-              {t}
-            </button>
-          ))}
-        </div>
+        <SelectDropdown
+          mode="multi"
+          value={draft.types}
+          placeholder="Выберите тип танца"
+          options={store.typeOptions}
+          onChange={handleTypesChange}
+          searchable
+        />
       </div>
       <div className={s.section}>
         <label className={s.label}>Уровень подготовки</label>
@@ -108,13 +103,13 @@ const Filters: React.FC<Props> = observer(({ store, onClose }) => {
             <div className={s.rangeInline}>
               <span className={s.rangeInlineLabel}>с</span>
               <div className={s.rangeInlineField}>
-                <PickerInput type="time" value={draft.timeFrom} onChange={handleTimeFromChange} />
+                <TimeInput value={draft.timeFrom} onChange={handleTimeFromChange} />
               </div>
             </div>
             <div className={s.rangeInline}>
               <span className={s.rangeInlineLabel}>по</span>
               <div className={s.rangeInlineField}>
-                <PickerInput type="time" value={draft.timeTo} onChange={handleTimeToChange} />
+                <TimeInput value={draft.timeTo} onChange={handleTimeToChange} />
               </div>
             </div>
           </div>

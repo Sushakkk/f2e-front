@@ -5,7 +5,21 @@
 }
 
 .swiper {
-  --swiper-navigation-color: transparent;
+  --swiper-navigation-color: $color-white;
+
+  :global(.swiper-button-prev),
+  :global(.swiper-button-next) {
+    opacity: 0.5;
+    transition: opacity 0.2s ease;
+
+    &:hover {
+      opacity: 1;
+    }
+
+    @include tablet {
+      display: none;
+    }
+  }
 }
 
 :global(.swiper-slide) {

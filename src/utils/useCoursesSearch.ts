@@ -14,7 +14,13 @@ function courseMatchesSearch(course: (typeof COURSES_CONFIG)[number], searchValu
     return true;
   }
 
-  const haystack = [course.title, course.teacher, course.level, formatCourseLevel(course.level)]
+  const haystack = [
+    course.type,
+    course.name,
+    course.teacher,
+    course.level,
+    formatCourseLevel(course.level),
+  ]
     .filter(Boolean)
     .map((x) => String(x).toLowerCase());
 
@@ -24,8 +30,8 @@ function courseMatchesSearch(course: (typeof COURSES_CONFIG)[number], searchValu
 /**
  * Хук поиска по курсам с debounce
  */
-export function useCoursesSearch(courses = COURSES_CONFIG, debounceMs = 300) {
-  const [search, setSearch] = React.useState('');
+export function useCoursesSearch(courses = COURSES_CONFIG, debounceMs = 300, initialSearch = '') {
+  const [search, setSearch] = React.useState(initialSearch);
 
   const debouncedSearch = useDebouncedValue(search, debounceMs);
 

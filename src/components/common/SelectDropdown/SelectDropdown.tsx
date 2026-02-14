@@ -156,6 +156,7 @@ const SelectDropdown: React.FC<SelectDropdownProps> = (props) => {
           onMouseDown={handleInputMouseDown}
           onFocus={handleInputFocus}
           onChange={handleInputChange}
+          onCaretClick={handleToggle}
         />
       ) : (
         <SelectTrigger

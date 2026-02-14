@@ -13,16 +13,17 @@ type Props = {
 };
 
 const Card: React.FC<Props> = ({ className, item, onClick }) => {
-  const { title, teacher, level, dateFrom, dateTo, price, image, id } = item;
+  const { name, teacher, level, dateFrom, dateTo, price, image, id } = item;
 
   return (
     <div className={cn(s.card, className)} onClick={() => onClick?.(id)} role="button">
       <div className={s.imageWrapper}>
-        <img src={image} alt={title} />
+        <img src={image} alt={name} />
       </div>
       <div className={s.level}>{formatCourseLevel(level)}</div>
       <div className={s.content}>
-        <div className={s.title}>{title}</div>
+        <div className={s.title}>{name}</div>
+        {/* <div className={s.subtitle}>{type}</div> */}
         {teacher && <div className={s.subtitle}>{teacher}</div>}
         <div className={s.container}>
           {dateFrom && dateTo && (

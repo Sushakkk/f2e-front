@@ -54,14 +54,14 @@ export const Recommendations: React.FC<Props> = ({ items, className }) => {
               <img
                 className={s.img}
                 src={it.image}
-                alt={it.title}
+                alt={it.name}
                 draggable={false}
                 loading="lazy"
                 decoding="async"
               />
               <div className={s.level}>{formatCourseLevel(it.level)}</div>
               <div className={s.overlay}>
-                <div className={s.title}>{it.title}</div>
+                <div className={s.title}>{it.name}</div>
                 {it.teacher && <div className={s.subtitle}>{it.teacher}</div>}
                 <div className={s.bottom}>
                   {it.dateFrom && it.dateTo && (

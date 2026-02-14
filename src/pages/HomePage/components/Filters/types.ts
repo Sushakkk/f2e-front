@@ -1,7 +1,7 @@
 import type { CourseLevel } from 'pages/HomePage/config/levels';
 
 export type DraftState = {
-  titles: string[];
+  types: string[];
   levels: CourseLevel[];
   teachers: string[];
   studios: string[];
@@ -15,7 +15,7 @@ export type DraftState = {
 };
 
 export type CoursesFiltersValue = {
-  titles: string[];
+  types: string[];
   levels: CourseLevel[];
   teachers?: string[];
   studios?: string[];

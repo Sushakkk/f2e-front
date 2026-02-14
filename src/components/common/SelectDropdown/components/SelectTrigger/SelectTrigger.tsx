@@ -20,6 +20,7 @@ type InputTriggerProps = {
   onMouseDown: (e: React.MouseEvent) => void;
   onFocus: () => void;
   onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  onCaretClick?: () => void;
 };
 
 type Props = ButtonTriggerProps | InputTriggerProps;
@@ -38,7 +39,7 @@ const SelectTrigger: React.FC<Props> = (props) => {
           onFocus={props.onFocus}
           onChange={props.onChange}
         />
-        <span className={s.inputCaret} aria-hidden="true">
+        <span className={s.inputCaret} aria-hidden="true" onClick={props.onCaretClick}>
           ▾
         </span>
       </div>

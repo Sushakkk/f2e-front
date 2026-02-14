@@ -13,7 +13,7 @@ import type { CoursesFiltersValue, DraftState } from 'pages/HomePage/components/
 import { CourseConfigItem, CourseLevel } from 'pages/HomePage/config/cards';
 import { COURSE_LEVEL_LABELS } from 'pages/HomePage/config/levels';
 import { ILocalStore } from 'store/interfaces';
-import { fromIsoDate, parseDDMM, rangesOverlap } from 'utils/dateUtils';
+import { fromIsoDate, parseDDMM } from 'utils/dateUtils';
 
 export class FiltersStore implements ILocalStore {
   draft: DraftState;
@@ -34,14 +34,15 @@ export class FiltersStore implements ILocalStore {
       applied: observable.ref,
       _courses: observable.ref,
       filteredCourses: computed,
-      titleOptions: computed,
+      typeOptions: computed,
       teacherOptions: computed,
       levelOptions: computed,
       studioOptions: computed,
       weekdayOptions: computed,
       syncFromValue: action,
       setDraft: action,
-      toggleTitle: action,
+      setTypes: action,
+      toggleType: action,
       setLevels: action,
       setTeachers: action,
       setStudios: action,
@@ -60,7 +61,7 @@ export class FiltersStore implements ILocalStore {
     const filters = this.applied;
     const courses = this._courses;
 
-    const titles = filters.titles ?? [];
+    const types = filters.types ?? [];
     const levels = filters.levels ?? [];
     const teachers = filters.teachers ?? [];
     const studios = filters.studios ?? [];
@@ -78,7 +79,7 @@ export class FiltersStore implements ILocalStore {
       filterDateFrom?.getFullYear() ?? filterDateTo?.getFullYear() ?? new Date().getFullYear();
 
     return courses.filter((course) => {
-      if (titles.length > 0 && !titles.includes(course.title)) {
+      if (types.length > 0 && !types.includes(course.type)) {
         return false;
       }
 
@@ -118,7 +119,12 @@ export class FiltersStore implements ILocalStore {
         const courseStart = parseDDMM(course.dateFrom, referenceYear);
         const courseEnd = parseDDMM(course.dateTo, referenceYear);
 
-        if (!rangesOverlap(courseStart, courseEnd, filterDateFrom, filterDateTo)) {
+        // Дата курса должна полностью входить в выбранный диапазон
+        if (filterDateFrom && courseStart && courseStart < filterDateFrom) {
+          return false;
+        }
+
+        if (filterDateTo && courseEnd && courseEnd > filterDateTo) {
           return false;
         }
       }
@@ -127,8 +133,11 @@ export class FiltersStore implements ILocalStore {
     });
   }
 
-  get titleOptions(): string[] {
-    return uniqSorted(this._courses.map((c) => c.title).filter(Boolean));
+  get typeOptions(): { value: string; label: string }[] {
+    return uniqSorted(this._courses.map((c) => c.type).filter(Boolean)).map((t) => ({
+      value: t,
+      label: t,
+    }));
   }
 
   get teacherOptions(): { value: string; label: string }[] {
@@ -162,16 +171,20 @@ export class FiltersStore implements ILocalStore {
     this.draft = { ...this.draft, ...patch };
   }
 
-  toggleTitle(title: string): void {
-    const next = new Set(this.draft.titles);
+  setTypes(types: string[]): void {
+    this.draft = { ...this.draft, types };
+  }
 
-    if (next.has(title)) {
-      next.delete(title);
+  toggleType(type: string): void {
+    const next = new Set(this.draft.types);
+
+    if (next.has(type)) {
+      next.delete(type);
     } else {
-      next.add(title);
+      next.add(type);
     }
 
-    this.draft = { ...this.draft, titles: Array.from(next) };
+    this.draft = { ...this.draft, types: Array.from(next) };
   }
 
   setLevels(levels: string[]): void {
