@@ -8,6 +8,7 @@ import 'swiper/css/effect-coverflow';
 import 'swiper/css/navigation';
 
 import { CourseConfigItem } from 'pages/HomePage/config/cards';
+import { formatCourseLevel } from 'pages/HomePage/config/levels';
 
 import s from './Recommendations.module.scss';
 
@@ -58,6 +59,19 @@ export const Recommendations: React.FC<Props> = ({ items, className }) => {
                 loading="lazy"
                 decoding="async"
               />
+              <div className={s.level}>{formatCourseLevel(it.level)}</div>
+              <div className={s.overlay}>
+                <div className={s.title}>{it.title}</div>
+                {it.teacher && <div className={s.subtitle}>{it.teacher}</div>}
+                <div className={s.bottom}>
+                  {it.dateFrom && it.dateTo && (
+                    <div className={s.subtitle}>
+                      {it.dateFrom} - {it.dateTo}
+                    </div>
+                  )}
+                  {it.price && <div className={s.price}>{it.price.toLocaleString()} ₽</div>}
+                </div>
+              </div>
             </div>
           </SwiperSlide>
         ))}

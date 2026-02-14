@@ -77,19 +77,24 @@
 
   background: $color-bg-tertiary;
   border: 2px solid $color-accent;
-  border-radius: 0px 0px 6px 6px;
+  border-radius: 0 0 6px 6px;
 
   z-index: 1;
 }
 
 .title {
-  font-weight: 500;
+  font-weight: 600;
   font-size: 20px;
   line-height: 24px;
 }
 
 .subtitle {
   font-size: 14px;
+  color: $color-white-secondary;
+}
+
+.weekdays {
+  font-size: 13px;
   color: $color-white-secondary;
 }
 

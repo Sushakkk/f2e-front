@@ -29,9 +29,6 @@
   background: $color-bg-secondary;
   border-bottom: 1px solid rgba($color-white, 0.08);
   padding: 8px 0;
-
-  @include mobile {
-  }
 }
 
 .headerTitle {
@@ -97,7 +94,9 @@
   padding: 10px 18px;
   color: $color-white;
   cursor: pointer;
-  transition: background-color 150ms ease, border-color 150ms ease;
+  transition:
+    background-color 150ms ease,
+    border-color 150ms ease;
   font-size: 14px;
   text-align: center;
   min-height: 40px;

@@ -4,7 +4,7 @@ import type { CoursesFiltersValue, DraftState } from './types';
 
 export type { CoursesFiltersValue, DraftState };
 
-export const LEVELS_ORDER: CourseLevel[] = ['Beginner', 'Intermediate', 'Advanced'];
+export const LEVELS_ORDER: CourseLevel[] = ['Beginner', 'Intermediate', 'Advanced', 'AllLevels'];
 
 export const WEEKDAYS: { value: string; label: string }[] = [
   { value: 'monday', label: 'Понедельник' },

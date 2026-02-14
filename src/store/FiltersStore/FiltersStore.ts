@@ -63,8 +63,12 @@ export class FiltersStore implements ILocalStore {
     const titles = filters.titles ?? [];
     const levels = filters.levels ?? [];
     const teachers = filters.teachers ?? [];
+    const studios = filters.studios ?? [];
+    const weekdays = filters.weekdays ?? [];
     const priceFrom = filters.priceFrom;
     const priceTo = filters.priceTo;
+    const filterTimeFrom = filters.timeFrom ?? '';
+    const filterTimeTo = filters.timeTo ?? '';
 
     const filterDateFrom = fromIsoDate(filters.dateFrom ?? '');
     const filterDateTo = fromIsoDate(filters.dateTo ?? '');
@@ -86,11 +90,27 @@ export class FiltersStore implements ILocalStore {
         return false;
       }
 
+      if (studios.length > 0 && !studios.includes(course.studio)) {
+        return false;
+      }
+
+      if (weekdays.length > 0 && !weekdays.some((day) => course.weekdays.includes(day))) {
+        return false;
+      }
+
       if (priceFrom !== undefined && course.price < priceFrom) {
         return false;
       }
 
       if (priceTo !== undefined && course.price > priceTo) {
+        return false;
+      }
+
+      if (filterTimeFrom && course.timeTo < filterTimeFrom) {
+        return false;
+      }
+
+      if (filterTimeTo && course.timeFrom > filterTimeTo) {
         return false;
       }
 
@@ -119,11 +139,7 @@ export class FiltersStore implements ILocalStore {
   }
 
   get levelOptions(): { value: string; label: string }[] {
-    const set = new Set<CourseLevel>();
-
-    this._courses.forEach((c) => set.add(c.level));
-
-    return LEVELS_ORDER.filter((x) => set.has(x)).map((lvl) => ({
+    return LEVELS_ORDER.map((lvl) => ({
       value: lvl,
       label: COURSE_LEVEL_LABELS[lvl],
     }));

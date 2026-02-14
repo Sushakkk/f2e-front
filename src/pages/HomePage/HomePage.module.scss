@@ -31,7 +31,9 @@
     overflow: auto;
     -webkit-overflow-scrolling: touch;
     width: 100%;
-    transition: opacity 220ms ease, transform 220ms ease;
+    transition:
+      opacity 220ms ease,
+      transform 220ms ease;
     margin-left: 0;
     will-change: opacity, transform;
   }

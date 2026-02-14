@@ -75,6 +75,7 @@
     @content;
   }
 }
+
 @mixin gradient {
   &::after {
     content: "";

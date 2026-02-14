@@ -1,7 +1,6 @@
 @import "styles/mixins";
 
 .button {
-
   text-align: center;
   cursor: pointer;
   transition: 300ms ease all;
@@ -17,8 +16,6 @@
     opacity: 0.5;
     pointer-events: none;
   }
-
-
 
   &_purple {
     color: $color-white;
@@ -40,7 +37,9 @@
       );
       transform: translateX(-60%);
       opacity: 0;
-      transition: transform 450ms ease, opacity 250ms ease;
+      transition:
+        transform 450ms ease,
+        opacity 250ms ease;
     }
 
     @include hover {
