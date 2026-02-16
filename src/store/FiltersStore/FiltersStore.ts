@@ -34,15 +34,15 @@ export class FiltersStore implements ILocalStore {
       applied: observable.ref,
       _courses: observable.ref,
       filteredCourses: computed,
-      titleOptions: computed,
+      typeOptions: computed,
       teacherOptions: computed,
       levelOptions: computed,
       studioOptions: computed,
       weekdayOptions: computed,
       syncFromValue: action,
       setDraft: action,
-      setTitles: action,
-      toggleTitle: action,
+      setTypes: action,
+      toggleType: action,
       setLevels: action,
       setTeachers: action,
       setStudios: action,
@@ -61,7 +61,7 @@ export class FiltersStore implements ILocalStore {
     const filters = this.applied;
     const courses = this._courses;
 
-    const titles = filters.titles ?? [];
+    const types = filters.types ?? [];
     const levels = filters.levels ?? [];
     const teachers = filters.teachers ?? [];
     const studios = filters.studios ?? [];
@@ -79,7 +79,7 @@ export class FiltersStore implements ILocalStore {
       filterDateFrom?.getFullYear() ?? filterDateTo?.getFullYear() ?? new Date().getFullYear();
 
     return courses.filter((course) => {
-      if (titles.length > 0 && !titles.includes(course.title)) {
+      if (types.length > 0 && !types.includes(course.type)) {
         return false;
       }
 
@@ -133,8 +133,8 @@ export class FiltersStore implements ILocalStore {
     });
   }
 
-  get titleOptions(): { value: string; label: string }[] {
-    return uniqSorted(this._courses.map((c) => c.title).filter(Boolean)).map((t) => ({
+  get typeOptions(): { value: string; label: string }[] {
+    return uniqSorted(this._courses.map((c) => c.type).filter(Boolean)).map((t) => ({
       value: t,
       label: t,
     }));
@@ -171,20 +171,20 @@ export class FiltersStore implements ILocalStore {
     this.draft = { ...this.draft, ...patch };
   }
 
-  setTitles(titles: string[]): void {
-    this.draft = { ...this.draft, titles };
+  setTypes(types: string[]): void {
+    this.draft = { ...this.draft, types };
   }
 
-  toggleTitle(title: string): void {
-    const next = new Set(this.draft.titles);
+  toggleType(type: string): void {
+    const next = new Set(this.draft.types);
 
-    if (next.has(title)) {
-      next.delete(title);
+    if (next.has(type)) {
+      next.delete(type);
     } else {
-      next.add(title);
+      next.add(type);
     }
 
-    this.draft = { ...this.draft, titles: Array.from(next) };
+    this.draft = { ...this.draft, types: Array.from(next) };
   }
 
   setLevels(levels: string[]): void {

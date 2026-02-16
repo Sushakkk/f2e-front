@@ -80,15 +80,13 @@ const HomePage: React.FC = () => {
   );
 
   const paginationStore = useLocalStore(
-    () => new PaginationStore<CourseConfigItem>(isMobile ? 6 : 9)
+    () => new PaginationStore<CourseConfigItem>(isMobile ? 6 : 9, queryParams.page)
   );
 
-  // QueryStore: sync filters + page + search → URL
   const queryStore = useLocalStore(
     () => new QueryStore(filtersStore, paginationStore, queryParams.search)
   );
 
-  // Wrap setSearch so it also updates QueryStore (for URL sync)
   const handleSearchChange = React.useCallback(
     (value: string) => {
       setSearch(value);
@@ -97,23 +95,13 @@ const HomePage: React.FC = () => {
     [setSearch, queryStore]
   );
 
-  // Sync per-page count with screen size
   React.useEffect(() => {
     paginationStore.setPerPage(isMobile ? 6 : 9);
   }, [isMobile, paginationStore]);
 
-  // Sync filtered courses into the pagination store
   React.useEffect(() => {
     paginationStore.setItems(filteredCourses);
   }, [filteredCourses, paginationStore]);
-
-  // Restore page from URL after items are set (must come after setItems effect)
-  React.useEffect(() => {
-    if (queryParams.page > 1) {
-      paginationStore.setPage(queryParams.page);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
 
   const { paginatedItems, currentPage, totalPages, visiblePages } = paginationStore;
   const isSingleCard = !isEmpty && paginatedItems.length === 1;
@@ -125,15 +113,34 @@ const HomePage: React.FC = () => {
     [paginationStore]
   );
 
+  const anchorRef = React.useRef<HTMLDivElement | null>(null);
+  const isFirstRender = React.useRef(true);
+
+  React.useEffect(() => {
+    if (isFirstRender.current) {
+      isFirstRender.current = false;
+
+      return;
+    }
+
+    anchorRef.current?.scrollIntoView({
+      behavior: 'smooth',
+      block: 'start',
+    });
+  }, [currentPage]);
+
   return (
     <div className={s.page}>
       <Recommendations items={COURSES_CONFIG} />
-      <SearchBar
-        value={search}
-        onChange={handleSearchChange}
-        isFiltersOpen={isMobile ? isFiltersOpen : undefined}
-        onToggleFilters={isMobile ? () => setIsFiltersOpen((v) => !v) : undefined}
-      />
+      <div className={s.searchBarWrapper}>
+        <div ref={anchorRef} className={s.scrollAnchor} />
+        <SearchBar
+          value={search}
+          onChange={handleSearchChange}
+          isFiltersOpen={isMobile ? isFiltersOpen : undefined}
+          onToggleFilters={isMobile ? () => setIsFiltersOpen((v) => !v) : undefined}
+        />
+      </div>
       <div className={s.content}>
         <div className={s.main}>
           <div className={cn(s.cards, isSingleCard && s.cardsSingle)}>

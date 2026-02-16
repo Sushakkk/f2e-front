@@ -6,7 +6,8 @@ export type { CourseLevel } from './levels';
 
 export type CourseConfigItem = {
   id: number;
-  title: string;
+  name: string;
+  type: string;
   teacher: string;
   level: CourseLevel;
   dateFrom: string;
@@ -22,7 +23,8 @@ export type CourseConfigItem = {
 export const COURSES_CONFIG: CourseConfigItem[] = [
   {
     id: 1,
-    title: 'High Heels',
+    name: 'Интенсив по High Heels',
+    type: 'High Heels',
     teacher: 'Карпова Ксения',
     level: 'Intermediate',
     dateFrom: '02.02',
@@ -36,7 +38,8 @@ export const COURSES_CONFIG: CourseConfigItem[] = [
   },
   {
     id: 2,
-    title: 'High Heels',
+    name: 'High Heels с нуля',
+    type: 'High Heels',
     teacher: 'Иванова Мария',
     level: 'Beginner',
     dateFrom: '03.02',
@@ -50,7 +53,8 @@ export const COURSES_CONFIG: CourseConfigItem[] = [
   },
   {
     id: 3,
-    title: 'Contemporary',
+    name: 'Основы Contemporary',
+    type: 'Contemporary',
     teacher: 'Смирнова Анна',
     level: 'Intermediate',
     dateFrom: '05.02',
@@ -64,7 +68,8 @@ export const COURSES_CONFIG: CourseConfigItem[] = [
   },
   {
     id: 4,
-    title: 'Jazz Funk',
+    name: 'Jazz Funk для начинающих',
+    type: 'Jazz Funk',
     teacher: 'Орлова Дарья',
     level: 'Beginner',
     dateFrom: '10.02',
@@ -78,7 +83,8 @@ export const COURSES_CONFIG: CourseConfigItem[] = [
   },
   {
     id: 5,
-    title: 'Vogue',
+    name: 'Vogue: продвинутый уровень',
+    type: 'Vogue',
     teacher: 'Кузнецов Артём',
     level: 'Advanced',
     dateFrom: '15.02',
@@ -92,7 +98,8 @@ export const COURSES_CONFIG: CourseConfigItem[] = [
   },
   {
     id: 6,
-    title: 'Hip-Hop',
+    name: 'Hip-Hop: новая волна',
+    type: 'Hip-Hop',
     teacher: 'Павлова Елена',
     level: 'Intermediate',
     dateFrom: '16.02',
@@ -106,7 +113,8 @@ export const COURSES_CONFIG: CourseConfigItem[] = [
   },
   {
     id: 7,
-    title: 'Dancehall',
+    name: 'Dancehall: первые шаги',
+    type: 'Dancehall',
     teacher: 'Мельникова Ольга',
     level: 'Beginner',
     dateFrom: '18.02',
@@ -120,7 +128,8 @@ export const COURSES_CONFIG: CourseConfigItem[] = [
   },
   {
     id: 8,
-    title: 'Frame Up',
+    name: 'Frame Up: мастерский класс',
+    type: 'Frame Up',
     teacher: 'Карпова Ксения',
     level: 'Advanced',
     dateFrom: '20.02',
@@ -134,7 +143,8 @@ export const COURSES_CONFIG: CourseConfigItem[] = [
   },
   {
     id: 9,
-    title: 'Stretching',
+    name: 'Stretching для начинающих',
+    type: 'Stretching',
     teacher: 'Лебедева Ирина',
     level: 'Beginner',
     dateFrom: '01.03',
@@ -148,7 +158,8 @@ export const COURSES_CONFIG: CourseConfigItem[] = [
   },
   {
     id: 10,
-    title: 'Lady Style',
+    name: 'Lady Style: грация и пластика',
+    type: 'Lady Style',
     teacher: 'Соколова Полина',
     level: 'Intermediate',
     dateFrom: '03.03',
@@ -162,7 +173,8 @@ export const COURSES_CONFIG: CourseConfigItem[] = [
   },
   {
     id: 11,
-    title: 'Heels Choreography',
+    name: 'Heels Choreography: постановка',
+    type: 'Heels Choreography',
     teacher: 'Карпова Ксения',
     level: 'Advanced',
     dateFrom: '10.03',
@@ -176,7 +188,8 @@ export const COURSES_CONFIG: CourseConfigItem[] = [
   },
   {
     id: 13,
-    title: 'K-Pop',
+    name: 'K-Pop: танцуем хиты',
+    type: 'K-Pop',
     teacher: 'Чжан Лина',
     level: 'Intermediate',
     dateFrom: '01.04',
@@ -190,7 +203,8 @@ export const COURSES_CONFIG: CourseConfigItem[] = [
   },
   {
     id: 14,
-    title: 'Afro Dance',
+    name: 'Afro Dance с нуля',
+    type: 'Afro Dance',
     teacher: 'Абдуллаев Тимур',
     level: 'Beginner',
     dateFrom: '03.04',
@@ -204,7 +218,8 @@ export const COURSES_CONFIG: CourseConfigItem[] = [
   },
   {
     id: 15,
-    title: 'Waacking',
+    name: 'Waacking: экспрессия движения',
+    type: 'Waacking',
     teacher: 'Громова Юлия',
     level: 'Advanced',
     dateFrom: '05.04',
@@ -218,7 +233,8 @@ export const COURSES_CONFIG: CourseConfigItem[] = [
   },
   {
     id: 18,
-    title: 'House Dance',
+    name: 'House Dance: ритм и грув',
+    type: 'House Dance',
     teacher: 'Беляева София',
     level: 'Intermediate',
     dateFrom: '15.04',
@@ -232,7 +248,8 @@ export const COURSES_CONFIG: CourseConfigItem[] = [
   },
   {
     id: 19,
-    title: 'Breakdance',
+    name: 'Breakdance: мастер-класс',
+    type: 'Breakdance',
     teacher: 'Наумов Максим',
     level: 'Advanced',
     dateFrom: '01.05',
@@ -246,7 +263,8 @@ export const COURSES_CONFIG: CourseConfigItem[] = [
   },
   {
     id: 20,
-    title: 'Twerk',
+    name: 'Twerk для начинающих',
+    type: 'Twerk',
     teacher: 'Лазарева Виктория',
     level: 'Beginner',
     dateFrom: '05.05',
@@ -260,7 +278,8 @@ export const COURSES_CONFIG: CourseConfigItem[] = [
   },
   {
     id: 21,
-    title: 'Salsa',
+    name: 'Salsa: ритмы Латины',
+    type: 'Salsa',
     teacher: 'Гарсия Марко',
     level: 'Beginner',
     dateFrom: '10.05',
@@ -274,7 +293,8 @@ export const COURSES_CONFIG: CourseConfigItem[] = [
   },
   {
     id: 22,
-    title: 'Bachata',
+    name: 'Bachata: чувственный танец',
+    type: 'Bachata',
     teacher: 'Рамирес Луис',
     level: 'Intermediate',
     dateFrom: '12.05',
@@ -288,7 +308,8 @@ export const COURSES_CONFIG: CourseConfigItem[] = [
   },
   {
     id: 24,
-    title: 'Choreo Class',
+    name: 'Авторская хореография',
+    type: 'Choreo Class',
     teacher: 'Карпова Ксения',
     level: 'Intermediate',
     dateFrom: '18.05',

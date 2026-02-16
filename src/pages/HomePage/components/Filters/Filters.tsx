@@ -7,7 +7,7 @@ import { FiltersStore } from 'store/FiltersStore';
 
 import s from './Filters.module.scss';
 import { DateRangePicker } from './components/DateRangePicker';
-import { PickerInput } from './components/PickerInput';
+import { TimeInput } from './components/TimeInput';
 import type { CoursesFiltersValue } from './types';
 
 type Props = {
@@ -18,7 +18,7 @@ type Props = {
 const Filters: React.FC<Props> = observer(({ store, onClose }) => {
   const { draft } = store;
 
-  const handleTitlesChange = React.useCallback((v: string[]) => store.setTitles(v), [store]);
+  const handleTypesChange = React.useCallback((v: string[]) => store.setTypes(v), [store]);
 
   const handleLevelsChange = React.useCallback((next: string[]) => store.setLevels(next), [store]);
 
@@ -73,10 +73,10 @@ const Filters: React.FC<Props> = observer(({ store, onClose }) => {
         <label className={s.label}>Тип танца</label>
         <SelectDropdown
           mode="multi"
-          value={draft.titles}
+          value={draft.types}
           placeholder="Выберите тип танца"
-          options={store.titleOptions}
-          onChange={handleTitlesChange}
+          options={store.typeOptions}
+          onChange={handleTypesChange}
           searchable
         />
       </div>
@@ -103,13 +103,13 @@ const Filters: React.FC<Props> = observer(({ store, onClose }) => {
             <div className={s.rangeInline}>
               <span className={s.rangeInlineLabel}>с</span>
               <div className={s.rangeInlineField}>
-                <PickerInput type="time" value={draft.timeFrom} onChange={handleTimeFromChange} />
+                <TimeInput value={draft.timeFrom} onChange={handleTimeFromChange} />
               </div>
             </div>
             <div className={s.rangeInline}>
               <span className={s.rangeInlineLabel}>по</span>
               <div className={s.rangeInlineField}>
-                <PickerInput type="time" value={draft.timeTo} onChange={handleTimeToChange} />
+                <TimeInput value={draft.timeTo} onChange={handleTimeToChange} />
               </div>
             </div>
           </div>

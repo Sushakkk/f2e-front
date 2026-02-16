@@ -34,6 +34,7 @@
   color: rgba($color-white, 0.75);
   font-size: 14px;
   line-height: 1;
+  cursor: pointer;
 }
 
 .inputWrap {
@@ -65,5 +66,5 @@
   top: 50%;
   transform: translateY(-50%);
   color: rgba($color-white, 0.75);
-  pointer-events: none;
+  cursor: pointer;
 }

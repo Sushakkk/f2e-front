@@ -45,7 +45,7 @@ function parseNumberParam(params: URLSearchParams, key: string): number | undefi
 export function parseQueryFromURL(): QueryParams {
   const params = new URLSearchParams(window.location.search);
 
-  const titles = parseArrayParam(params, 'type');
+  const types = parseArrayParam(params, 'type');
   const levels = parseArrayParam(params, 'levels') as CourseLevel[];
   const teachers = parseArrayParam(params, 'teachers');
   const studios = parseArrayParam(params, 'studios');
@@ -53,7 +53,7 @@ export function parseQueryFromURL(): QueryParams {
 
   return {
     filters: {
-      titles,
+      types,
       levels,
       teachers: teachers.length ? teachers : undefined,
       studios: studios.length ? studios : undefined,
@@ -77,8 +77,8 @@ export function parseQueryFromURL(): QueryParams {
 function buildSearchString(filters: CoursesFiltersValue, page: number, search: string): string {
   const params = new URLSearchParams();
 
-  if (filters.titles.length) {
-    params.set('type', filters.titles.join(','));
+  if (filters.types.length) {
+    params.set('type', filters.types.join(','));
   }
 
   if (filters.levels.length) {

@@ -1,4 +1,4 @@
-import { action, computed, makeObservable, observable, reaction, IReactionDisposer } from 'mobx';
+import { action, computed, makeObservable, observable } from 'mobx';
 
 import { ILocalStore } from 'store/interfaces';
 
@@ -8,10 +8,14 @@ export class PaginationStore<T = unknown> implements ILocalStore {
   private _items: T[] = [];
   private _currentPage = 1;
   private _perPage: number;
-  private _disposers: IReactionDisposer[] = [];
+  private _isFirstLoad = true;
 
-  constructor(perPage = DEFAULT_PER_PAGE) {
+  constructor(perPage = DEFAULT_PER_PAGE, initialPage?: number) {
     this._perPage = perPage;
+
+    if (initialPage !== undefined && initialPage >= 1) {
+      this._currentPage = initialPage;
+    }
 
     makeObservable<this, '_items' | '_currentPage' | '_perPage'>(this, {
       _items: observable.ref,
@@ -28,15 +32,6 @@ export class PaginationStore<T = unknown> implements ILocalStore {
       setPerPage: action,
       reset: action,
     });
-
-    this._disposers.push(
-      reaction(
-        () => this._items.length,
-        () => {
-          this._currentPage = 1;
-        }
-      )
-    );
   }
 
   get currentPage(): number {
@@ -93,7 +88,19 @@ export class PaginationStore<T = unknown> implements ILocalStore {
   }
 
   setItems(items: T[]): void {
+    const prevLength = this._items.length;
+
     this._items = items;
+
+    if (this._isFirstLoad) {
+      this._isFirstLoad = false;
+
+      if (this._currentPage > this.totalPages) {
+        this._currentPage = this.totalPages;
+      }
+    } else if (items.length !== prevLength) {
+      this._currentPage = 1;
+    }
   }
 
   setPage(page: number): void {
@@ -103,6 +110,10 @@ export class PaginationStore<T = unknown> implements ILocalStore {
   }
 
   setPerPage(perPage: number): void {
+    if (this._perPage === perPage) {
+      return;
+    }
+
     this._perPage = perPage;
     this._currentPage = 1;
   }
@@ -112,7 +123,6 @@ export class PaginationStore<T = unknown> implements ILocalStore {
   }
 
   destroy(): void {
-    this._disposers.forEach((d) => d());
-    this._disposers = [];
+    // no-op
   }
 }

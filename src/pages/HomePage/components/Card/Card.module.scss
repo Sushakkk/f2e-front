@@ -53,7 +53,7 @@
   padding-top: 0;
 
   @include mobile {
-    padding: 0;
+    padding: 16px 0;
   }
 }
 
@@ -103,5 +103,4 @@
   font-size: 18px;
 
   flex-shrink: 0;
-  margin-bottom: 2px;
 }
