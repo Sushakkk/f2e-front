@@ -1,3 +1,4 @@
+import cn from 'classnames';
 import * as React from 'react';
 
 import { formatRu } from 'utils/dateUtils';
@@ -56,7 +57,9 @@ const RangeTrigger: React.FC<Props> = ({
           data-active={open && active === 'from'}
           onClick={handleToggleFrom}
         >
-          <span className={s.value}>{formatRu(from) || DATE_PLACEHOLDER}</span>
+          <span className={cn(s.value, !formatRu(from) && s.value_placeholder)}>
+            {formatRu(from) || DATE_PLACEHOLDER}
+          </span>
           <span className={s.icon} aria-hidden="true">
             {calendarSvg}
           </span>
@@ -71,7 +74,9 @@ const RangeTrigger: React.FC<Props> = ({
           data-active={open && active === 'to'}
           onClick={handleToggleTo}
         >
-          <span className={s.value}>{formatRu(to) || DATE_PLACEHOLDER}</span>
+          <span className={cn(s.value, !formatRu(to) && s.value_placeholder)}>
+            {formatRu(to) || DATE_PLACEHOLDER}
+          </span>
           <span className={s.icon} aria-hidden="true">
             {calendarSvg}
           </span>

@@ -49,6 +49,7 @@ export function parseQueryFromURL(): QueryParams {
   const levels = parseArrayParam(params, 'levels') as CourseLevel[];
   const teachers = parseArrayParam(params, 'teachers');
   const studios = parseArrayParam(params, 'studios');
+  const cities = parseArrayParam(params, 'cities');
   const weekdays = parseArrayParam(params, 'weekdays');
 
   return {
@@ -57,6 +58,7 @@ export function parseQueryFromURL(): QueryParams {
       levels,
       teachers: teachers.length ? teachers : undefined,
       studios: studios.length ? studios : undefined,
+      cities: cities.length ? cities : undefined,
       weekdays: weekdays.length ? weekdays : undefined,
       dateFrom: params.get('dateFrom') ?? undefined,
       dateTo: params.get('dateTo') ?? undefined,
@@ -91,6 +93,10 @@ function buildSearchString(filters: CoursesFiltersValue, page: number, search: s
 
   if (filters.studios?.length) {
     params.set('studios', filters.studios.join(','));
+  }
+
+  if (filters.cities?.length) {
+    params.set('cities', filters.cities.join(','));
   }
 
   if (filters.weekdays?.length) {

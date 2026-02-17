@@ -1,6 +1,7 @@
 import { action, computed, makeObservable, observable, IReactionDisposer } from 'mobx';
 
 import {
+  CITIES,
   EMPTY_FILTERS,
   LEVELS_ORDER,
   STUDIOS,
@@ -14,6 +15,7 @@ import { CourseConfigItem, CourseLevel } from 'pages/HomePage/config/cards';
 import { COURSE_LEVEL_LABELS } from 'pages/HomePage/config/levels';
 import { ILocalStore } from 'store/interfaces';
 import { fromIsoDate, parseDDMM } from 'utils/dateUtils';
+import { getCourseWeekdays, getCourseTimeFrom, getCourseTimeTo } from 'utils/scheduleUtils';
 
 export class FiltersStore implements ILocalStore {
   draft: DraftState;
@@ -38,6 +40,7 @@ export class FiltersStore implements ILocalStore {
       teacherOptions: computed,
       levelOptions: computed,
       studioOptions: computed,
+      cityOptions: computed,
       weekdayOptions: computed,
       syncFromValue: action,
       setDraft: action,
@@ -46,6 +49,7 @@ export class FiltersStore implements ILocalStore {
       setLevels: action,
       setTeachers: action,
       setStudios: action,
+      setCities: action,
       setWeekdays: action,
       setDateRange: action,
       setTimeFrom: action,
@@ -65,6 +69,7 @@ export class FiltersStore implements ILocalStore {
     const levels = filters.levels ?? [];
     const teachers = filters.teachers ?? [];
     const studios = filters.studios ?? [];
+    const cities = filters.cities ?? [];
     const weekdays = filters.weekdays ?? [];
     const priceFrom = filters.priceFrom;
     const priceTo = filters.priceTo;
@@ -95,7 +100,13 @@ export class FiltersStore implements ILocalStore {
         return false;
       }
 
-      if (weekdays.length > 0 && !weekdays.some((day) => course.weekdays.includes(day))) {
+      if (cities.length > 0 && !cities.includes(course.city)) {
+        return false;
+      }
+
+      const courseWeekdays = getCourseWeekdays(course);
+
+      if (weekdays.length > 0 && !weekdays.some((day) => courseWeekdays.includes(day))) {
         return false;
       }
 
@@ -107,11 +118,14 @@ export class FiltersStore implements ILocalStore {
         return false;
       }
 
-      if (filterTimeFrom && course.timeTo < filterTimeFrom) {
+      const courseTimeFrom = getCourseTimeFrom(course);
+      const courseTimeTo = getCourseTimeTo(course);
+
+      if (filterTimeFrom && courseTimeTo < filterTimeFrom) {
         return false;
       }
 
-      if (filterTimeTo && course.timeFrom > filterTimeTo) {
+      if (filterTimeTo && courseTimeFrom > filterTimeTo) {
         return false;
       }
 
@@ -158,6 +172,10 @@ export class FiltersStore implements ILocalStore {
     return STUDIOS.map((x) => ({ value: x, label: x }));
   }
 
+  get cityOptions(): { value: string; label: string }[] {
+    return CITIES.map((x) => ({ value: x, label: x }));
+  }
+
   get weekdayOptions(): { value: string; label: string }[] {
     return WEEKDAYS;
   }
@@ -200,6 +218,10 @@ export class FiltersStore implements ILocalStore {
 
   setStudios(studios: string[]): void {
     this.draft = { ...this.draft, studios };
+  }
+
+  setCities(cities: string[]): void {
+    this.draft = { ...this.draft, cities };
   }
 
   setWeekdays(weekdays: string[]): void {

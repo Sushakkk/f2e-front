@@ -13,6 +13,14 @@ $font-secondary: "VK Sans Display", sans-serif;
   font-weight: $weight;
 }
 
+@mixin text-description {
+  font-size: 20px;
+
+  @include mobile {
+    font-size: 18px;
+  }
+}
+
 /// Задает основной шрифт: **VK Sans Display**
 ///
 /// @param {number} $weight

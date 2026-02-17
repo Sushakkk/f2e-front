@@ -14,6 +14,9 @@ export const LAYOUT_CONFIG: Record<RoutePath, LayoutConfig> = {
   [RoutePath.home]: {
     withHeader: true,
   },
+  [RoutePath.course]: {
+    withHeader: true,
+  },
   [RoutePath.calendar]: {
     withHeader: true,
   },
