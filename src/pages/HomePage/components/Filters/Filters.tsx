@@ -40,6 +40,8 @@ const Filters: React.FC<Props> = observer(({ store, onClose }) => {
 
   const handleStudiosChange = React.useCallback((v: string[]) => store.setStudios(v), [store]);
 
+  const handleCitiesChange = React.useCallback((v: string[]) => store.setCities(v), [store]);
+
   const handlePriceFromChange = React.useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => store.setPriceFrom(e.target.value),
     [store]
@@ -134,6 +136,17 @@ const Filters: React.FC<Props> = observer(({ store, onClose }) => {
           placeholder="Выберите преподавателя"
           options={store.teacherOptions}
           onChange={handleTeachersChange}
+          searchable
+        />
+      </div>
+      <div className={s.section}>
+        <label className={s.label}>Город</label>
+        <SelectDropdown
+          mode="multi"
+          value={draft.cities}
+          placeholder="Выберите город"
+          options={store.cityOptions}
+          onChange={handleCitiesChange}
           searchable
         />
       </div>

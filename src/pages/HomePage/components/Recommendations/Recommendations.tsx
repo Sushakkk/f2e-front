@@ -1,5 +1,6 @@
 import cn from 'classnames';
 import React from 'react';
+import { Link } from 'react-router-dom';
 import { Autoplay, EffectCoverflow, Navigation } from 'swiper/modules';
 import { Swiper, SwiperSlide } from 'swiper/react';
 
@@ -9,6 +10,7 @@ import 'swiper/css/navigation';
 
 import { CourseConfigItem } from 'pages/HomePage/config/cards';
 import { formatCourseLevel } from 'pages/HomePage/config/levels';
+import { getScheduleDisplay } from 'utils/scheduleUtils';
 
 import s from './Recommendations.module.scss';
 
@@ -48,33 +50,48 @@ export const Recommendations: React.FC<Props> = ({ items, className }) => {
           slideShadows: false,
         }}
       >
-        {items.map((it) => (
-          <SwiperSlide key={it.id}>
-            <div className={s.card}>
-              <img
-                className={s.img}
-                src={it.image}
-                alt={it.name}
-                draggable={false}
-                loading="lazy"
-                decoding="async"
-              />
-              <div className={s.level}>{formatCourseLevel(it.level)}</div>
-              <div className={s.overlay}>
-                <div className={s.title}>{it.name}</div>
-                {it.teacher && <div className={s.subtitle}>{it.teacher}</div>}
-                <div className={s.bottom}>
+        {items.map((it) => {
+          const schedule = getScheduleDisplay(it);
+
+          return (
+            <SwiperSlide key={it.id}>
+              <Link to={`/course/${it.id}`} className={s.card}>
+                <img
+                  className={s.img}
+                  src={it.image}
+                  alt={it.name}
+                  draggable={false}
+                  loading="lazy"
+                  decoding="async"
+                />
+                <div className={s.level}>{formatCourseLevel(it.level)}</div>
+                <div className={s.overlay}>
+                  <div className={s.title}>{it.name}</div>
+                  {it.teacher && <div className={s.subtitle}>{it.teacher}</div>}
                   {it.dateFrom && it.dateTo && (
                     <div className={s.subtitle}>
                       {it.dateFrom} - {it.dateTo}
                     </div>
                   )}
-                  {it.price && <div className={s.price}>{it.price.toLocaleString()} ₽</div>}
+                  <div className={s.bottom}>
+                    {schedule && (
+                      <div className={s.subtitle}>
+                        {schedule.days}
+                        {schedule.time && (
+                          <>
+                            {' '}
+                            <span className={s.time}>{schedule.time}</span>
+                          </>
+                        )}
+                      </div>
+                    )}
+                    {it.price && <div className={s.price}>{it.price.toLocaleString()} ₽</div>}
+                  </div>
                 </div>
-              </div>
-            </div>
-          </SwiperSlide>
-        ))}
+              </Link>
+            </SwiperSlide>
+          );
+        })}
       </Swiper>
     </div>
   );

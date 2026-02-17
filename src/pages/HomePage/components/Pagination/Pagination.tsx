@@ -1,6 +1,8 @@
 import cn from 'classnames';
 import * as React from 'react';
 
+import ArrowIcon from 'assets/images/arrow.svg?react';
+
 import s from './Pagination.module.scss';
 
 type Props = {
@@ -23,15 +25,7 @@ const Pagination: React.FC<Props> = ({ currentPage, totalPages, visiblePages, on
         onClick={() => onPageChange(currentPage - 1)}
         aria-label="Предыдущая страница"
       >
-        <svg width="7" height="12" viewBox="0 0 7 12" fill="none">
-          <path
-            d="M6 1L1 6L6 11"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          />
-        </svg>
+        <ArrowIcon className={s.arrowIcon} />
       </button>
       {visiblePages.map((page, idx) =>
         page === '...' ? (
@@ -51,20 +45,12 @@ const Pagination: React.FC<Props> = ({ currentPage, totalPages, visiblePages, on
         )
       )}
       <button
-        className={cn(s.button, s.arrow)}
+        className={cn(s.button, s.arrow, s.arrowRight)}
         disabled={currentPage === totalPages}
         onClick={() => onPageChange(currentPage + 1)}
         aria-label="Следующая страница"
       >
-        <svg width="7" height="12" viewBox="0 0 7 12" fill="none">
-          <path
-            d="M1 1L6 6L1 11"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          />
-        </svg>
+        <ArrowIcon className={s.arrowIcon} />
       </button>
     </nav>
   );

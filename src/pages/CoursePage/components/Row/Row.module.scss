@@ -1,0 +1,29 @@
+@import "styles/mixins";
+
+.row {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.label {
+  font-weight: 600;
+  @include text-description;
+}
+
+.text {
+  margin: 0;
+  color: $color-white-secondary;
+  @include text-description;
+
+  &_accent {
+    color: $color-accent;
+    cursor: pointer;
+    transition: opacity 200ms ease;
+
+    @include hover {
+      text-decoration: underline;
+    }
+  }
+}

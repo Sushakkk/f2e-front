@@ -1,28 +1,10 @@
-import { CourseLevel } from 'pages/HomePage/config/cards';
+import { CITIES, LEVELS_ORDER, STUDIOS, WEEKDAYS } from 'pages/HomePage/config/constants';
 
 import type { CoursesFiltersValue, DraftState } from './types';
 
 export type { CoursesFiltersValue, DraftState };
 
-export const LEVELS_ORDER: CourseLevel[] = ['Beginner', 'Intermediate', 'Advanced', 'AllLevels'];
-
-export const WEEKDAYS: { value: string; label: string }[] = [
-  { value: 'monday', label: 'Понедельник' },
-  { value: 'tuesday', label: 'Вторник' },
-  { value: 'wednesday', label: 'Среда' },
-  { value: 'thursday', label: 'Четверг' },
-  { value: 'friday', label: 'Пятница' },
-  { value: 'saturday', label: 'Суббота' },
-  { value: 'sunday', label: 'Воскресенье' },
-];
-
-export const STUDIOS: string[] = [
-  'ТанцХаб',
-  'DanceLab',
-  'Студия движения',
-  'Арт-пространство',
-  'Грация',
-];
+export { CITIES, LEVELS_ORDER, STUDIOS, WEEKDAYS };
 
 export const EMPTY_FILTERS: CoursesFiltersValue = {
   types: [],
@@ -45,6 +27,7 @@ export function toDraft(value: CoursesFiltersValue): DraftState {
     levels: value.levels ?? [],
     teachers: value.teachers ?? [],
     studios: value.studios ?? [],
+    cities: value.cities ?? [],
     weekdays: value.weekdays ?? [],
     dateFrom: value.dateFrom ?? '',
     dateTo: value.dateTo ?? '',
@@ -64,6 +47,7 @@ export function toApplied(draft: DraftState): CoursesFiltersValue {
     levels: draft.levels,
     teachers: draft.teachers.length > 0 ? draft.teachers : undefined,
     studios: draft.studios.length > 0 ? draft.studios : undefined,
+    cities: draft.cities.length > 0 ? draft.cities : undefined,
     weekdays: draft.weekdays.length > 0 ? draft.weekdays : undefined,
     dateFrom: draft.dateFrom || undefined,
     dateTo: draft.dateTo || undefined,

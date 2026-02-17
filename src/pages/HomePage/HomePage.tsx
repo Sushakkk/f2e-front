@@ -106,22 +106,23 @@ const HomePage: React.FC = () => {
   const { paginatedItems, currentPage, totalPages, visiblePages } = paginationStore;
   const isSingleCard = !isEmpty && paginatedItems.length === 1;
 
+  const anchorRef = React.useRef<HTMLDivElement | null>(null);
+  const userChangedPage = React.useRef(false);
+
   const handlePageChange = React.useCallback(
     (page: number) => {
+      userChangedPage.current = true;
       paginationStore.setPage(page);
     },
     [paginationStore]
   );
 
-  const anchorRef = React.useRef<HTMLDivElement | null>(null);
-  const isFirstRender = React.useRef(true);
-
   React.useEffect(() => {
-    if (isFirstRender.current) {
-      isFirstRender.current = false;
-
+    if (!userChangedPage.current) {
       return;
     }
+
+    userChangedPage.current = false;
 
     anchorRef.current?.scrollIntoView({
       behavior: 'smooth',

@@ -59,6 +59,10 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+
+  &_placeholder {
+    opacity: 0.5;
+  }
 }
 
 .icon {

@@ -54,6 +54,22 @@
   @include mobile {
     min-width: 32px;
   }
+
+  @include hover {
+    color: $color-accent;
+  }
+}
+
+.arrowRight {
+  .arrowIcon {
+    transform: rotate(180deg);
+  }
+}
+
+.arrowIcon {
+  width: 10px;
+  height: 14px;
+  transition: color 200ms ease;
 }
 
 .page {

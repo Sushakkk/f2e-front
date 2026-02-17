@@ -5,6 +5,7 @@ export type DraftState = {
   levels: CourseLevel[];
   teachers: string[];
   studios: string[];
+  cities: string[];
   weekdays: string[];
   dateFrom: string;
   dateTo: string;
@@ -19,6 +20,7 @@ export type CoursesFiltersValue = {
   levels: CourseLevel[];
   teachers?: string[];
   studios?: string[];
+  cities?: string[];
   weekdays?: string[];
   dateFrom?: string;
   dateTo?: string;

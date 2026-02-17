@@ -32,6 +32,8 @@
   overflow: hidden;
   transform: translateZ(0);
   border-radius: 16px;
+  text-decoration: none;
+  color: inherit;
 
   aspect-ratio: 16 / 9;
 
@@ -109,6 +111,10 @@
   @include mobile {
     font-size: 12px;
   }
+}
+
+.time {
+  white-space: nowrap;
 }
 
 .bottom {
