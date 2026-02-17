@@ -1,0 +1,11 @@
+@import "styles/mixins";
+
+.courseLink {
+  color: $color-accent;
+  text-decoration: none;
+  transition: opacity 200ms ease;
+
+  @include hover {
+    text-decoration: underline;
+  }
+}

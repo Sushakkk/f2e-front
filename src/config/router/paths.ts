@@ -3,6 +3,7 @@ export enum RoutePath {
   error = '/error',
   home = '/home',
   course = '/course/:id',
+  teacher = '/teacher/:name',
   calendar = '/calendar',
   map = '/map',
   profile = '/profile',

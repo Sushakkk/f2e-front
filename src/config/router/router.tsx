@@ -8,6 +8,7 @@ import { CoursePage } from 'pages/CoursePage';
 import { HomePage } from 'pages/HomePage';
 import MapPage from 'pages/MapPage/MapPage';
 import ProfilePage from 'pages/ProfilePage/ProfilePage';
+import { TeacherPage } from 'pages/TeacherPage';
 
 import { RoutePath } from './paths';
 
@@ -28,6 +29,10 @@ export const ROUTER = createBrowserRouter([
       {
         path: RoutePath.course,
         element: <CoursePage />,
+      },
+      {
+        path: RoutePath.teacher,
+        element: <TeacherPage />,
       },
       {
         path: RoutePath.calendar,

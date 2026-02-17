@@ -58,7 +58,7 @@ export const Recommendations: React.FC<Props> = ({ items, className }) => {
               <Link to={`/course/${it.id}`} className={s.card}>
                 <img
                   className={s.img}
-                  src={it.image}
+                  src={it.images[0]}
                   alt={it.name}
                   draggable={false}
                   loading="lazy"
@@ -67,7 +67,7 @@ export const Recommendations: React.FC<Props> = ({ items, className }) => {
                 <div className={s.level}>{formatCourseLevel(it.level)}</div>
                 <div className={s.overlay}>
                   <div className={s.title}>{it.name}</div>
-                  {it.teacher && <div className={s.subtitle}>{it.teacher}</div>}
+                  {it.teacher && <div className={s.subtitle}>{it.teacher.name}</div>}
                   {it.dateFrom && it.dateTo && (
                     <div className={s.subtitle}>
                       {it.dateFrom} - {it.dateTo}

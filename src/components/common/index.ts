@@ -7,3 +7,7 @@ export * from './Header';
 export * from './Footer';
 
 export * from './SelectDropdown';
+
+export * from './InfoPage';
+
+export * from './Row';

@@ -1,4 +1,5 @@
 import { courseImages } from 'assets/images/courses';
+import { teacherImages } from 'assets/images/teachers';
 
 import type { CourseLevel } from './levels';
 
@@ -11,16 +12,25 @@ export type ScheduleEntry = {
   location?: string;
 };
 
+export type Teacher = {
+  name: string;
+  bio: string;
+  images: string[];
+  achievements: string[];
+  experience: number;
+  specializations: string[];
+};
+
 export type CourseConfigItem = {
   id: number;
   name: string;
   type: string;
-  teacher: string;
+  teacher: Teacher;
   level: CourseLevel;
   dateFrom: string;
   dateTo: string;
   price: number;
-  image: string;
+  images: string[];
   studio: string;
   weekdays?: string[];
   timeFrom?: string;
@@ -43,12 +53,23 @@ export const COURSES_CONFIG: CourseConfigItem[] = [
     id: 1,
     name: 'High Heels PRO Intensive',
     type: 'High Heels',
-    teacher: 'Карпова Ксения',
+    teacher: {
+      name: 'Карпова Ксения',
+      bio: 'Хореограф и основатель студии. Более 10 лет в танцевальной индустрии.',
+      achievements: [
+        'Финалист Dance Parade 2023',
+        'Судья танцевальных баттлов',
+        'Обучила более 500 учеников',
+      ],
+      experience: 10,
+      specializations: ['High Heels', 'Frame Up', 'Lady Style'],
+      images: [teacherImages.woman, teacherImages.woman, teacherImages.woman],
+    },
     level: 'Advanced',
     dateFrom: '10.06',
     dateTo: '25.06',
     price: 15000,
-    image: courseImages.highHeels1,
+    images: [courseImages.highHeels1, courseImages.highHeels1, courseImages.highHeels1],
     studio: 'ТанцХаб',
     city: 'Москва',
     description: 'Интенсив с плавающим расписанием. Подходит для занятых танцоров.',
@@ -69,12 +90,19 @@ export const COURSES_CONFIG: CourseConfigItem[] = [
     id: 2,
     name: 'High Heels с нуля',
     type: 'High Heels',
-    teacher: 'Иванова Мария',
+    teacher: {
+      name: 'Иванова Мария',
+      bio: 'Педагог по High Heels с фокусом на работу с начинающими.',
+      achievements: ['Призёр Hip Hop International Russia', 'Сертифицированный преподаватель FIDS'],
+      experience: 6,
+      specializations: ['High Heels', 'Strip Plastic'],
+      images: [teacherImages.woman, teacherImages.woman, teacherImages.woman],
+    },
     level: 'Beginner',
     dateFrom: '03.02',
     dateTo: '15.02',
     price: 8000,
-    image: courseImages.highHeels2,
+    images: [courseImages.highHeels2, courseImages.highHeels2, courseImages.highHeels2],
     studio: 'DanceLab',
     weekdays: ['Вт', 'Чт'],
     timeFrom: '18:00',
@@ -94,12 +122,19 @@ export const COURSES_CONFIG: CourseConfigItem[] = [
     id: 3,
     name: 'Основы Contemporary',
     type: 'Contemporary',
-    teacher: 'Смирнова Анна',
+    teacher: {
+      name: 'Смирнова Анна',
+      bio: 'Танцовщица и хореограф современного танца. Выступала на международных фестивалях.',
+      achievements: ['Участник Open Look Festival', 'Стипендиат программы DanceWeb'],
+      experience: 8,
+      specializations: ['Contemporary', 'Modern', 'Импровизация'],
+      images: [teacherImages.woman, teacherImages.woman, teacherImages.woman],
+    },
     level: 'Intermediate',
     dateFrom: '05.02',
     dateTo: '20.02',
     price: 9500,
-    image: courseImages.contemporary,
+    images: [courseImages.contemporary, courseImages.contemporary, courseImages.contemporary],
     studio: 'Студия движения',
     weekdays: ['Пн', 'Ср'],
     timeFrom: '17:00',
@@ -119,12 +154,19 @@ export const COURSES_CONFIG: CourseConfigItem[] = [
     id: 4,
     name: 'Jazz Funk для начинающих',
     type: 'Jazz Funk',
-    teacher: 'Орлова Дарья',
+    teacher: {
+      name: 'Орлова Дарья',
+      bio: 'Энергичный тренер с уникальным стилем преподавания. Работает с детскими и взрослыми группами.',
+      achievements: ['Победитель Groove Dance Champ 2022', 'Танцовщица клипов российских артистов'],
+      experience: 5,
+      specializations: ['Jazz Funk', 'Hip-Hop', 'Commercial'],
+      images: [teacherImages.woman, teacherImages.woman, teacherImages.woman],
+    },
     level: 'Beginner',
     dateFrom: '10.02',
     dateTo: '22.02',
     price: 7000,
-    image: courseImages.jazzFunk,
+    images: [courseImages.jazzFunk, courseImages.jazzFunk, courseImages.jazzFunk],
     studio: 'Арт-пространство',
     weekdays: ['Вт', 'Чт', 'Сб'],
     timeFrom: '12:00',
@@ -144,12 +186,23 @@ export const COURSES_CONFIG: CourseConfigItem[] = [
     id: 5,
     name: 'Vogue: продвинутый уровень',
     type: 'Vogue',
-    teacher: 'Кузнецов Артём',
+    teacher: {
+      name: 'Кузнецов Артём',
+      bio: 'Один из ведущих vogue-танцоров России. Регулярный участник ballroom-сцены.',
+      achievements: [
+        'Чемпион Vogue Ball Moscow 2023',
+        'Основатель House of Phantom',
+        'Судья международных баллов',
+      ],
+      experience: 9,
+      specializations: ['Vogue', 'Waacking', 'Ballroom'],
+      images: [teacherImages.man, teacherImages.man, teacherImages.man],
+    },
     level: 'Advanced',
     dateFrom: '15.02',
     dateTo: '28.02',
     price: 12000,
-    image: courseImages.vogue,
+    images: [courseImages.vogue, courseImages.vogue, courseImages.vogue],
     studio: 'Грация',
     weekdays: ['Ср', 'Пт'],
     timeFrom: '20:00',
@@ -169,12 +222,19 @@ export const COURSES_CONFIG: CourseConfigItem[] = [
     id: 6,
     name: 'Hip-Hop: новая волна',
     type: 'Hip-Hop',
-    teacher: 'Павлова Елена',
+    teacher: {
+      name: 'Павлова Елена',
+      bio: 'Хореограф новой школы хип-хопа. Ставит номера для шоу и концертов.',
+      achievements: ['Финалист SDK Europe', 'Хореограф шоу «Танцы»'],
+      experience: 7,
+      specializations: ['Hip-Hop', 'New Style', 'Popping'],
+      images: [teacherImages.woman, teacherImages.woman, teacherImages.woman],
+    },
     level: 'Intermediate',
     dateFrom: '16.02',
     dateTo: '28.02',
     price: 9000,
-    image: courseImages.hipHop,
+    images: [courseImages.hipHop, courseImages.hipHop, courseImages.hipHop],
     studio: 'ТанцХаб',
     weekdays: ['Пн', 'Чт'],
     timeFrom: '18:00',
@@ -194,12 +254,19 @@ export const COURSES_CONFIG: CourseConfigItem[] = [
     id: 7,
     name: 'Dancehall: первые шаги',
     type: 'Dancehall',
-    teacher: 'Мельникова Ольга',
+    teacher: {
+      name: 'Мельникова Ольга',
+      bio: 'Амбассадор dancehall-культуры в России. Проводит мастер-классы по всей стране.',
+      achievements: ['Победитель Dancehall Queen Contest 2021', 'Обучение на Ямайке'],
+      experience: 6,
+      specializations: ['Dancehall', 'Afro', 'Reggaeton'],
+      images: [teacherImages.woman, teacherImages.woman, teacherImages.woman],
+    },
     level: 'Beginner',
     dateFrom: '18.02',
     dateTo: '28.02',
     price: 7500,
-    image: courseImages.dancehall,
+    images: [courseImages.dancehall, courseImages.dancehall, courseImages.dancehall],
     studio: 'DanceLab',
     weekdays: ['Вт', 'Сб'],
     timeFrom: '14:00',
@@ -219,12 +286,23 @@ export const COURSES_CONFIG: CourseConfigItem[] = [
     id: 8,
     name: 'Frame Up: мастерский класс',
     type: 'Frame Up',
-    teacher: 'Карпова Ксения',
+    teacher: {
+      name: 'Карпова Ксения',
+      bio: 'Хореограф и основатель студии. Более 10 лет в танцевальной индустрии.',
+      achievements: [
+        'Финалист Dance Parade 2023',
+        'Судья танцевальных баттлов',
+        'Обучила более 500 учеников',
+      ],
+      experience: 10,
+      specializations: ['High Heels', 'Frame Up', 'Lady Style'],
+      images: [teacherImages.woman, teacherImages.woman, teacherImages.woman],
+    },
     level: 'Advanced',
     dateFrom: '20.02',
     dateTo: '05.03',
     price: 13000,
-    image: courseImages.frameUp,
+    images: [courseImages.frameUp, courseImages.frameUp, courseImages.frameUp],
     studio: 'Арт-пространство',
     weekdays: ['Пн', 'Ср', 'Пт'],
     timeFrom: '20:00',
@@ -244,12 +322,19 @@ export const COURSES_CONFIG: CourseConfigItem[] = [
     id: 9,
     name: 'Stretching для начинающих',
     type: 'Stretching',
-    teacher: 'Лебедева Ирина',
+    teacher: {
+      name: 'Лебедева Ирина',
+      bio: 'Мастер спорта по художественной гимнастике. Специалист по растяжке и гибкости.',
+      achievements: ['Мастер спорта по художественной гимнастике', 'Сертификат PNF Stretching'],
+      experience: 12,
+      specializations: ['Stretching', 'Гибкость', 'Художественная гимнастика'],
+      images: [teacherImages.woman, teacherImages.woman, teacherImages.woman],
+    },
     level: 'Beginner',
     dateFrom: '01.03',
     dateTo: '12.03',
     price: 6000,
-    image: courseImages.stretching,
+    images: [courseImages.stretching, courseImages.stretching, courseImages.stretching],
     studio: 'Студия движения',
     weekdays: ['Вт', 'Чт', 'Сб'],
     timeFrom: '10:00',
@@ -269,12 +354,19 @@ export const COURSES_CONFIG: CourseConfigItem[] = [
     id: 10,
     name: 'Lady Style: грация и пластика',
     type: 'Lady Style',
-    teacher: 'Соколова Полина',
+    teacher: {
+      name: 'Соколова Полина',
+      bio: 'Танцовщица и модель. Развивает направление Lady Style в России.',
+      achievements: ['Призёр Lady Dance Cup 2022', 'Хореограф модных показов'],
+      experience: 7,
+      specializations: ['Lady Style', 'High Heels', 'Strip Plastic'],
+      images: [teacherImages.woman, teacherImages.woman, teacherImages.woman],
+    },
     level: 'Intermediate',
     dateFrom: '03.03',
     dateTo: '16.03',
     price: 9000,
-    image: courseImages.ladyStyle,
+    images: [courseImages.ladyStyle, courseImages.ladyStyle, courseImages.ladyStyle],
     studio: 'Грация',
     weekdays: ['Пн', 'Ср'],
     timeFrom: '19:00',
