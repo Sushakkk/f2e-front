@@ -1,7 +1,8 @@
 import cn from 'classnames';
 import * as React from 'react';
-import { Link } from 'react-router-dom';
+import { generatePath, useNavigate } from 'react-router-dom';
 
+import { RoutePath } from 'config/router/paths';
 import { CourseConfigItem } from 'pages/HomePage/config/cards';
 import { formatCourseLevel } from 'pages/HomePage/config/levels';
 import { getScheduleDisplay } from 'utils/scheduleUtils';
@@ -14,19 +15,26 @@ type Props = {
 };
 
 const Card: React.FC<Props> = ({ className, item }) => {
-  const { name, teacher, level, dateFrom, dateTo, price, image, id } = item;
+  const { name, teacher, level, dateFrom, dateTo, price, images, id } = item;
+  const navigate = useNavigate();
 
   const schedule = React.useMemo(() => getScheduleDisplay(item), [item]);
 
+  const goToCourse = React.useCallback(() => {
+    if (id) {
+      navigate(generatePath(RoutePath.course, { id: String(id) }));
+    }
+  }, [navigate, id]);
+
   return (
-    <Link to={`/course/${id}`} className={cn(s.card, className)}>
+    <div className={cn(s.card, className)} onClick={goToCourse}>
       <div className={s.imageWrapper}>
-        <img src={image} alt={name} />
+        <img src={images[0]} alt={name} />
       </div>
       <div className={s.level}>{formatCourseLevel(level)}</div>
       <div className={s.content}>
         <div className={s.title}>{name}</div>
-        {teacher && <div className={s.subtitle}>{teacher}</div>}
+        {teacher && <div className={s.subtitle}>{teacher.name}</div>}
         {dateFrom && dateTo && (
           <div className={s.subtitle}>
             {dateFrom} - {dateTo}
@@ -41,7 +49,7 @@ const Card: React.FC<Props> = ({ className, item }) => {
           {price && <div className={s.price}>{price.toLocaleString()} ₽</div>}
         </div>
       </div>
-    </Link>
+    </div>
   );
 };
 

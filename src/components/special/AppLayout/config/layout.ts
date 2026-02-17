@@ -12,18 +12,21 @@ export const LAYOUT_CONFIG: Record<RoutePath, LayoutConfig> = {
     withHeader: false,
   },
   [RoutePath.home]: {
-    withHeader: true,
+    withHeader: false,
   },
   [RoutePath.course]: {
-    withHeader: true,
+    withHeader: false,
   },
   [RoutePath.calendar]: {
-    withHeader: true,
+    withHeader: false,
   },
   [RoutePath.map]: {
-    withHeader: true,
+    withHeader: false,
   },
   [RoutePath.profile]: {
-    withHeader: true,
+    withHeader: false,
+  },
+  [RoutePath.teacher]: {
+    withHeader: false,
   },
 };

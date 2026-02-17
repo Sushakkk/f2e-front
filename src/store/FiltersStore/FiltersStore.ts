@@ -92,7 +92,7 @@ export class FiltersStore implements ILocalStore {
         return false;
       }
 
-      if (teachers.length > 0 && !teachers.includes(course.teacher)) {
+      if (teachers.length > 0 && !teachers.includes(course.teacher.name)) {
         return false;
       }
 
@@ -155,7 +155,7 @@ export class FiltersStore implements ILocalStore {
   }
 
   get teacherOptions(): { value: string; label: string }[] {
-    return uniqSorted(this._courses.map((c) => c.teacher).filter(Boolean)).map((t) => ({
+    return uniqSorted(this._courses.map((c) => c.teacher.name).filter(Boolean)).map((t) => ({
       value: t,
       label: t,
     }));
