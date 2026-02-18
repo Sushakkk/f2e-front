@@ -2,6 +2,7 @@ import cn from 'classnames';
 import { observer } from 'mobx-react';
 import * as React from 'react';
 
+import { COURSES_CONFIG, CourseConfigItem } from 'config';
 import { FiltersStore } from 'store/FiltersStore';
 import { PaginationStore } from 'store/PaginationStore';
 import { QueryStore, parseQueryFromURL } from 'store/QueryStore';
@@ -10,8 +11,6 @@ import { useCoursesSearch } from 'utils/useCoursesSearch';
 
 import s from './HomePage.module.scss';
 import { Card, Filters, Pagination, Recommendations, SearchBar } from './components';
-import { COURSES_CONFIG } from './config/cards';
-import type { CourseConfigItem } from './config/cards';
 
 function useMediaQuery(query: string) {
   const [matches, setMatches] = React.useState(() => window.matchMedia(query).matches);
@@ -150,12 +149,6 @@ const HomePage: React.FC = () => {
             ))}
           </div>
           {isEmpty && <div className={s.empty}>Ничего не найдено</div>}
-          <Pagination
-            currentPage={currentPage}
-            totalPages={totalPages}
-            visiblePages={visiblePages}
-            onPageChange={handlePageChange}
-          />
         </div>
         <aside
           ref={sidebarRef}
@@ -166,6 +159,12 @@ const HomePage: React.FC = () => {
           <Filters store={filtersStore} onClose={isMobile ? handleClose : undefined} />
         </aside>
       </div>
+      <Pagination
+        currentPage={currentPage}
+        totalPages={totalPages}
+        visiblePages={visiblePages}
+        onPageChange={handlePageChange}
+      />
     </div>
   );
 };

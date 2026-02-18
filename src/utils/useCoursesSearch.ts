@@ -1,7 +1,7 @@
 import * as React from 'react';
 
-import { COURSES_CONFIG } from 'pages/HomePage/config/cards';
-import { formatCourseLevel } from 'pages/HomePage/config/levels';
+import { COURSES_CONFIG } from 'config/cards';
+import { formatCourseLevel } from 'config/levels';
 
 import { useDebouncedValue } from './useDebouncedValue';
 

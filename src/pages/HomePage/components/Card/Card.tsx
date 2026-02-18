@@ -2,9 +2,8 @@ import cn from 'classnames';
 import * as React from 'react';
 import { generatePath, useNavigate } from 'react-router-dom';
 
+import { CourseConfigItem, formatCourseLevel } from 'config';
 import { RoutePath } from 'config/router/paths';
-import { CourseConfigItem } from 'pages/HomePage/config/cards';
-import { formatCourseLevel } from 'pages/HomePage/config/levels';
 import { getScheduleDisplay } from 'utils/scheduleUtils';
 
 import s from './Card.module.scss';

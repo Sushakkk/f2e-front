@@ -1,4 +1,4 @@
-import type { CourseLevel } from 'pages/HomePage/config/levels';
+import type { CourseLevel } from 'config/levels';
 
 export type DraftState = {
   types: string[];

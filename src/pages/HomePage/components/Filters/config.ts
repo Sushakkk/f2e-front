@@ -1,4 +1,4 @@
-import { CITIES, LEVELS_ORDER, STUDIOS, WEEKDAYS } from 'pages/HomePage/config/constants';
+import { CITIES, LEVELS_ORDER, STUDIOS, WEEKDAYS } from 'config/constants';
 
 import type { CoursesFiltersValue, DraftState } from './types';
 

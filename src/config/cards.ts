@@ -3,13 +3,18 @@ import { teacherImages } from 'assets/images/teachers';
 
 import type { CourseLevel } from './levels';
 
-export type { CourseLevel } from './levels';
-
 export type ScheduleEntry = {
   weekday: string;
   timeFrom: string;
   timeTo: string;
   location?: string;
+};
+
+export type Review = {
+  author: string;
+  date: string;
+  text: string;
+  rating: number;
 };
 
 export type Teacher = {
@@ -19,6 +24,8 @@ export type Teacher = {
   achievements: string[];
   experience: number;
   specializations: string[];
+  rating: number;
+  reviews: Review[];
 };
 
 export type CourseConfigItem = {
@@ -63,13 +70,34 @@ export const COURSES_CONFIG: CourseConfigItem[] = [
       ],
       experience: 10,
       specializations: ['High Heels', 'Frame Up', 'Lady Style'],
-      images: [teacherImages.woman, teacherImages.woman, teacherImages.woman],
+      images: [teacherImages.woman2, teacherImages.woman],
+      rating: 4.9,
+      reviews: [
+        {
+          author: 'Алина',
+          date: '12.01.2025',
+          text: 'Ксения — невероятный педагог! После её интенсива я наконец почувствовала уверенность на каблуках.',
+          rating: 5,
+        },
+        {
+          author: 'Виктория',
+          date: '28.12.2024',
+          text: 'Очень структурированные занятия, всё по делу. Прогресс заметен уже после первой недели.',
+          rating: 5,
+        },
+        {
+          author: 'Марина',
+          date: '15.11.2024',
+          text: 'Энергетика на занятиях потрясающая. Ксения умеет мотивировать и находит подход к каждому.',
+          rating: 4,
+        },
+      ],
     },
     level: 'Advanced',
     dateFrom: '10.06',
     dateTo: '25.06',
     price: 15000,
-    images: [courseImages.highHeels1, courseImages.highHeels1, courseImages.highHeels1],
+    images: [courseImages.highHeels1, courseImages.highHeels2],
     studio: 'ТанцХаб',
     city: 'Москва',
     description: 'Интенсив с плавающим расписанием. Подходит для занятых танцоров.',
@@ -97,6 +125,21 @@ export const COURSES_CONFIG: CourseConfigItem[] = [
       experience: 6,
       specializations: ['High Heels', 'Strip Plastic'],
       images: [teacherImages.woman, teacherImages.woman, teacherImages.woman],
+      rating: 4.5,
+      reviews: [
+        {
+          author: 'Дарья',
+          date: '20.01.2025',
+          text: 'Мария отлично объясняет базу. Я пришла с нуля и уже через месяц могла танцевать связки!',
+          rating: 5,
+        },
+        {
+          author: 'Екатерина',
+          date: '05.01.2025',
+          text: 'Терпеливый и внимательный педагог. Всегда подскажет, поправит технику.',
+          rating: 4,
+        },
+      ],
     },
     level: 'Beginner',
     dateFrom: '03.02',
@@ -129,6 +172,27 @@ export const COURSES_CONFIG: CourseConfigItem[] = [
       experience: 8,
       specializations: ['Contemporary', 'Modern', 'Импровизация'],
       images: [teacherImages.woman, teacherImages.woman, teacherImages.woman],
+      rating: 4.7,
+      reviews: [
+        {
+          author: 'Полина',
+          date: '18.01.2025',
+          text: 'Анна раскрывает танец с другой стороны. Много работы с импровизацией — это бесценно.',
+          rating: 5,
+        },
+        {
+          author: 'Олег',
+          date: '02.01.2025',
+          text: 'Глубокий подход к движению. После курса стал совсем иначе чувствовать своё тело.',
+          rating: 5,
+        },
+        {
+          author: 'Настя',
+          date: '10.12.2024',
+          text: 'Хороший курс, но хотелось бы больше техники и меньше импровизации.',
+          rating: 4,
+        },
+      ],
     },
     level: 'Intermediate',
     dateFrom: '05.02',
@@ -161,6 +225,21 @@ export const COURSES_CONFIG: CourseConfigItem[] = [
       experience: 5,
       specializations: ['Jazz Funk', 'Hip-Hop', 'Commercial'],
       images: [teacherImages.woman, teacherImages.woman, teacherImages.woman],
+      rating: 4.3,
+      reviews: [
+        {
+          author: 'Кристина',
+          date: '22.01.2025',
+          text: 'Дарья заряжает энергией! Занятия пролетают незаметно, хочется ещё и ещё.',
+          rating: 5,
+        },
+        {
+          author: 'Софья',
+          date: '08.01.2025',
+          text: 'Классные связки, много драйва. Иногда темп слишком быстрый для новичков.',
+          rating: 4,
+        },
+      ],
     },
     level: 'Beginner',
     dateFrom: '10.02',
@@ -197,6 +276,27 @@ export const COURSES_CONFIG: CourseConfigItem[] = [
       experience: 9,
       specializations: ['Vogue', 'Waacking', 'Ballroom'],
       images: [teacherImages.man, teacherImages.man, teacherImages.man],
+      rating: 4.8,
+      reviews: [
+        {
+          author: 'Денис',
+          date: '25.01.2025',
+          text: 'Артём — легенда vogue-сцены. Учиться у него — это отдельный уровень вдохновения.',
+          rating: 5,
+        },
+        {
+          author: 'Лера',
+          date: '14.01.2025',
+          text: 'Сложно, но очень круто. Артём требовательный, но справедливый. Результат того стоит.',
+          rating: 5,
+        },
+        {
+          author: 'Игорь',
+          date: '30.12.2024',
+          text: 'Курс помог подготовиться к первому баллу. Спасибо за веру в учеников!',
+          rating: 4,
+        },
+      ],
     },
     level: 'Advanced',
     dateFrom: '15.02',
@@ -229,6 +329,21 @@ export const COURSES_CONFIG: CourseConfigItem[] = [
       experience: 7,
       specializations: ['Hip-Hop', 'New Style', 'Popping'],
       images: [teacherImages.woman, teacherImages.woman, teacherImages.woman],
+      rating: 4.6,
+      reviews: [
+        {
+          author: 'Максим',
+          date: '19.01.2025',
+          text: 'Елена разбирает каждое движение детально. Отличный баланс теории и практики.',
+          rating: 5,
+        },
+        {
+          author: 'Аня',
+          date: '03.01.2025',
+          text: 'Очень крутая атмосфера на занятиях. Чувствуешь себя частью команды.',
+          rating: 4,
+        },
+      ],
     },
     level: 'Intermediate',
     dateFrom: '16.02',
@@ -261,6 +376,27 @@ export const COURSES_CONFIG: CourseConfigItem[] = [
       experience: 6,
       specializations: ['Dancehall', 'Afro', 'Reggaeton'],
       images: [teacherImages.woman, teacherImages.woman, teacherImages.woman],
+      rating: 4.4,
+      reviews: [
+        {
+          author: 'Юлия',
+          date: '16.01.2025',
+          text: 'Ольга передаёт настоящий вайб dancehall. После занятий хочется танцевать везде!',
+          rating: 5,
+        },
+        {
+          author: 'Карина',
+          date: '29.12.2024',
+          text: 'Весёлые и позитивные уроки. Ольга умеет создать расслабленную атмосферу.',
+          rating: 4,
+        },
+        {
+          author: 'Светлана',
+          date: '12.12.2024',
+          text: 'Хотелось бы чуть больше разбора техники отдельных степов.',
+          rating: 4,
+        },
+      ],
     },
     level: 'Beginner',
     dateFrom: '18.02',
@@ -297,6 +433,27 @@ export const COURSES_CONFIG: CourseConfigItem[] = [
       experience: 10,
       specializations: ['High Heels', 'Frame Up', 'Lady Style'],
       images: [teacherImages.woman, teacherImages.woman, teacherImages.woman],
+      rating: 4.9,
+      reviews: [
+        {
+          author: 'Алина',
+          date: '12.01.2025',
+          text: 'Ксения — невероятный педагог! После её интенсива я наконец почувствовала уверенность на каблуках.',
+          rating: 5,
+        },
+        {
+          author: 'Виктория',
+          date: '28.12.2024',
+          text: 'Очень структурированные занятия, всё по делу. Прогресс заметен уже после первой недели.',
+          rating: 5,
+        },
+        {
+          author: 'Марина',
+          date: '15.11.2024',
+          text: 'Энергетика на занятиях потрясающая. Ксения умеет мотивировать и находит подход к каждому.',
+          rating: 4,
+        },
+      ],
     },
     level: 'Advanced',
     dateFrom: '20.02',
@@ -329,6 +486,27 @@ export const COURSES_CONFIG: CourseConfigItem[] = [
       experience: 12,
       specializations: ['Stretching', 'Гибкость', 'Художественная гимнастика'],
       images: [teacherImages.woman, teacherImages.woman, teacherImages.woman],
+      rating: 5.0,
+      reviews: [
+        {
+          author: 'Наталья',
+          date: '24.01.2025',
+          text: 'Ирина — волшебница! За месяц я села на шпагат, хотя думала, что это невозможно.',
+          rating: 5,
+        },
+        {
+          author: 'Оксана',
+          date: '10.01.2025',
+          text: 'Очень бережный подход к растяжке. Никакой боли, только прогресс.',
+          rating: 5,
+        },
+        {
+          author: 'Елена',
+          date: '22.12.2024',
+          text: 'Лучший преподаватель по стретчингу. Всё объясняет с точки зрения анатомии.',
+          rating: 5,
+        },
+      ],
     },
     level: 'Beginner',
     dateFrom: '01.03',
@@ -361,6 +539,27 @@ export const COURSES_CONFIG: CourseConfigItem[] = [
       experience: 7,
       specializations: ['Lady Style', 'High Heels', 'Strip Plastic'],
       images: [teacherImages.woman, teacherImages.woman, teacherImages.woman],
+      rating: 4.6,
+      reviews: [
+        {
+          author: 'Ирина',
+          date: '21.01.2025',
+          text: 'Полина учит не просто движениям, а женственности и подаче. Это меняет всё!',
+          rating: 5,
+        },
+        {
+          author: 'Мила',
+          date: '06.01.2025',
+          text: 'Красивые постановки, приятная музыка. Чувствуешь себя звездой на каждом занятии.',
+          rating: 5,
+        },
+        {
+          author: 'Александра',
+          date: '18.12.2024',
+          text: 'Хороший курс, но хотелось бы больше внимания технике рук.',
+          rating: 4,
+        },
+      ],
     },
     level: 'Intermediate',
     dateFrom: '03.03',
