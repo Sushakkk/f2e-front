@@ -5,11 +5,10 @@
   align-items: center;
   justify-content: center;
   gap: 6px;
-  padding-top: 32px;
-  margin-top: auto;
+  padding: 32px 0;
 
   @include mobile {
-    padding-top: 24px;
+    padding: 24px 0;
     gap: 4px;
   }
 }

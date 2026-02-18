@@ -1,4 +1,4 @@
-import type { CourseConfigItem, ScheduleEntry } from 'pages/HomePage/config/cards';
+import type { CourseConfigItem, ScheduleEntry } from 'config/cards';
 
 function getEntries(course: CourseConfigItem): ScheduleEntry[] {
   if (course.schedule) {

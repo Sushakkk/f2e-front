@@ -1,5 +1,6 @@
 import { action, computed, makeObservable, observable, IReactionDisposer } from 'mobx';
 
+import { CourseConfigItem, CourseLevel, COURSE_LEVEL_LABELS } from 'config';
 import {
   CITIES,
   EMPTY_FILTERS,
@@ -11,8 +12,6 @@ import {
   uniqSorted,
 } from 'pages/HomePage/components/Filters/config';
 import type { CoursesFiltersValue, DraftState } from 'pages/HomePage/components/Filters/types';
-import { CourseConfigItem, CourseLevel } from 'pages/HomePage/config/cards';
-import { COURSE_LEVEL_LABELS } from 'pages/HomePage/config/levels';
 import { ILocalStore } from 'store/interfaces';
 import { fromIsoDate, parseDDMM } from 'utils/dateUtils';
 import { getCourseWeekdays, getCourseTimeFrom, getCourseTimeTo } from 'utils/scheduleUtils';

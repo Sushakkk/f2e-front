@@ -5,17 +5,18 @@ import { useNavigate } from 'react-router-dom';
 import ArrowIcon from 'assets/images/arrow.svg?react';
 import HeartFilledIcon from 'assets/images/heart-filled.svg?react';
 import HeartIcon from 'assets/images/heart.svg?react';
+import { CoverflowSwiper } from 'components/common/CoverflowSwiper';
 
 import s from './InfoPage.module.scss';
 
 type Props = React.PropsWithChildren<{
   title: string;
   description: string;
-  image?: string;
+  images?: string[];
   button?: React.ReactNode;
 }>;
 
-const InfoPage: React.FC<Props> = ({ title, description, image, button, children }) => {
+const InfoPage: React.FC<Props> = ({ title, description, images, button, children }) => {
   const navigate = useNavigate();
 
   const [liked, setLiked] = React.useState(false);
@@ -34,6 +35,24 @@ const InfoPage: React.FC<Props> = ({ title, description, image, button, children
   const handleLike = React.useCallback(() => setLiked(true), []);
   const handleUnlike = React.useCallback(() => setLiked(false), []);
 
+  const normalizedImages = React.useMemo(() => {
+    if (!images || images.length === 0) {
+      return [];
+    }
+
+    if (images.length >= 5 || images.length === 1) {
+      return images;
+    }
+
+    const result: string[] = [];
+
+    while (result.length < 5) {
+      result.push(...images);
+    }
+
+    return result;
+  }, [images]);
+
   return (
     <div className={s.page}>
       <div className={s.container}>
@@ -49,10 +68,12 @@ const InfoPage: React.FC<Props> = ({ title, description, image, button, children
             <HeartIcon className={s.button} onClick={handleLike} aria-label="В избранное" />
           )}
         </div>
-        {image && (
-          <div className={s.imageWrapper}>
-            <img src={image} alt={title} />
-          </div>
+        {images && images.length > 0 && (
+          <CoverflowSwiper
+            items={normalizedImages}
+            getImage={(src: string) => src}
+            getAlt={() => title}
+          />
         )}
       </div>
       <div className={s.details}>

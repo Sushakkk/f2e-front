@@ -3,8 +3,6 @@ import { teacherImages } from 'assets/images/teachers';
 
 import type { CourseLevel } from './levels';
 
-export type { CourseLevel } from './levels';
-
 export type ScheduleEntry = {
   weekday: string;
   timeFrom: string;
@@ -63,13 +61,13 @@ export const COURSES_CONFIG: CourseConfigItem[] = [
       ],
       experience: 10,
       specializations: ['High Heels', 'Frame Up', 'Lady Style'],
-      images: [teacherImages.woman, teacherImages.woman, teacherImages.woman],
+      images: [teacherImages.woman2, teacherImages.woman],
     },
     level: 'Advanced',
     dateFrom: '10.06',
     dateTo: '25.06',
     price: 15000,
-    images: [courseImages.highHeels1, courseImages.highHeels1, courseImages.highHeels1],
+    images: [courseImages.highHeels1, courseImages.highHeels2],
     studio: 'ТанцХаб',
     city: 'Москва',
     description: 'Интенсив с плавающим расписанием. Подходит для занятых танцоров.',

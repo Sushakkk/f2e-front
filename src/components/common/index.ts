@@ -1,5 +1,7 @@
 export * from './Button';
 
+export * from './CoverflowSwiper';
+
 export * from './ScreenSpinner';
 
 export * from './Header';

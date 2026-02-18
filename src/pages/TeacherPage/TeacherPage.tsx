@@ -3,7 +3,7 @@ import { Link, Navigate, useParams } from 'react-router-dom';
 
 import { InfoPage } from 'components/common/InfoPage';
 import { Row } from 'components/common/Row';
-import { COURSES_CONFIG, CourseConfigItem } from 'pages/HomePage/config/cards';
+import { COURSES_CONFIG, CourseConfigItem } from 'config';
 
 import s from './TeacherPage.module.scss';
 
@@ -28,7 +28,7 @@ const TeacherPage: React.FC = () => {
   }
 
   return (
-    <InfoPage title={teacher.name} description={teacher.bio} image={teacher.images?.[0]}>
+    <InfoPage title={teacher.name} description={teacher.bio} images={teacher.images}>
       <Row label="Опыт:">{teacher.experience} лет</Row>
       <Row label="Специализации:">{teacher.specializations.join(', ')}</Row>
       {teacher.achievements.length > 0 && (

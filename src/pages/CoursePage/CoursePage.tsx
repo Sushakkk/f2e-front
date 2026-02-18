@@ -5,8 +5,7 @@ import { Link, Navigate, useParams } from 'react-router-dom';
 import Button from 'components/common/Button/Button';
 import { InfoPage } from 'components/common/InfoPage';
 import { Row } from 'components/common/Row';
-import { COURSES_CONFIG, CourseConfigItem } from 'pages/HomePage/config/cards';
-import { formatCourseLevel } from 'pages/HomePage/config/levels';
+import { COURSES_CONFIG, CourseConfigItem, formatCourseLevel } from 'config';
 import { getScheduleLines } from 'utils/scheduleUtils';
 
 import s from './CoursePage.module.scss';
@@ -29,7 +28,7 @@ const CoursePage: React.FC = () => {
     <InfoPage
       title={course.name}
       description={course.description}
-      image={course.images[0]}
+      images={course.images}
       button={
         <Button mode="purple" className={s.enrollBtn}>
           Записаться

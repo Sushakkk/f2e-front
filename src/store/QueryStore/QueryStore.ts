@@ -1,24 +1,16 @@
 import { action, makeObservable, observable, reaction, IReactionDisposer } from 'mobx';
 
+import type { CourseLevel } from 'config';
 import type { CoursesFiltersValue } from 'pages/HomePage/components/Filters/types';
-import type { CourseLevel } from 'pages/HomePage/config/cards';
 import { FiltersStore } from 'store/FiltersStore';
 import { PaginationStore } from 'store/PaginationStore';
 import { ILocalStore } from 'store/interfaces';
-
-/* ------------------------------------------------------------------ */
-/*  Types                                                              */
-/* ------------------------------------------------------------------ */
 
 export type QueryParams = {
   filters: CoursesFiltersValue;
   page: number;
   search: string;
 };
-
-/* ------------------------------------------------------------------ */
-/*  URL → State  (parsing)                                             */
-/* ------------------------------------------------------------------ */
 
 function parseArrayParam(params: URLSearchParams, key: string): string[] {
   const value = params.get(key);
@@ -71,10 +63,6 @@ export function parseQueryFromURL(): QueryParams {
     search: params.get('search') ?? '',
   };
 }
-
-/* ------------------------------------------------------------------ */
-/*  State → URL  (serialization)                                       */
-/* ------------------------------------------------------------------ */
 
 function buildSearchString(filters: CoursesFiltersValue, page: number, search: string): string {
   const params = new URLSearchParams();
@@ -140,12 +128,7 @@ function buildSearchString(filters: CoursesFiltersValue, page: number, search: s
   return str ? `?${str}` : '';
 }
 
-/* ------------------------------------------------------------------ */
-/*  QueryStore                                                         */
-/* ------------------------------------------------------------------ */
-
 export class QueryStore implements ILocalStore {
-  /** Search value, synced to URL */
   private _search = '';
 
   private _disposers: IReactionDisposer[] = [];
@@ -162,7 +145,6 @@ export class QueryStore implements ILocalStore {
       setSearch: action,
     });
 
-    // React on any tracked change → update URL via replaceState
     this._disposers.push(
       reaction(
         () => ({
