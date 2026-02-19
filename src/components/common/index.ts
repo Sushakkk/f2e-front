@@ -13,3 +13,5 @@ export * from './SelectDropdown';
 export * from './InfoPage';
 
 export * from './Row';
+
+export * from './StarRating';

@@ -3,9 +3,11 @@ import { Link, Navigate, useParams } from 'react-router-dom';
 
 import { InfoPage } from 'components/common/InfoPage';
 import { Row } from 'components/common/Row';
+import { StarRating } from 'components/common/StarRating';
 import { COURSES_CONFIG, CourseConfigItem } from 'config';
 
 import s from './TeacherPage.module.scss';
+import { ReviewsSection } from './components';
 
 const TeacherPage: React.FC = () => {
   const { name } = useParams<{ name: string }>();
@@ -53,6 +55,11 @@ const TeacherPage: React.FC = () => {
           ))}
         </Row>
       )}
+      <div className={s.ratingBlock}>
+        <span className={s.sectionTitle}>Рейтинг</span>
+        <StarRating rating={teacher.rating} size="lg" />
+      </div>
+      {teacher.reviews.length > 0 && <ReviewsSection reviews={teacher.reviews} />}
     </InfoPage>
   );
 };

@@ -1,0 +1,66 @@
+@import "styles/mixins";
+
+.rating {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.rating_sm {
+  gap: 4px;
+}
+
+.stars {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.star {
+  color: $color-accent;
+  flex-shrink: 0;
+
+  &_empty {
+    opacity: 0.35;
+  }
+}
+
+.rating_md .star {
+  width: 18px;
+  height: 18px;
+}
+
+.rating_sm .star {
+  width: 14px;
+  height: 14px;
+}
+
+.value {
+  font-weight: 600;
+  line-height: 1;
+}
+
+.rating_md .value {
+  font-size: 15px;
+}
+
+.rating_sm .value {
+  font-size: 12px;
+}
+
+.rating_lg {
+  gap: 10px;
+}
+
+.rating_lg .stars {
+  gap: 4px;
+}
+
+.rating_lg .star {
+  width: 32px;
+  height: 32px;
+}
+
+.rating_lg .value {
+  font-size: 28px;
+}
