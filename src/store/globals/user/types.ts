@@ -1,3 +1,5 @@
+import type { Enrollment } from 'config/users';
+
 export type ApiAuth = {
   user: string;
   token: string;
@@ -5,18 +7,20 @@ export type ApiAuth = {
 
 export type UserFlags = Record<string, boolean>;
 
-export type SexType = 0 | 1 | 2; // 0 - пол не указан, 1 - женский пол, 2 - мужской пол
-
-// TODO: заменить тип пользователя на используемый в проекте
 export type UserServer = {
   id: number;
-  first_name?: string;
-  last_name?: string;
-  sex?: SexType;
-  bdate?: string;
-  country_id?: number;
-  city_id?: number;
+  firstName: string;
+  lastName: string;
+  email: string;
+  phone: string;
+  avatar?: string;
+  city: string;
+  level: string;
+  registeredAt: string;
   flags?: UserFlags;
+  enrollments?: Enrollment[];
+  favoriteCourseIds?: number[];
+  favoriteTeacherNames?: string[];
 };
 
 export type ApiGetUserType<UserT = UserServer> = {

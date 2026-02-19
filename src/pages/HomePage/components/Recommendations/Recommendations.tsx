@@ -1,68 +1,71 @@
-import React from 'react';
-import cn from 'classnames';
+import React, { useCallback } from 'react';
+import { generatePath, useNavigate } from 'react-router-dom';
 
-import { Swiper, SwiperSlide } from 'swiper/react';
-import { Autoplay, EffectCoverflow, Navigation } from 'swiper/modules';
-
-import 'swiper/css';
-import 'swiper/css/effect-coverflow';
-import 'swiper/css/navigation';
+import { CoverflowSwiper } from 'components';
+import { CourseConfigItem, formatCourseLevel } from 'config';
+import { RoutePath } from 'config/router/paths';
+import { getScheduleDisplay } from 'utils/scheduleUtils';
 
 import s from './Recommendations.module.scss';
-import { CourseConfigItem } from 'pages/HomePage/config/cards';
 
 type Props = {
   items: CourseConfigItem[];
-  className?: string;
 };
 
-export const Recommendations: React.FC<Props> = ({ items, className }) => {
+export const Recommendations: React.FC<Props> = ({ items }) => {
+  const navigate = useNavigate();
+
+  const goToCourse = useCallback(
+    (item: CourseConfigItem) => {
+      if (item.id) {
+        navigate(generatePath(RoutePath.course, { id: String(item.id) }));
+      }
+    },
+    [navigate]
+  );
+
   return (
-    <div className={cn(s.root, className)}>
-      <Swiper
-        className={s.swiper}
-        modules={[EffectCoverflow, Navigation, Autoplay]}
-        effect="coverflow"
-        centeredSlides
-        loop
-        grabCursor
-        navigation
-        slidesPerView={1}
-        breakpoints={{
-          1024: {
-            slidesPerView: 2,
-          },
-        }}
-        autoplay={{
-          delay: 2500,
-          disableOnInteraction: false,
-          pauseOnMouseEnter: true,
-        }}
-        speed={650}
-        coverflowEffect={{
-          rotate: 0,
-          stretch: 0,
-          depth: 320,
-          modifier: 1,
-          slideShadows: false,
-        }}
-      >
-        {items.map((it) => (
-          <SwiperSlide key={it.id}>
-            <div className={s.card}>
-              <img
-                className={s.img}
-                src={it.image}
-                alt={it.title}
-                draggable={false}
-                loading="lazy"
-                decoding="async"
-              />
+    <CoverflowSwiper
+      items={items}
+      getImage={(it: CourseConfigItem) => it.images?.[0]}
+      getKey={(it: CourseConfigItem) => it.id}
+      getAlt={(it: CourseConfigItem) => it.name}
+      onItemClick={goToCourse}
+    >
+      {(it: CourseConfigItem) => {
+        const schedule = getScheduleDisplay(it);
+
+        return (
+          <>
+            {' '}
+            <div className={s.level}>{formatCourseLevel(it.level)}</div>
+            <div className={s.overlay}>
+              <div className={s.title}>{it.name}</div>
+              {it.teacher && <div className={s.subtitle}>{it.teacher.name}</div>}
+              {it.dateFrom && it.dateTo && (
+                <div className={s.subtitle}>
+                  {it.dateFrom} - {it.dateTo}
+                </div>
+              )}
+              <div className={s.bottom}>
+                {schedule && (
+                  <div className={s.subtitle}>
+                    {schedule.days}
+                    {schedule.time && (
+                      <>
+                        {' '}
+                        <span className={s.time}>{schedule.time}</span>
+                      </>
+                    )}
+                  </div>
+                )}
+                {Boolean(it.price) && <div className={s.price}>{it.price.toLocaleString()} ₽</div>}
+              </div>
             </div>
-          </SwiperSlide>
-        ))}
-      </Swiper>
-    </div>
+          </>
+        );
+      }}
+    </CoverflowSwiper>
   );
 };
 

@@ -72,8 +72,8 @@ class RootStore implements IRootStore {
     }
 
     tasks.push(this.routerStore.init(initProps.navigate));
+    tasks.push(this.userStore.init());
 
-    // TODO: remove mock app loading delay
     tasks.push(new Promise((resolve) => setTimeout(resolve, 1000, true)));
 
     return tasks;

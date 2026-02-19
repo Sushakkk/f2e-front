@@ -2,11 +2,475 @@
 
 .page {
   @include page;
-  padding-bottom: 72px; /* чтобы контент не перекрывался мобильным футером */
+
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  padding-bottom: 0;
 }
 
 .title {
-  margin: 0;
+  margin: 0 0 20px;
   font-size: 28px;
   font-weight: 600;
+}
+
+.calendarWrapper {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  border-radius: 12px;
+  background: $color-bg-tertiary;
+  padding: 20px;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  margin-bottom: 20px;
+
+  :global {
+    .rbc-calendar {
+      color: $color-white;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* ---- Toolbar ---- */
+
+    .rbc-toolbar {
+      margin-bottom: 16px;
+      flex-wrap: wrap;
+      gap: 8px;
+
+      button {
+        color: $color-white;
+        background: $color-bg;
+        border: 1px solid rgba($color-white, 0.15);
+        border-radius: 8px;
+        padding: 6px 16px;
+        font-size: 14px;
+        cursor: pointer;
+        transition: all 0.2s;
+
+        &:hover,
+        &:focus {
+          background: $color-accent;
+          border-color: $color-accent;
+          color: $color-white;
+        }
+
+        /* stylelint-disable-next-line selector-no-qualifying-type */
+        &.rbc-active {
+          background: $color-accent;
+          border-color: $color-accent;
+          color: $color-white;
+
+          &:hover,
+          &:focus {
+            background: $color-accent;
+            border-color: $color-accent;
+          }
+        }
+      }
+
+      .rbc-toolbar-label {
+        font-size: 18px;
+        font-weight: 600;
+        text-transform: capitalize;
+      }
+
+      /* stylelint-disable selector-max-combinators, selector-max-compound-selectors */
+      .rbc-btn-group > button + button {
+        margin-left: -1px;
+      }
+
+      .rbc-btn-group > button:first-child {
+        border-radius: 8px 0 0 8px;
+      }
+
+      .rbc-btn-group > button:last-child {
+        border-radius: 0 8px 8px 0;
+      }
+
+      .rbc-btn-group > button:only-child {
+        border-radius: 8px;
+      }
+      /* stylelint-enable selector-max-combinators, selector-max-compound-selectors */
+    }
+
+    /* ---- Month View ---- */
+
+    .rbc-month-view {
+      border: 1px solid rgba($color-white, 0.1);
+      border-radius: 8px;
+      flex: 1;
+      height: auto !important;
+    }
+
+    .rbc-header {
+      padding: 10px 4px;
+      font-size: 13px;
+      font-weight: 500;
+      color: $color-white-secondary;
+      border-bottom: 1px solid rgba($color-white, 0.1);
+      border-left: none;
+
+      + .rbc-header {
+        border-left: 1px solid rgba($color-white, 0.06);
+      }
+    }
+
+    .rbc-month-row {
+      overflow: visible !important;
+      flex: 1 1 0% !important;
+      min-height: 0;
+      position: relative;
+      border-top: 1px solid rgba($color-white, 0.06);
+
+      + .rbc-month-row {
+        border-top: 1px solid rgba($color-white, 0.06);
+      }
+    }
+
+    .rbc-row-content {
+      position: relative;
+      z-index: 1;
+    }
+
+    .rbc-row-bg {
+      position: absolute;
+      inset: 0;
+    }
+
+    .rbc-day-bg {
+      background: transparent;
+
+      + .rbc-day-bg {
+        border-left: 1px solid rgba($color-white, 0.06);
+      }
+    }
+
+    .rbc-off-range-bg {
+      background: rgba($color-black, 0.2);
+    }
+
+    .rbc-today {
+      background: rgba($color-accent, 0.15);
+    }
+
+    .rbc-date-cell {
+      padding: 4px 8px;
+      text-align: right;
+      font-size: 13px;
+      color: $color-white-secondary;
+
+      &.rbc-off-range {
+        color: rgba($color-white, 0.25);
+      }
+
+      > a,
+      > button {
+        color: inherit;
+      }
+
+      &.rbc-now > a,
+      &.rbc-now > button {
+        color: $color-accent;
+        font-weight: 700;
+      }
+    }
+
+    .rbc-event {
+      border-radius: 4px;
+      font-size: 11px;
+      padding: 2px 4px;
+      line-height: 1.3;
+    }
+
+    .rbc-event-label {
+      font-size: 11px;
+    }
+
+    .rbc-event.rbc-selected {
+      outline: 2px solid $color-white;
+      outline-offset: 1px;
+    }
+
+    .rbc-show-more {
+      color: $color-accent;
+      font-size: 12px;
+      font-weight: 500;
+      background: transparent;
+    }
+
+    .rbc-row-segment {
+      padding: 0 2px 1px;
+    }
+
+    /* ---- Week & Day Views ---- */
+
+    .rbc-time-view {
+      border: 1px solid rgba($color-white, 0.1);
+      border-radius: 8px;
+      overflow: hidden;
+      flex: 1;
+    }
+
+    .rbc-time-header {
+      border-bottom: 1px solid rgba($color-white, 0.1);
+    }
+
+    .rbc-time-header-content {
+      border-left: 1px solid rgba($color-white, 0.06);
+    }
+
+    .rbc-time-header-gutter {
+      border-bottom: none;
+      min-width: 42px !important;
+      max-width: 42px !important;
+      width: 42px !important;
+    }
+
+    .rbc-allday-cell {
+      display: none;
+    }
+
+    .rbc-time-content {
+      border-top: 1px solid rgba($color-white, 0.1);
+
+      /* stylelint-disable-next-line selector-max-combinators, selector-max-compound-selectors, selector-max-universal */
+      > * + * > * {
+        border-left: 1px solid rgba($color-white, 0.06);
+      }
+    }
+
+    .rbc-timeslot-group {
+      border-bottom: 1px solid rgba($color-white, 0.06);
+    }
+
+    .rbc-label {
+      font-size: 10px;
+      color: rgba($color-white, 0.5);
+      padding: 0 4px;
+      white-space: nowrap;
+      text-align: center;
+    }
+
+    .rbc-time-gutter {
+      min-width: 42px !important;
+      max-width: 42px !important;
+      width: 42px !important;
+    }
+
+    .rbc-time-gutter .rbc-timeslot-group {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .rbc-day-slot .rbc-time-slot {
+      border-top: 1px solid rgba($color-white, 0.03);
+    }
+
+    .rbc-day-slot .rbc-events-container {
+      margin-right: 0;
+    }
+
+    .rbc-day-slot .rbc-event {
+      width: 100% !important;
+      left: 0 !important;
+    }
+
+    .rbc-current-time-indicator {
+      background-color: $color-accent;
+      height: 2px;
+    }
+
+    /* ---- Overlay popup (show more) ---- */
+
+    .rbc-overlay {
+      background: $color-bg;
+      border: 1px solid rgba($color-white, 0.15);
+      border-radius: 8px;
+      box-shadow: 0 8px 32px rgba($color-black, 0.5);
+      padding: 8px;
+      z-index: 10;
+      color: $color-white;
+    }
+
+    .rbc-overlay-header {
+      color: $color-white-secondary;
+      border-bottom: 1px solid rgba($color-white, 0.1);
+      padding-bottom: 4px;
+      margin-bottom: 4px;
+    }
+  }
+
+  @include mobile {
+    padding: 12px;
+
+    :global {
+      .rbc-toolbar {
+        font-size: 13px;
+        justify-content: center;
+
+        button {
+          padding: 4px 10px;
+          font-size: 12px;
+        }
+
+        .rbc-toolbar-label {
+          font-size: 15px;
+          width: 100%;
+          text-align: center;
+        }
+      }
+
+      .rbc-header {
+        font-size: 11px;
+        padding: 6px 2px;
+      }
+
+      .rbc-event {
+        font-size: 10px;
+        padding: 1px 3px;
+      }
+
+      .rbc-day-slot .rbc-event-content {
+        font-size: 9px;
+        line-height: 1.2;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+    }
+  }
+}
+
+/* ---- Week view ---- */
+
+.calendarWrapper[data-view="week"] {
+  :global {
+    .rbc-day-slot .rbc-event-label {
+      white-space: nowrap;
+      line-height: 1.2;
+      font-size: 10px;
+    }
+  }
+
+  @include mobile {
+    :global {
+      .rbc-day-slot .rbc-event-label {
+        white-space: pre-line;
+        font-size: 8px;
+        line-height: 1.1;
+      }
+    }
+  }
+}
+
+/* ---- Day view: always 1 line ---- */
+
+.calendarWrapper[data-view="day"] {
+  :global {
+    .rbc-day-slot .rbc-event-label {
+      display: block;
+      font-size: 11px;
+      white-space: nowrap;
+      line-height: 1.2;
+    }
+  }
+}
+
+/* ---- Event detail popup ---- */
+
+.overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  background: rgba($color-black, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  backdrop-filter: blur(4px);
+}
+
+.popup {
+  background: $color-bg;
+  border: 1px solid rgba($color-white, 0.12);
+  border-radius: 16px;
+  padding: 24px;
+  max-width: 400px;
+  width: 100%;
+  position: relative;
+  box-shadow: 0 12px 48px rgba($color-black, 0.6);
+}
+
+.popupClose {
+  position: absolute;
+  top: 12px;
+  right: 16px;
+  background: none;
+  color: rgba($color-white, 0.5);
+  font-size: 24px;
+  cursor: pointer;
+  padding: 4px;
+  line-height: 1;
+  transition: color 0.2s;
+
+  @include hover {
+    color: $color-white;
+  }
+}
+
+.popupType {
+  display: inline-block;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  color: $color-white;
+  margin-bottom: 12px;
+}
+
+.popupTitle {
+  margin: 0 0 16px;
+  font-size: 20px;
+  font-weight: 600;
+  line-height: 1.3;
+}
+
+.popupDetails {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.popupRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 14px;
+}
+
+.popupLabel {
+  color: rgba($color-white, 0.5);
+}
+
+.popupButton {
+  width: 100%;
+  padding: 12px;
+  border-radius: 10px;
+  background: $color-accent;
+  color: $color-white;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.2s;
+
+  @include hover {
+    opacity: 0.85;
+  }
 }

@@ -1,0 +1,24 @@
+@import "styles/mixins";
+
+.courseLink {
+  color: $color-accent;
+  text-decoration: none;
+  transition: opacity 200ms ease;
+
+  @include hover {
+    text-decoration: underline;
+  }
+}
+
+.sectionTitle {
+  font-weight: 600;
+  font-size: 20px;
+}
+
+.ratingBlock {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+  margin-top: 16px;
+}

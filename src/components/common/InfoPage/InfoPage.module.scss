@@ -1,0 +1,93 @@
+@import "styles/mixins";
+
+.page {
+  @include page;
+
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.container {
+  position: relative;
+}
+
+.buttons {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-bottom: 16px;
+
+  @include tablet {
+    position: absolute;
+    top: 16px;
+    left: 16px;
+    right: 16px;
+    z-index: 2;
+    padding-bottom: 0;
+  }
+}
+
+.button {
+  cursor: pointer;
+  transition:
+    background 200ms ease,
+    color 200ms ease;
+
+  @include hover {
+    color: $color-accent;
+  }
+}
+
+.liked {
+  color: $color-accent;
+}
+
+.title {
+  font-weight: 700;
+  font-size: 32px;
+  margin: 0;
+
+  @include mobile {
+    font-size: 24px;
+  }
+}
+
+.text {
+  margin: 0;
+  color: $color-white-secondary;
+  @include text-description;
+
+  &_accent {
+    color: $color-accent;
+    cursor: pointer;
+    transition: opacity 200ms ease;
+
+    @include hover {
+      text-decoration: underline;
+    }
+  }
+}
+
+.details {
+  padding: 24px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  flex: 1;
+}
+
+.content {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  margin-top: 8px;
+}
+
+.enrollBtn {
+  width: 100%;
+  height: 50px;
+  font-size: 16px;
+  border-radius: 14px;
+  margin-top: auto;
+}

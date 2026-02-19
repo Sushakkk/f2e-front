@@ -1,0 +1,93 @@
+@import "styles/mixins";
+
+.pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 32px 0;
+
+  @include mobile {
+    padding: 24px 0;
+    gap: 4px;
+  }
+}
+
+.button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  border: 1.5px solid $color-bg-tertiary;
+  background: transparent;
+  color: $color-white;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  transition: 200ms ease all;
+
+  @include mobile {
+    min-width: 36px;
+    height: 36px;
+    font-size: 13px;
+    border-radius: 8px;
+  }
+
+  &:disabled {
+    opacity: 0.3;
+    pointer-events: none;
+  }
+
+  @include hover {
+    border-color: $color-accent;
+    transform: translateY(-1px);
+  }
+}
+
+.arrow {
+  min-width: 36px;
+  border: none;
+
+  @include mobile {
+    min-width: 32px;
+  }
+
+  @include hover {
+    color: $color-accent;
+  }
+}
+
+.arrowRight {
+  .arrowIcon {
+    transform: rotate(180deg);
+  }
+}
+
+.arrowIcon {
+  width: 10px;
+  height: 14px;
+  transition: color 200ms ease;
+}
+
+.page {
+  padding: 0 4px;
+}
+
+.active {
+  background: $color-accent;
+  border-color: $color-accent;
+  pointer-events: none;
+}
+
+.dots {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 32px;
+  height: 40px;
+  color: $color-white-secondary;
+  font-size: 14px;
+  user-select: none;
+}

@@ -26,3 +26,5 @@ const createSubStoreHook = <S extends keyof IRootStore>(
 export const useAppParamsStore = createSubStoreHook('appParamsStore');
 
 export const useRouterStore = createSubStoreHook('routerStore');
+
+export const useUserStore = createSubStoreHook('userStore');

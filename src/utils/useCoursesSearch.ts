@@ -1,19 +1,26 @@
 import * as React from 'react';
 
+import { COURSES_CONFIG } from 'config/cards';
+import { formatCourseLevel } from 'config/levels';
+
 import { useDebouncedValue } from './useDebouncedValue';
-import { COURSES_CONFIG } from 'pages/HomePage/config/cards';
 
 function normalizeSearchValue(v: string) {
   return v.trim().toLowerCase();
 }
 
-function courseMatchesSearch(
-  course: (typeof COURSES_CONFIG)[number],
-  searchValue: string
-) {
-  if (!searchValue) return true;
+function courseMatchesSearch(course: (typeof COURSES_CONFIG)[number], searchValue: string) {
+  if (!searchValue) {
+    return true;
+  }
 
-  const haystack = [course.title, course.teacher, course.level]
+  const haystack = [
+    course.type,
+    course.name,
+    course.teacher,
+    course.level,
+    formatCourseLevel(course.level),
+  ]
     .filter(Boolean)
     .map((x) => String(x).toLowerCase());
 
@@ -23,19 +30,15 @@ function courseMatchesSearch(
 /**
  * Хук поиска по курсам с debounce
  */
-export function useCoursesSearch(
-  courses = COURSES_CONFIG,
-  debounceMs = 300
-) {
-  const [search, setSearch] = React.useState('');
+export function useCoursesSearch(courses = COURSES_CONFIG, debounceMs = 300, initialSearch = '') {
+  const [search, setSearch] = React.useState(initialSearch);
 
   const debouncedSearch = useDebouncedValue(search, debounceMs);
 
   const filteredCourses = React.useMemo(() => {
     const searchValue = normalizeSearchValue(debouncedSearch);
-    return courses.filter((course) =>
-      courseMatchesSearch(course, searchValue)
-    );
+
+    return courses.filter((course) => courseMatchesSearch(course, searchValue));
   }, [courses, debouncedSearch]);
 
   return {
