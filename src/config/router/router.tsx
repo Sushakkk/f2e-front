@@ -3,6 +3,7 @@ import { createBrowserRouter } from 'react-router-dom';
 
 import { ErrorFallback } from 'components/special';
 import AppLayout from 'layouts/AppLayout/AppLayout';
+import { AuthPage } from 'pages/AuthPage';
 import CalendarPage from 'pages/CalendarPage/CalendarPage';
 import { CoursePage } from 'pages/CoursePage';
 import { HomePage } from 'pages/HomePage';
@@ -25,6 +26,10 @@ export const ROUTER = createBrowserRouter([
       {
         path: RoutePath.home,
         element: <HomePage />,
+      },
+      {
+        path: RoutePath.auth,
+        element: <AuthPage />,
       },
       {
         path: RoutePath.course,

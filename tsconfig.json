@@ -34,7 +34,8 @@
       "styles/*": ["styles/*"],
       "types/*": ["types/*"],
       "utils/*": ["utils/*"],
-      "layouts/*": ["layouts/*"]
+      "layouts/*": ["layouts/*"],
+      "services/*": ["services/*"]
     }
   },
   "include": ["src"]

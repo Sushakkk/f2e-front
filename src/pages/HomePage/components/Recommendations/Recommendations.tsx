@@ -1,7 +1,9 @@
-import React from 'react';
+import React, { useCallback } from 'react';
+import { generatePath, useNavigate } from 'react-router-dom';
 
 import { CoverflowSwiper } from 'components';
 import { CourseConfigItem, formatCourseLevel } from 'config';
+import { RoutePath } from 'config/router/paths';
 import { getScheduleDisplay } from 'utils/scheduleUtils';
 
 import s from './Recommendations.module.scss';
@@ -11,12 +13,24 @@ type Props = {
 };
 
 export const Recommendations: React.FC<Props> = ({ items }) => {
+  const navigate = useNavigate();
+
+  const goToCourse = useCallback(
+    (item: CourseConfigItem) => {
+      if (item.id) {
+        navigate(generatePath(RoutePath.course, { id: String(item.id) }));
+      }
+    },
+    [navigate]
+  );
+
   return (
     <CoverflowSwiper
       items={items}
       getImage={(it: CourseConfigItem) => it.images?.[0]}
       getKey={(it: CourseConfigItem) => it.id}
       getAlt={(it: CourseConfigItem) => it.name}
+      onItemClick={goToCourse}
     >
       {(it: CourseConfigItem) => {
         const schedule = getScheduleDisplay(it);

@@ -1,9 +1,17 @@
+import { observer } from 'mobx-react';
 import * as React from 'react';
 import { Outlet } from 'react-router-dom';
 
-import { Footer, Header } from 'components/common';
+import { Footer, Header, ScreenSpinner } from 'components/common';
+import { useRootStoreInit } from 'store/hooks';
 
 const AppLayout: React.FC = () => {
+  const { appState } = useRootStoreInit();
+
+  if (appState.initial || appState.loading) {
+    return <ScreenSpinner />;
+  }
+
   return (
     <>
       <Header />
@@ -13,4 +21,4 @@ const AppLayout: React.FC = () => {
   );
 };
 
-export default React.memo(AppLayout);
+export default observer(AppLayout);

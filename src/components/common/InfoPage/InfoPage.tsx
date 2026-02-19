@@ -14,12 +14,24 @@ type Props = React.PropsWithChildren<{
   description: string;
   images?: string[];
   button?: React.ReactNode;
+  liked?: boolean;
+  onToggleLike?: () => void;
 }>;
 
-const InfoPage: React.FC<Props> = ({ title, description, images, button, children }) => {
+const InfoPage: React.FC<Props> = ({
+  title,
+  description,
+  images,
+  button,
+  liked: externalLiked,
+  onToggleLike,
+  children,
+}) => {
   const navigate = useNavigate();
 
-  const [liked, setLiked] = React.useState(false);
+  const [internalLiked, setInternalLiked] = React.useState(false);
+
+  const isLiked = externalLiked ?? internalLiked;
 
   React.useLayoutEffect(() => {
     if ('scrollRestoration' in history) {
@@ -32,8 +44,14 @@ const InfoPage: React.FC<Props> = ({ title, description, images, button, childre
   }, []);
 
   const handleGoBack = React.useCallback(() => navigate(-1), [navigate]);
-  const handleLike = React.useCallback(() => setLiked(true), []);
-  const handleUnlike = React.useCallback(() => setLiked(false), []);
+
+  const handleToggleLike = React.useCallback(() => {
+    if (onToggleLike) {
+      onToggleLike();
+    } else {
+      setInternalLiked((prev) => !prev);
+    }
+  }, [onToggleLike]);
 
   const normalizedImages = React.useMemo(() => {
     if (!images || images.length === 0) {
@@ -58,14 +76,14 @@ const InfoPage: React.FC<Props> = ({ title, description, images, button, childre
       <div className={s.container}>
         <div className={s.buttons}>
           <ArrowIcon className={s.button} onClick={handleGoBack} aria-label="Назад" />
-          {liked ? (
+          {isLiked ? (
             <HeartFilledIcon
               className={cn(s.button, s.liked)}
-              onClick={handleUnlike}
+              onClick={handleToggleLike}
               aria-label="Убрать из избранного"
             />
           ) : (
-            <HeartIcon className={s.button} onClick={handleLike} aria-label="В избранное" />
+            <HeartIcon className={s.button} onClick={handleToggleLike} aria-label="В избранное" />
           )}
         </div>
         {images && images.length > 0 && (

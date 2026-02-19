@@ -13,19 +13,33 @@ export type CalendarEvent = {
   studio: string;
   level: string;
   location?: string;
+  courseFrom: string;
+  courseTo: string;
 };
 
-export const TYPE_COLORS: Record<string, string> = {
-  'High Heels': '#d81b60',
-  Contemporary: '#1e88e5',
-  'Jazz Funk': '#f57c00',
-  Vogue: '#8e24aa',
-  'Hip-Hop': '#43a047',
-  Dancehall: '#e8a317',
-  'Frame Up': '#e53935',
-  Stretching: '#00897b',
-  'Lady Style': '#ad1457',
-};
+const COURSE_PALETTE = [
+  '#d81b60',
+  '#1e88e5',
+  '#f57c00',
+  '#8e24aa',
+  '#43a047',
+  '#e8a317',
+  '#e53935',
+  '#00897b',
+  '#5c6bc0',
+  '#00acc1',
+  '#c0ca33',
+  '#ff7043',
+  '#ab47bc',
+  '#26a69a',
+  '#ec407a',
+];
+
+export function getCourseColor(courseId: number, courseIds: number[]): string {
+  const idx = courseIds.indexOf(courseId);
+
+  return COURSE_PALETTE[(idx === -1 ? courseId : idx) % COURSE_PALETTE.length];
+}
 
 const WEEKDAY_MAP: Record<string, number> = {
   Вс: 0,
@@ -40,17 +54,23 @@ const WEEKDAY_MAP: Record<string, number> = {
 function parseTime(timeStr: string, baseDate: Date): Date {
   const [hours, minutes] = timeStr.split(':').map(Number);
   const result = new Date(baseDate);
+
   result.setHours(hours, minutes, 0, 0);
+
   return result;
 }
 
 function parseCourseDate(dateStr: string, year: number): Date {
   const [day, month] = dateStr.split('.').map(Number);
+
   return new Date(year, month - 1, day);
 }
 
 function getScheduleEntries(course: CourseConfigItem): ScheduleEntry[] {
-  if (course.schedule) return course.schedule;
+  if (course.schedule) {
+    return course.schedule;
+  }
+
   if (course.weekdays && course.timeFrom && course.timeTo) {
     return course.weekdays.map((weekday) => ({
       weekday,
@@ -59,6 +79,7 @@ function getScheduleEntries(course: CourseConfigItem): ScheduleEntry[] {
       location: course.location,
     }));
   }
+
   return [];
 }
 
@@ -95,9 +116,12 @@ export function generateCalendarEvents(courses: CourseConfigItem[]): CalendarEve
             teacher: course.teacher.name,
             studio: course.studio,
             level: course.level,
-            location: entry.location || course.location,
+            location: entry.location ?? course.location,
+            courseFrom: course.dateFrom,
+            courseTo: course.dateTo,
           });
         }
+
         current = addDays(current, 1);
       }
     }
