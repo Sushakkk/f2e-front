@@ -42,11 +42,13 @@ const MESSAGES = {
 };
 
 const MIN_TIME = new Date(1970, 0, 1, 8, 0);
-const MAX_TIME = new Date(1970, 0, 1, 23, 0);
+const MAX_TIME = new Date(1970, 0, 1, 23, 59);
 
 const FORMATS = {
   weekdayFormat: (date: Date, culture?: string, loc?: typeof localizer) =>
     loc ? loc.format(date, 'EEEEEE', culture) : '',
+  dayFormat: (date: Date, culture?: string, loc?: typeof localizer) =>
+    loc ? loc.format(date, 'EEEEEE d', culture) : '',
   dayHeaderFormat: (date: Date, culture?: string, loc?: typeof localizer) =>
     loc ? loc.format(date, 'EEEEEE, d MMMM', culture) : '',
   dayRangeHeaderFormat: (
@@ -54,6 +56,16 @@ const FORMATS = {
     culture?: string,
     loc?: typeof localizer,
   ) => (loc ? `${loc.format(start, 'd MMM', culture)} – ${loc.format(end, 'd MMM', culture)}` : ''),
+  timeGutterFormat: (date: Date, culture?: string, loc?: typeof localizer) =>
+    loc ? loc.format(date, 'H:mm', culture) : '',
+  eventTimeRangeFormat: (
+    { start, end }: { start: Date; end: Date },
+    culture?: string,
+    loc?: typeof localizer,
+  ) =>
+    loc
+      ? `${loc.format(start, 'H:mm', culture)} –\n${loc.format(end, 'H:mm', culture)}`
+      : '',
 };
 
 const CalendarPage: React.FC = () => {
@@ -108,7 +120,7 @@ const CalendarPage: React.FC = () => {
         ))}
       </div>
 
-      <div className={s.calendarWrapper}>
+      <div className={s.calendarWrapper} data-view={view}>
         <Calendar<CalendarEvent>
           localizer={localizer}
           events={events}

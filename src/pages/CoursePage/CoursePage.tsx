@@ -63,6 +63,7 @@ const CoursePage: React.FC = () => {
         </Row>
       )}
       {course.location && <Row label="Место:">{course.location}</Row>}
+      <Row label="Студия:">{course.studio}</Row>
       <Row label="Количество мест:">
         {course.capacity} (осталось {course.spotsLeft})
       </Row>
