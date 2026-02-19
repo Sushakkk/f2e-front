@@ -15,28 +15,6 @@
   font-weight: 600;
 }
 
-.legend {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 12px 16px;
-  margin-bottom: 24px;
-}
-
-.legendItem {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 13px;
-  color: $color-white-secondary;
-}
-
-.legendDot {
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
-  flex-shrink: 0;
-}
-
 .calendarWrapper {
   flex: 1;
   min-height: 0;
@@ -81,6 +59,7 @@
           color: $color-white;
         }
 
+        /* stylelint-disable-next-line selector-no-qualifying-type */
         &.rbc-active {
           background: $color-accent;
           border-color: $color-accent;
@@ -100,6 +79,7 @@
         text-transform: capitalize;
       }
 
+      /* stylelint-disable selector-max-combinators, selector-max-compound-selectors */
       .rbc-btn-group > button + button {
         margin-left: -1px;
       }
@@ -115,6 +95,7 @@
       .rbc-btn-group > button:only-child {
         border-radius: 8px;
       }
+      /* stylelint-enable selector-max-combinators, selector-max-compound-selectors */
     }
 
     /* ---- Month View ---- */
@@ -257,6 +238,7 @@
     .rbc-time-content {
       border-top: 1px solid rgba($color-white, 0.1);
 
+      /* stylelint-disable-next-line selector-max-combinators, selector-max-compound-selectors, selector-max-universal */
       > * + * > * {
         border-left: 1px solid rgba($color-white, 0.06);
       }

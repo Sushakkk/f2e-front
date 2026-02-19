@@ -11,6 +11,9 @@ export const LAYOUT_CONFIG: Record<RoutePath, LayoutConfig> = {
   [RoutePath.error]: {
     withHeader: false,
   },
+  [RoutePath.auth]: {
+    withHeader: false,
+  },
   [RoutePath.home]: {
     withHeader: false,
   },

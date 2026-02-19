@@ -15,6 +15,7 @@ type Props<T> = {
   getImage: (item: T) => string;
   getKey?: (item: T, index: number) => string | number;
   getAlt?: (item: T) => string;
+  onItemClick?: (item: T) => void;
   children?: (item: T) => React.ReactNode;
 };
 
@@ -25,6 +26,7 @@ export function CoverflowSwiper<T>({
   getImage,
   getKey,
   getAlt,
+  onItemClick,
   children,
 }: Props<T>) {
   const [verticalSet, setVerticalSet] = useState<Set<number>>(() => new Set());
@@ -83,7 +85,10 @@ export function CoverflowSwiper<T>({
       >
         {items.map((it, index) => (
           <SwiperSlide key={getKey ? getKey(it, index) : index}>
-            <div className={cn(s.card, verticalSet.has(index) && s.card_vertical)}>
+            <div
+              className={cn(s.card, verticalSet.has(index) && s.card_vertical)}
+              onClick={onItemClick ? () => onItemClick(it) : undefined}
+            >
               <img
                 className={s.img}
                 src={getImage(it)}

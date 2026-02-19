@@ -1,54 +1,145 @@
 import cn from 'classnames';
+import { observer } from 'mobx-react';
 import * as React from 'react';
-import { Link, Navigate, useParams } from 'react-router-dom';
+import { Navigate, generatePath, useNavigate, useParams } from 'react-router-dom';
 
 import Button from 'components/common/Button/Button';
 import { InfoPage } from 'components/common/InfoPage';
 import { Row } from 'components/common/Row';
-import { COURSES_CONFIG, CourseConfigItem, formatCourseLevel } from 'config';
+import { formatCourseLevel } from 'config';
+import { RoutePath } from 'config/router/paths';
+import { MockDb } from 'services/mockDb';
+import { useUserStore } from 'store/hooks';
 import { getScheduleLines } from 'utils/scheduleUtils';
 
 import s from './CoursePage.module.scss';
 
 const CoursePage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
+  const userStore = useUserStore();
+  const navigate = useNavigate();
 
-  const course: CourseConfigItem | undefined = React.useMemo(
-    () => COURSES_CONFIG.find((c) => c.id === Number(id)),
-    [id]
+  const [courseData, setCourseData] = React.useState(() => MockDb.getCourse(Number(id)));
+  const [enrolling, setEnrolling] = React.useState(false);
+
+  const isLoggedIn = Boolean(userStore.user);
+
+  const isEnrolled = React.useMemo(
+    () => (courseData ? MockDb.isEnrolled(courseData.id) : false),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [courseData, userStore.user]
   );
 
-  const scheduleLines = React.useMemo(() => (course ? getScheduleLines(course) : []), [course]);
+  const isFavorite = React.useMemo(
+    () => (courseData ? MockDb.isCourseFavorite(courseData.id) : false),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [courseData, userStore.user]
+  );
 
-  if (!id || !course) {
-    return <Navigate to="/" />;
+  const scheduleLines = React.useMemo(
+    () => (courseData ? getScheduleLines(courseData) : []),
+    [courseData]
+  );
+
+  const handleEnroll = React.useCallback(async () => {
+    if (!isLoggedIn) {
+      navigate(RoutePath.auth);
+
+      return;
+    }
+
+    if (!courseData || enrolling) {
+      return;
+    }
+
+    setEnrolling(true);
+    await MockDb.enrollInCourse(courseData.id);
+    userStore.refreshUser();
+    setCourseData(MockDb.getCourse(courseData.id));
+    setEnrolling(false);
+  }, [isLoggedIn, courseData, enrolling, navigate, userStore]);
+
+  const handleCancel = React.useCallback(async () => {
+    if (!courseData || enrolling) {
+      return;
+    }
+
+    setEnrolling(true);
+    await MockDb.cancelEnrollment(courseData.id);
+    userStore.refreshUser();
+    setCourseData(MockDb.getCourse(courseData.id));
+    setEnrolling(false);
+  }, [courseData, enrolling, userStore]);
+
+  const goToTeacher = React.useCallback(
+    (teacherName: string) => {
+      navigate(generatePath(RoutePath.teacher, { name: encodeURIComponent(teacherName) }));
+    },
+    [navigate]
+  );
+
+  const handleToggleFavorite = React.useCallback(() => {
+    if (!isLoggedIn) {
+      navigate(RoutePath.auth);
+
+      return;
+    }
+
+    if (!courseData) {
+      return;
+    }
+
+    MockDb.toggleFavoriteCourse(courseData.id);
+    userStore.refreshUser();
+  }, [isLoggedIn, courseData, navigate, userStore]);
+
+  if (!id || !courseData) {
+    return <Navigate to={RoutePath.root} />;
   }
+
+  const enrollButton = isEnrolled ? (
+    <Button
+      mode="dark"
+      className={s.enrollBtn}
+      onClick={() => void handleCancel()}
+      disabled={enrolling}
+    >
+      {enrolling ? 'Загрузка...' : 'Отменить запись'}
+    </Button>
+  ) : (
+    <Button
+      mode="purple"
+      className={s.enrollBtn}
+      onClick={() => void handleEnroll()}
+      disabled={enrolling}
+    >
+      {enrolling ? 'Загрузка...' : 'Записаться'}
+    </Button>
+  );
 
   return (
     <InfoPage
-      title={course.name}
-      description={course.description}
-      images={course.images}
-      button={
-        <Button mode="purple" className={s.enrollBtn}>
-          Записаться
-        </Button>
-      }
+      title={courseData.name}
+      description={courseData.description}
+      images={courseData.images}
+      liked={isFavorite}
+      onToggleLike={handleToggleFavorite}
+      button={enrollButton}
     >
       <Row label="Преподаватель:" accent>
-        <Link
-          to={`/teacher/${encodeURIComponent(course.teacher.name)}`}
+        <div
           className={cn(s.text, s.text_accent)}
+          onClick={() => goToTeacher(courseData.teacher.name)}
         >
-          {course.teacher.name}
-        </Link>
+          {courseData.teacher.name}
+        </div>
       </Row>
-      <Row label="Направление:">{course.type}</Row>
-      <Row label="Уровень:">{formatCourseLevel(course.level)}</Row>
-      {course.city && <Row label="Город:">{course.city}</Row>}
-      {course.dateFrom && course.dateTo && (
+      <Row label="Направление:">{courseData.type}</Row>
+      <Row label="Уровень:">{formatCourseLevel(courseData.level)}</Row>
+      {courseData.city && <Row label="Город:">{courseData.city}</Row>}
+      {courseData.dateFrom && courseData.dateTo && (
         <Row label="Дата:">
-          {course.dateFrom}-{course.dateTo}
+          {courseData.dateFrom}-{courseData.dateTo}
         </Row>
       )}
       {scheduleLines.length > 0 && (
@@ -62,24 +153,24 @@ const CoursePage: React.FC = () => {
           ))}
         </Row>
       )}
-      {course.location && <Row label="Место:">{course.location}</Row>}
-      <Row label="Студия:">{course.studio}</Row>
+      {courseData.location && <Row label="Место:">{courseData.location}</Row>}
+      <Row label="Студия:">{courseData.studio}</Row>
       <Row label="Количество мест:">
-        {course.capacity} (осталось {course.spotsLeft})
+        {courseData.capacity} (осталось {courseData.spotsLeft})
       </Row>
       <Row label="Музыка:">
         <a
-          href={course.music.url}
+          href={courseData.music.url}
           target="_blank"
           rel="noopener noreferrer"
           className={cn(s.text, s.text_accent)}
         >
-          {course.music.artist} — {course.music.track}
+          {courseData.music.artist} — {courseData.music.track}
         </a>
       </Row>
-      <Row label="Цена:">{course.price.toLocaleString()} ₽</Row>
+      <Row label="Цена:">{courseData.price.toLocaleString()} ₽</Row>
     </InfoPage>
   );
 };
 
-export default CoursePage;
+export default observer(CoursePage);
