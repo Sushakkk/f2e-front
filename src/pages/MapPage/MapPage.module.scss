@@ -2,7 +2,7 @@
 
 .page {
   @include page;
-  padding-bottom: 72px; /* чтобы контент не перекрывался мобильным футером */
+  padding-bottom: 72px; 
 }
 
 .title {
