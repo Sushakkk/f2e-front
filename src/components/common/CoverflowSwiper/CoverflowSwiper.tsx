@@ -7,6 +7,7 @@ import 'swiper/css';
 import 'swiper/css/effect-coverflow';
 import 'swiper/css/navigation';
 
+import ScreenSpinner from 'components/common/ScreenSpinner/ScreenSpinner';
 import { useMediaQuery } from 'utils/useMediaQuery';
 
 import s from './CoverflowSwiper.module.scss';
@@ -23,6 +24,8 @@ type Props<T> = {
   children?: (item: T) => React.ReactNode;
 };
 
+const MIN_LOADER_MS = 300;
+
 function useImageOrientations<T>(items: T[], getImage: (item: T) => string) {
   const [verticalSet, setVerticalSet] = useState<Set<number> | null>(null);
   const getImageRef = useRef(getImage);
@@ -38,11 +41,23 @@ function useImageOrientations<T>(items: T[], getImage: (item: T) => string) {
     let cancelled = false;
     const verticals = new Set<number>();
     let pending = 0;
+    let imagesReady = false;
+    let timerReady = false;
 
-    const finish = () => {
-      if (!cancelled) {
+    const tryFinish = () => {
+      if (!cancelled && imagesReady && timerReady) {
         setVerticalSet(new Set(verticals));
       }
+    };
+
+    const timer = setTimeout(() => {
+      timerReady = true;
+      tryFinish();
+    }, MIN_LOADER_MS);
+
+    const onAllImagesProcessed = () => {
+      imagesReady = true;
+      tryFinish();
     };
 
     items.forEach((item, index) => {
@@ -71,7 +86,7 @@ function useImageOrientations<T>(items: T[], getImage: (item: T) => string) {
         pending--;
 
         if (pending === 0) {
-          finish();
+          onAllImagesProcessed();
         }
       };
 
@@ -80,11 +95,12 @@ function useImageOrientations<T>(items: T[], getImage: (item: T) => string) {
     });
 
     if (pending === 0) {
-      finish();
+      onAllImagesProcessed();
     }
 
     return () => {
       cancelled = true;
+      clearTimeout(timer);
     };
   }, [items]);
 
@@ -108,6 +124,7 @@ export function CoverflowSwiper<T>({
     return (
       <div className={cn(s.root, className)}>
         <div className={s.loader} />
+        <ScreenSpinner />
       </div>
     );
   }
