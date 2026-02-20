@@ -2,10 +2,27 @@
 
 .root {
   width: 100%;
+  position: relative;
+}
+
+.loader {
+  aspect-ratio: 16 / 9;
+  width: 100%;
 }
 
 .swiper {
   --swiper-navigation-color: $color-white;
+
+  :global(.swiper-wrapper) {
+    align-items: center;
+    transition-timing-function: cubic-bezier(0.25, 0.1, 0.25, 1) !important;
+  }
+
+  :global(.swiper-slide) {
+    height: auto;
+    display: flex;
+    align-items: center;
+  }
 
   :global(.swiper-button-prev),
   :global(.swiper-button-next) {
@@ -22,11 +39,6 @@
   }
 }
 
-:global(.swiper-slide) {
-  height: auto;
-  display: flex;
-}
-
 .card {
   position: relative;
   overflow: hidden;
@@ -34,6 +46,7 @@
   border-radius: 16px;
   text-decoration: none;
   color: inherit;
+  width: 100%;
 
   aspect-ratio: 16 / 9;
 

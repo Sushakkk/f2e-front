@@ -8,32 +8,10 @@ import { PaginationStore } from 'store/PaginationStore';
 import { QueryStore, parseQueryFromURL } from 'store/QueryStore';
 import { useLocalStore } from 'store/hooks/useLocalStore';
 import { useCoursesSearch } from 'utils/useCoursesSearch';
+import { useMediaQuery } from 'utils/useMediaQuery';
 
 import s from './HomePage.module.scss';
 import { Card, Filters, Pagination, Recommendations, SearchBar } from './components';
-
-function useMediaQuery(query: string) {
-  const [matches, setMatches] = React.useState(() => window.matchMedia(query).matches);
-
-  React.useEffect(() => {
-    const mq = window.matchMedia(query);
-    const onChange = () => setMatches(mq.matches);
-
-    onChange();
-
-    if (typeof mq.addEventListener === 'function') {
-      mq.addEventListener('change', onChange);
-
-      return () => mq.removeEventListener('change', onChange);
-    }
-
-    mq.addListener(onChange);
-
-    return () => mq.removeListener(onChange);
-  }, [query]);
-
-  return matches;
-}
 
 const HomePage: React.FC = () => {
   const isMobile = useMediaQuery('(max-width: 992px)');
