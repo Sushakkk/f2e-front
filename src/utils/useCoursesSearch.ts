@@ -1,7 +1,6 @@
 import * as React from 'react';
 
 import { COURSES_CONFIG } from 'config/cards';
-import { formatCourseLevel } from 'config/levels';
 
 import { useDebouncedValue } from './useDebouncedValue';
 
@@ -19,7 +18,6 @@ function courseMatchesSearch(course: (typeof COURSES_CONFIG)[number], searchValu
     course.name,
     course.teacher,
     course.level,
-    formatCourseLevel(course.level),
   ]
     .filter(Boolean)
     .map((x) => String(x).toLowerCase());

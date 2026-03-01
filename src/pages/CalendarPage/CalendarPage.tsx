@@ -176,12 +176,7 @@ const CalendarPage: React.FC = () => {
                   <span>{selectedEvent.location}</span>
                 </div>
               )}
-              <div className={s.popupRow}>
-                <span className={s.popupLabel}>Даты курса</span>
-                <span>
-                  {selectedEvent.courseFrom} – {selectedEvent.courseTo}
-                </span>
-              </div>
+            
               <div className={s.popupRow}>
                 <span className={s.popupLabel}>Дата занятия</span>
                 <span>{format(selectedEvent.start, 'd MMMM yyyy', { locale: ru })}</span>

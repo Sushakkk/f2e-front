@@ -1,6 +1,6 @@
 import { action, computed, makeObservable, observable, IReactionDisposer } from 'mobx';
 
-import { CourseConfigItem, CourseLevel, COURSE_LEVEL_LABELS } from 'config';
+import { CourseConfigItem, CourseLevel } from 'config';
 import {
   CITIES,
   EMPTY_FILTERS,
@@ -163,7 +163,7 @@ export class FiltersStore implements ILocalStore {
   get levelOptions(): { value: string; label: string }[] {
     return LEVELS_ORDER.map((lvl) => ({
       value: lvl,
-      label: COURSE_LEVEL_LABELS[lvl],
+      label: lvl,
     }));
   }
 

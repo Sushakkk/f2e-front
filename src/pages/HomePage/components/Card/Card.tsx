@@ -2,7 +2,7 @@ import cn from 'classnames';
 import * as React from 'react';
 import { generatePath, useNavigate } from 'react-router-dom';
 
-import { CourseConfigItem, formatCourseLevel } from 'config';
+import { CourseConfigItem } from 'config';
 import { RoutePath } from 'config/router/paths';
 import { getScheduleDisplay } from 'utils/scheduleUtils';
 
@@ -30,7 +30,7 @@ const Card: React.FC<Props> = ({ className, item }) => {
       <div className={s.imageWrapper}>
         <img src={images[0]} alt={name} />
       </div>
-      <div className={s.level}>{formatCourseLevel(level)}</div>
+      <div className={s.level}>{level}</div>
       <div className={s.content}>
         <div className={s.title}>{name}</div>
         {teacher && <div className={s.subtitle}>{teacher.name}</div>}

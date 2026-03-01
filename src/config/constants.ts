@@ -33,7 +33,7 @@ export const DAYS: { key: DayOfWeek; label: string }[] = [
   { key: 'sun', label: 'Вс' },
 ];
 
-export const LEVELS_ORDER: CourseLevel[] = ['Beginner', 'Intermediate', 'Advanced', 'AllLevels'];
+export const LEVELS_ORDER: CourseLevel[] = ['Начинающие', 'Средний уровень', 'Продвинутые', 'Любой уровень'];
 
 export const WEEKDAYS: { value: string; label: string }[] = [
   { value: 'Пн', label: 'Понедельник' },
