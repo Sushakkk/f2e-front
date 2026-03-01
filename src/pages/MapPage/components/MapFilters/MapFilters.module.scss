@@ -1,0 +1,132 @@
+@import "styles/mixins";
+
+.overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 2000;
+  background: rgba($color-black, 0.5);
+  animation: fade-in 0.2s ease-out;
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+.panel {
+  position: fixed;
+  inset: 0;
+  z-index: 2001;
+  display: flex;
+  flex-direction: column;
+  background: $color-bg-secondary;
+  animation: fade-in 0.2s ease-out;
+
+  @include media-up(sm) {
+    inset: 0 0 0 auto;
+    width: 360px;
+    border-radius: 12px 0 0 12px;
+    box-shadow: -4px 0 24px rgba(0, 0, 0, 0.4);
+    animation: slide-left 0.3s ease-out;
+  }
+}
+
+@keyframes slide-left {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 16px 20px;
+  border-bottom: 1px solid rgba($color-white, 0.08);
+
+  @include media-up(sm) {
+    padding: 24px 24px 16px;
+  }
+}
+
+.title {
+  font-weight: 700;
+  font-size: 18px;
+  line-height: 22px;
+  color: $color-white;
+}
+
+.closeBtn {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  border: 1px solid transparent;
+  background: transparent;
+  color: $color-white;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 28px;
+  line-height: 1;
+
+  @include hover {
+    background: rgba($color-white, 0.06);
+  }
+
+  &:active {
+    background: rgba($color-white, 0.1);
+  }
+
+  &:focus-visible {
+    outline: none;
+    border-color: $color-accent;
+  }
+}
+
+.body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px 20px 0;
+  -webkit-overflow-scrolling: touch;
+
+  @include media-up(sm) {
+    padding: 20px 24px 0;
+  }
+}
+
+.section {
+  margin-bottom: 22px;
+}
+
+.label {
+  display: block;
+  margin-bottom: 12px;
+  font-weight: 600;
+  color: $color-white;
+  font-size: 16px;
+}
+
+.actions {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 16px 20px;
+  padding-bottom: calc(16px + env(safe-area-inset-bottom, 0px));
+
+  @include media-up(sm) {
+    padding: 20px 24px;
+  }
+}

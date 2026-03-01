@@ -80,6 +80,7 @@
           color: $color-white;
         }
 
+        /* stylelint-disable-next-line selector-no-qualifying-type */
         &.rbc-active {
           background: $color-accent;
           border-color: $color-accent;
@@ -99,6 +100,7 @@
         text-transform: capitalize;
       }
 
+      /* stylelint-disable selector-max-combinators, selector-max-compound-selectors */
       .rbc-btn-group > button + button {
         margin-left: -1px;
       }
@@ -114,6 +116,7 @@
       .rbc-btn-group > button:only-child {
         border-radius: 8px;
       }
+      /* stylelint-enable selector-max-combinators, selector-max-compound-selectors */
     }
 
     /* ---- Month View ---- */
@@ -253,9 +256,11 @@
     .rbc-time-content {
       border-top: 1px solid rgba($color-white, 0.1);
 
+      /* stylelint-disable selector-max-combinators, selector-max-compound-selectors, selector-max-universal */
       > * + * > * {
         border-left: 1px solid rgba($color-white, 0.06);
       }
+      /* stylelint-enable selector-max-combinators, selector-max-compound-selectors, selector-max-universal */
     }
 
     .rbc-timeslot-group {

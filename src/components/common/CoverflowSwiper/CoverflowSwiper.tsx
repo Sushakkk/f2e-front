@@ -29,6 +29,7 @@ const MIN_LOADER_MS = 300;
 function useImageOrientations<T>(items: T[], getImage: (item: T) => string) {
   const [verticalSet, setVerticalSet] = useState<Set<number> | null>(null);
   const getImageRef = useRef(getImage);
+
   getImageRef.current = getImage;
 
   useEffect(() => {
@@ -62,6 +63,7 @@ function useImageOrientations<T>(items: T[], getImage: (item: T) => string) {
 
     items.forEach((item, index) => {
       const img = new Image();
+
       img.src = getImageRef.current(item);
 
       if (img.complete && img.naturalWidth > 0) {

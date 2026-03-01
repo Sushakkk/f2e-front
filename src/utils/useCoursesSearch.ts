@@ -13,12 +13,7 @@ function courseMatchesSearch(course: (typeof COURSES_CONFIG)[number], searchValu
     return true;
   }
 
-  const haystack = [
-    course.type,
-    course.name,
-    course.teacher,
-    course.level,
-  ]
+  const haystack = [course.type, course.name, course.teacher, course.level]
     .filter(Boolean)
     .map((x) => String(x).toLowerCase());
 

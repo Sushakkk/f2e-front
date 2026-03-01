@@ -1,3 +1,4 @@
+import cn from 'classnames';
 import * as React from 'react';
 
 import s from './SearchBar.module.scss';
@@ -9,6 +10,8 @@ export type SearchBarProps = {
   onChange: (v: string) => void;
   onToggleFilters?: () => void;
   isFiltersOpen?: boolean;
+  className?: string;
+  filtersAlwaysVisible?: boolean;
 };
 
 const SearchBar: React.FC<SearchBarProps> = ({
@@ -16,6 +19,8 @@ const SearchBar: React.FC<SearchBarProps> = ({
   onChange,
   onToggleFilters,
   isFiltersOpen,
+  className,
+  filtersAlwaysVisible,
 }) => {
   const inputRef = React.useRef<HTMLInputElement | null>(null);
 
@@ -26,7 +31,7 @@ const SearchBar: React.FC<SearchBarProps> = ({
   }, [onChange]);
 
   return (
-    <div className={s.root}>
+    <div className={cn(s.root, className)}>
       <div className={s.inputWrap}>
         <SearchIcon className={s.searchIcon} />
         <input
@@ -52,7 +57,7 @@ const SearchBar: React.FC<SearchBarProps> = ({
       </div>
       {onToggleFilters && (
         <button
-          className={s.filtersBtn}
+          className={cn(s.filtersBtn, filtersAlwaysVisible && s.filtersBtnVisible)}
           type="button"
           onClick={onToggleFilters}
           aria-label="Открыть фильтры"

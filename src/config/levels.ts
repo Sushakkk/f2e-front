@@ -1,4 +1,9 @@
-export const COURSE_LEVELS = ['Начинающие', 'Средний уровень', 'Продвинутые', 'Любой уровень'] as const;
+export const COURSE_LEVELS = [
+  'Начинающие',
+  'Средний уровень',
+  'Продвинутые',
+  'Любой уровень',
+] as const;
 
 export type CourseLevel = (typeof COURSE_LEVELS)[number];
 
