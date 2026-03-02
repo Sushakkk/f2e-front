@@ -15,8 +15,7 @@ type StudioMapProps = {
   studios: StudioData[];
   selectedId: string | null;
   onMarkerClick: (studio: StudioData) => void;
-  mapRef: React.MutableRefObject<ymaps.Map | null>;
-  onLoad: () => void;
+  mapRef: (ref: ymaps.Map | null) => void;
 };
 
 const StudioMap: React.FC<StudioMapProps> = ({
@@ -24,19 +23,12 @@ const StudioMap: React.FC<StudioMapProps> = ({
   selectedId,
   onMarkerClick,
   mapRef,
-  onLoad,
 }) => (
   <YMaps query={{ lang: 'ru_RU' }}>
     <Map
       defaultState={{ center: RUSSIA_CENTER, zoom: DEFAULT_ZOOM }}
       className={s.map}
-      instanceRef={(ref) => {
-        mapRef.current = ref;
-
-        if (ref) {
-          onLoad();
-        }
-      }}
+      instanceRef={mapRef}
       options={{ suppressMapOpenBlock: true }}
     >
       {studios.map((studio) => (
