@@ -1,4 +1,4 @@
-import { Map, Placemark, YMaps } from '@pbe/react-yandex-maps';
+import { Map, Placemark, YMaps, ZoomControl } from '@pbe/react-yandex-maps';
 import * as React from 'react';
 
 import {
@@ -26,6 +26,7 @@ const StudioMap: React.FC<StudioMapProps> = ({ studios, selectedId, onMarkerClic
       instanceRef={mapRef}
       options={{ suppressMapOpenBlock: true }}
     >
+      <ZoomControl options={{ position: { right: 16, top: 80 } }} />
       {studios.map((studio) => (
         <Placemark
           key={studio.id}
@@ -35,6 +36,7 @@ const StudioMap: React.FC<StudioMapProps> = ({ studios, selectedId, onMarkerClic
             iconImageHref: selectedId === studio.id ? MARKER_ACTIVE_ICON : MARKER_ICON,
             iconImageSize: selectedId === studio.id ? [28, 36] : [20, 26],
             iconImageOffset: selectedId === studio.id ? [-14, -36] : [-10, -26],
+            cursor: 'pointer',
           }}
           onClick={() => onMarkerClick(studio)}
         />
@@ -43,22 +45,4 @@ const StudioMap: React.FC<StudioMapProps> = ({ studios, selectedId, onMarkerClic
   </YMaps>
 );
 
-function arePropsEqual(prev: StudioMapProps, next: StudioMapProps): boolean {
-  if (prev.selectedId !== next.selectedId) {
-    return false;
-  }
-
-  if (prev.studios.length !== next.studios.length) {
-    return false;
-  }
-
-  for (let i = 0; i < prev.studios.length; i++) {
-    if (prev.studios[i].id !== next.studios[i].id) {
-      return false;
-    }
-  }
-
-  return true;
-}
-
-export default React.memo(StudioMap, arePropsEqual);
+export default React.memo(StudioMap);

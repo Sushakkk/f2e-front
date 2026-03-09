@@ -7,7 +7,7 @@ import { MapPageStore } from 'store/MapPageStore';
 import { useLocalStore } from 'store/hooks';
 
 import s from './MapPage.module.scss';
-import { MapFilters, StudioCard, StudioMap, ZoomControls } from './components';
+import { MapFilters, StudioCard, StudioMap } from './components';
 
 const MapPage: React.FC = () => {
   const store = useLocalStore(() => new MapPageStore());
@@ -29,7 +29,6 @@ const MapPage: React.FC = () => {
           onMarkerClick={store.selectStudio}
           mapRef={handleInstanceRef}
         />
-        <ZoomControls onZoomIn={store.zoomIn} onZoomOut={store.zoomOut} />
       </div>
       {store.selectedStudio && (
         <StudioCard studio={store.selectedStudio} onClose={store.closeCard} />
