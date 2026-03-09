@@ -9,10 +9,10 @@ import {
 } from 'mobx';
 
 import {
-  DEFAULT_ZOOM,
-  EMPTY_FILTERS,
+  DEFAULT_FILTERS,
   MapFilters,
-  RUSSIA_CENTER,
+  MOSCOW_CENTER,
+  MOSCOW_ZOOM,
   STUDIOS_MAP,
   StudioData,
 } from 'pages/MapPage/config';
@@ -26,8 +26,8 @@ export class MapPageStore implements ILocalStore {
   searchQuery = '';
   isFiltersOpen = false;
   isMapLoaded = false;
-  filters: MapFilters = EMPTY_FILTERS;
-  draft: MapFilters = EMPTY_FILTERS;
+  filters: MapFilters = DEFAULT_FILTERS;
+  draft: MapFilters = DEFAULT_FILTERS;
 
   private _debouncedSearch = '';
   private _mapRef: ymaps.Map | null = null;
@@ -86,11 +86,7 @@ export class MapPageStore implements ILocalStore {
               this._fitBounds(studios);
             }
           } else {
-            const hasFilters = Object.values(this.filters).some((arr) => arr.length > 0);
-
-            if (!hasFilters) {
-              void this._mapRef?.setCenter(RUSSIA_CENTER, DEFAULT_ZOOM, { duration: 400 });
-            }
+            this._fitToFilters();
           }
         }
       )
@@ -161,7 +157,7 @@ export class MapPageStore implements ILocalStore {
 
   closeCard = (): void => {
     this.selectedStudio = null;
-    void this._mapRef?.setCenter(RUSSIA_CENTER, DEFAULT_ZOOM, { duration: 400 });
+    this._fitToFilters();
   };
 
   toggleFilters = (): void => {
@@ -209,10 +205,10 @@ export class MapPageStore implements ILocalStore {
   };
 
   resetFilters = (): void => {
-    this.draft = EMPTY_FILTERS;
-    this.filters = EMPTY_FILTERS;
+    this.draft = DEFAULT_FILTERS;
+    this.filters = DEFAULT_FILTERS;
     this.isFiltersOpen = false;
-    void this._mapRef?.setCenter(RUSSIA_CENTER, DEFAULT_ZOOM, { duration: 400 });
+    void this._mapRef?.setCenter(MOSCOW_CENTER, MOSCOW_ZOOM, { duration: 400 });
   };
 
   zoomIn = (): void => {
@@ -231,6 +227,16 @@ export class MapPageStore implements ILocalStore {
     this._disposers.forEach((d) => d());
     this._disposers = [];
     this._clearLoadTimeout();
+  }
+
+  private _fitToFilters(): void {
+    const studios = this.filteredStudios;
+
+    if (studios.length > 0) {
+      this._fitBounds(studios);
+    } else {
+      void this._mapRef?.setCenter(MOSCOW_CENTER, MOSCOW_ZOOM, { duration: 400 });
+    }
   }
 
   private _fitBounds(studios: StudioData[]): void {

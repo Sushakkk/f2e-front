@@ -13,6 +13,7 @@ export type RegisterData = {
   phone?: string;
   city?: string;
   level?: string;
+  role?: 'teacher' | 'student';
 };
 
 export type MockUserData = Omit<UserConfig, 'password'> & {

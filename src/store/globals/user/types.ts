@@ -1,4 +1,4 @@
-import type { Enrollment } from 'config/users';
+import type { Enrollment, UserRole } from 'config/users';
 
 export type ApiAuth = {
   user: string;
@@ -16,6 +16,7 @@ export type UserServer = {
   avatar?: string;
   city: string;
   level: string;
+  role: UserRole;
   registeredAt: string;
   flags?: UserFlags;
   enrollments?: Enrollment[];

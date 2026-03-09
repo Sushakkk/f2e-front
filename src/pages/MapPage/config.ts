@@ -21,9 +21,20 @@ export type MapFilters = {
 
 export const EMPTY_FILTERS: MapFilters = { cities: [], metro: [], studios: [], danceTypes: [] };
 
+export const DEFAULT_FILTERS: MapFilters = {
+  cities: ['Москва'],
+  metro: [],
+  studios: [],
+  danceTypes: [],
+};
+
 export const RUSSIA_CENTER: [number, number] = [55.7558, 49.1];
 
+export const MOSCOW_CENTER: [number, number] = [55.751, 37.632];
+
 export const DEFAULT_ZOOM = 5;
+
+export const MOSCOW_ZOOM = 12;
 
 export const MARKER_ICON =
   'data:image/svg+xml,' +
@@ -181,6 +192,14 @@ function uniqSorted(values: string[]): { value: string; label: string }[] {
 export const CITY_OPTIONS = uniqSorted(STUDIOS_MAP.map((st) => st.city));
 
 export const METRO_OPTIONS = uniqSorted(STUDIOS_MAP.map((st) => st.metro));
+
+const DEFAULT_METRO_CITY = 'Москва';
+
+export function getMetroOptionsForCities(cities: string[]): { value: string; label: string }[] {
+  const target = cities.length > 0 ? cities : [DEFAULT_METRO_CITY];
+
+  return uniqSorted(STUDIOS_MAP.filter((st) => target.includes(st.city)).map((st) => st.metro));
+}
 
 export const STUDIO_OPTIONS = uniqSorted(STUDIOS_MAP.map((st) => st.name));
 

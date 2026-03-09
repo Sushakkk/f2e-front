@@ -40,7 +40,7 @@ const SelectDropdown: React.FC<SelectDropdownProps> = (props) => {
 
   const summary = React.useMemo(() => {
     if (!isMulti) {
-      return props.value || '';
+      return props.value ? labelByValue.get(props.value) ?? props.value : '';
     }
 
     if (props.value.length === 0) {

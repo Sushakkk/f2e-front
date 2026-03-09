@@ -2,10 +2,10 @@ import { Map, Placemark, YMaps } from '@pbe/react-yandex-maps';
 import * as React from 'react';
 
 import {
-  DEFAULT_ZOOM,
   MARKER_ACTIVE_ICON,
   MARKER_ICON,
-  RUSSIA_CENTER,
+  MOSCOW_CENTER,
+  MOSCOW_ZOOM,
   StudioData,
 } from '../../config';
 
@@ -18,15 +18,10 @@ type StudioMapProps = {
   mapRef: (ref: ymaps.Map | null) => void;
 };
 
-const StudioMap: React.FC<StudioMapProps> = ({
-  studios,
-  selectedId,
-  onMarkerClick,
-  mapRef,
-}) => (
+const StudioMap: React.FC<StudioMapProps> = ({ studios, selectedId, onMarkerClick, mapRef }) => (
   <YMaps query={{ lang: 'ru_RU' }}>
     <Map
-      defaultState={{ center: RUSSIA_CENTER, zoom: DEFAULT_ZOOM }}
+      defaultState={{ center: MOSCOW_CENTER, zoom: MOSCOW_ZOOM }}
       className={s.map}
       instanceRef={mapRef}
       options={{ suppressMapOpenBlock: true }}

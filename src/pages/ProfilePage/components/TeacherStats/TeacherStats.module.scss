@@ -1,0 +1,212 @@
+@import "styles/mixins";
+
+.root {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.controls {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.selector {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+
+.label {
+  font-size: 13px;
+  font-weight: 500;
+  color: $color-white-secondary;
+}
+
+.periodRow {
+  display: flex;
+  align-items: flex-end;
+  gap: 12px;
+  flex-wrap: wrap;
+
+  @include media-down(sm) {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}
+
+.refreshBtn {
+  padding: 10px 20px;
+  font-size: 13px;
+  border-radius: 10px;
+  height: 40px;
+}
+
+.summaryCards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 12px;
+}
+
+.card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 16px 12px;
+  border-radius: 12px;
+  background: $color-bg-secondary;
+  border: 1px solid $color-bg-tertiary;
+}
+
+.cardValue {
+  font-size: 28px;
+  font-weight: 700;
+}
+
+.cardLabel {
+  font-size: 12px;
+  color: $color-white-secondary;
+  text-align: center;
+}
+
+.tableSection {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.subTitle {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.table {
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1px solid $color-bg-tertiary;
+}
+
+.tableHeader {
+  display: flex;
+  align-items: center;
+  padding: 10px 16px;
+  background: $color-bg-tertiary;
+  font-size: 12px;
+  font-weight: 600;
+  color: $color-white-secondary;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.tableRow {
+  display: flex;
+  align-items: center;
+  padding: 10px 16px;
+  font-size: 14px;
+  background: $color-bg-secondary;
+  border-bottom: 1px solid $color-bg-tertiary;
+
+  &:last-child {
+    border-bottom: none;
+  }
+}
+
+.colDate {
+  flex: 3;
+  min-width: 0;
+
+  @include media-down(sm) {
+    flex: 2;
+    font-size: 13px;
+  }
+}
+
+.colName {
+  flex: 3;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+
+  @include media-down(sm) {
+    flex: 2;
+    font-size: 13px;
+  }
+}
+
+.colNum {
+  flex: 1;
+  min-width: 0;
+  text-align: center;
+
+  @include media-down(sm) {
+    font-size: 13px;
+  }
+}
+
+.percent {
+  font-weight: 600;
+}
+
+.compareSection {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.toggleCompare {
+  all: unset;
+  font-size: 14px;
+  color: $color-accent;
+  cursor: pointer;
+  font-weight: 500;
+
+  @include hover {
+    text-decoration: underline;
+  }
+}
+
+.compareBlock {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 16px;
+  border-radius: 12px;
+  border: 1px solid $color-bg-tertiary;
+}
+
+.compareResults {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.compareRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 12px;
+  border-radius: 8px;
+  background: $color-bg-tertiary;
+}
+
+.compareLabel {
+  font-size: 14px;
+  color: $color-white-secondary;
+}
+
+.compareValue {
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.exportBtn {
+  align-self: flex-start;
+  padding: 10px 24px;
+  font-size: 14px;
+  border-radius: 10px;
+}

@@ -1,4 +1,11 @@
-import { COURSES_CONFIG, type CourseConfigItem } from 'config/cards';
+import { COURSES_CONFIG, type CourseConfigItem, type ScheduleEntry } from 'config/cards';
+import type {
+  AttendanceRecord,
+  AttendanceStats,
+  CourseFormData,
+  Lesson,
+  TeacherCourse,
+} from 'config/teacher';
 import type { Enrollment, UserConfig } from 'config/users';
 import { USERS_CONFIG } from 'config/users';
 
@@ -17,8 +24,96 @@ const STORAGE_KEYS = {
   favorites: 'mockDb_favorites',
   session: 'mockDb_session',
   spots: 'mockDb_spots',
+  teacherCourses: 'mockDb_teacherCourses',
+  lessons: 'mockDb_lessons',
+  attendance: 'mockDb_attendance',
   initialized: 'mockDb_initialized',
 } as const;
+
+const WEEKDAY_MAP: Record<string, number> = {
+  Пн: 1,
+  Вт: 2,
+  Ср: 3,
+  Чт: 4,
+  Пт: 5,
+  Сб: 6,
+  Вс: 0,
+};
+
+function parseDDMM(ddmm: string, year = 2025): Date {
+  const [dd, mm] = ddmm.split('.').map(Number);
+
+  return new Date(year, mm - 1, dd);
+}
+
+function generateLessonsFromSchedule(
+  courseId: number,
+  schedule: ScheduleEntry[],
+  dateFrom: string,
+  dateTo: string
+): Lesson[] {
+  const start = parseDDMM(dateFrom);
+  const end = parseDDMM(dateTo);
+  const lessons: Lesson[] = [];
+  let lessonId = courseId * 1000;
+
+  for (const entry of schedule) {
+    const weekdayNames = entry.weekday.split(',').map((w) => w.trim());
+
+    for (const wdName of weekdayNames) {
+      const targetDay = WEEKDAY_MAP[wdName];
+
+      if (targetDay === undefined) {
+        continue;
+      }
+
+      const current = new Date(start);
+
+      while (current.getDay() !== targetDay) {
+        current.setDate(current.getDate() + 1);
+      }
+
+      while (current <= end) {
+        lessonId++;
+        lessons.push({
+          id: lessonId,
+          courseId,
+          date: current.toISOString().split('T')[0],
+          timeFrom: entry.timeFrom,
+          timeTo: entry.timeTo,
+          location: entry.location,
+          status: 'scheduled',
+        });
+        current.setDate(current.getDate() + 7);
+      }
+    }
+  }
+
+  lessons.sort((a, b) => a.date.localeCompare(b.date));
+
+  return lessons;
+}
+
+function buildScheduleFromCourse(course: CourseConfigItem): ScheduleEntry[] {
+  if (course.schedule && course.schedule.length > 0) {
+    return course.schedule;
+  }
+
+  if (course.weekdays && course.timeFrom && course.timeTo) {
+    return [
+      {
+        weekday: course.weekdays.join(', '),
+        timeFrom: course.timeFrom,
+        timeTo: course.timeTo,
+        location: course.location,
+      },
+    ];
+  }
+
+  return [];
+}
+
+const DB_VERSION = '3';
 
 const DELAY_MS = 300;
 
@@ -39,9 +134,11 @@ function stripPassword(user: UserConfig): Omit<UserConfig, 'password'> {
 
 class MockDb {
   static init(): void {
-    if (localStorage.getItem(STORAGE_KEYS.initialized)) {
+    if (localStorage.getItem(STORAGE_KEYS.initialized) === DB_VERSION) {
       return;
     }
+
+    Object.values(STORAGE_KEYS).forEach((key) => localStorage.removeItem(key));
 
     const users = JSON.parse(JSON.stringify(USERS_CONFIG)) as UserConfig[];
 
@@ -51,10 +148,65 @@ class MockDb {
       spots[c.id] = c.spotsLeft;
     }
 
+    const teacherCourses: TeacherCourse[] = [];
+    const allLessons: Lesson[] = [];
+    const allAttendance: AttendanceRecord[] = [];
+
+    // eslint-disable-next-line @typescript-eslint/naming-convention
+    const teacherMapping = new Map<string, number>([
+      ['Карпова Ксения', 11],
+      ['Кузнецов Артём', 12],
+    ]);
+
+    for (const course of COURSES_CONFIG) {
+      const teacherId = teacherMapping.get(course.teacher.name);
+
+      if (!teacherId) {
+        continue;
+      }
+
+      teacherCourses.push({
+        ...course,
+        createdByTeacherId: teacherId,
+        courseStatus: 'active',
+      });
+
+      const schedule = buildScheduleFromCourse(course);
+      const lessons = generateLessonsFromSchedule(
+        course.id,
+        schedule,
+        course.dateFrom,
+        course.dateTo
+      );
+
+      allLessons.push(...lessons);
+
+      const enrolledStudents = users
+        .filter((u) => u.enrollments.some((e) => e.courseId === course.id && e.status === 'active'))
+        .map((u) => u.id);
+
+      for (const lesson of lessons) {
+        for (const studentId of enrolledStudents) {
+          const present = Math.random() > 0.2;
+
+          allAttendance.push({
+            lessonId: lesson.id,
+            courseId: course.id,
+            studentId,
+            present,
+            markedAt: lesson.date,
+          });
+        }
+      }
+    }
+
     localStorage.setItem(STORAGE_KEYS.users, JSON.stringify(users));
     localStorage.setItem(STORAGE_KEYS.favorites, JSON.stringify({}));
     localStorage.setItem(STORAGE_KEYS.spots, JSON.stringify(spots));
-    localStorage.setItem(STORAGE_KEYS.initialized, 'true');
+    localStorage.setItem(STORAGE_KEYS.teacherCourses, JSON.stringify(teacherCourses));
+    localStorage.setItem(STORAGE_KEYS.lessons, JSON.stringify(allLessons));
+    localStorage.setItem(STORAGE_KEYS.attendance, JSON.stringify(allAttendance));
+    localStorage.setItem(STORAGE_KEYS.initialized, DB_VERSION);
   }
 
   static reset(): void {
@@ -161,6 +313,7 @@ class MockDb {
       password: data.password,
       city: data.city ?? '',
       level: data.level ?? 'Beginner',
+      role: data.role ?? 'student',
       registeredAt: new Date().toISOString().split('T')[0],
       enrollments: [],
     };
@@ -435,6 +588,375 @@ class MockDb {
     MockDb._setUsers(users);
 
     return MockDb._buildUserData(users[userIdx]);
+  }
+
+  // ── Teacher storage helpers ──────────────────────────────────────────
+
+  private static _getTeacherCourses(): TeacherCourse[] {
+    const raw = localStorage.getItem(STORAGE_KEYS.teacherCourses);
+
+    return raw ? (JSON.parse(raw) as TeacherCourse[]) : [];
+  }
+
+  private static _setTeacherCourses(courses: TeacherCourse[]): void {
+    localStorage.setItem(STORAGE_KEYS.teacherCourses, JSON.stringify(courses));
+  }
+
+  private static _getLessons(): Lesson[] {
+    const raw = localStorage.getItem(STORAGE_KEYS.lessons);
+
+    return raw ? (JSON.parse(raw) as Lesson[]) : [];
+  }
+
+  private static _setLessons(lessons: Lesson[]): void {
+    localStorage.setItem(STORAGE_KEYS.lessons, JSON.stringify(lessons));
+  }
+
+  private static _getAttendance(): AttendanceRecord[] {
+    const raw = localStorage.getItem(STORAGE_KEYS.attendance);
+
+    return raw ? (JSON.parse(raw) as AttendanceRecord[]) : [];
+  }
+
+  private static _setAttendance(records: AttendanceRecord[]): void {
+    localStorage.setItem(STORAGE_KEYS.attendance, JSON.stringify(records));
+  }
+
+  // ── Teacher courses CRUD ─────────────────────────────────────────────
+
+  static getTeacherCourses(teacherId: number): TeacherCourse[] {
+    return MockDb._getTeacherCourses().filter((c) => c.createdByTeacherId === teacherId);
+  }
+
+  static async createTeacherCourse(
+    teacherId: number,
+    data: CourseFormData
+  ): Promise<TeacherCourse> {
+    await delay();
+
+    const courses = MockDb._getTeacherCourses();
+    const allCourseIds = [...COURSES_CONFIG.map((c) => c.id), ...courses.map((c) => c.id)];
+    const newId = Math.max(0, ...allCourseIds) + 1;
+
+    const users = MockDb._getUsers();
+    const teacher = users.find((u) => u.id === teacherId);
+    const teacherName = teacher ? `${teacher.lastName} ${teacher.firstName}` : 'Преподаватель';
+
+    const scheduleEntries: ScheduleEntry[] = data.schedule.map((s) => ({
+      weekday: s.weekday,
+      timeFrom: s.timeFrom,
+      timeTo: s.timeTo,
+      location: s.location,
+    }));
+
+    const newCourse: TeacherCourse = {
+      id: newId,
+      name: data.name,
+      type: data.type,
+      teacher: {
+        name: teacherName,
+        bio: '',
+        images: [],
+        achievements: [],
+        experience: 0,
+        specializations: [data.type],
+        rating: 0,
+        reviews: [],
+      },
+      level: data.level as TeacherCourse['level'],
+      dateFrom: data.dateFrom,
+      dateTo: data.dateTo,
+      price: data.price,
+      images: [],
+      studio: data.studio,
+      city: data.city,
+      description: data.description,
+      capacity: data.capacity,
+      spotsLeft: data.capacity,
+      schedule: scheduleEntries,
+      music: { artist: '', track: '', url: '' },
+      createdByTeacherId: teacherId,
+      courseStatus: 'active',
+    };
+
+    courses.push(newCourse);
+    MockDb._setTeacherCourses(courses);
+
+    const lessons = generateLessonsFromSchedule(newId, scheduleEntries, data.dateFrom, data.dateTo);
+    const allLessons = MockDb._getLessons();
+
+    allLessons.push(...lessons);
+    MockDb._setLessons(allLessons);
+
+    return newCourse;
+  }
+
+  static async updateTeacherCourse(
+    courseId: number,
+    data: Partial<CourseFormData>
+  ): Promise<TeacherCourse | null> {
+    await delay();
+
+    const courses = MockDb._getTeacherCourses();
+    const idx = courses.findIndex((c) => c.id === courseId);
+
+    if (idx === -1) {
+      return null;
+    }
+
+    const course = courses[idx];
+
+    if (data.name !== undefined) {
+      course.name = data.name;
+    }
+
+    if (data.type !== undefined) {
+      course.type = data.type;
+    }
+
+    if (data.level !== undefined) {
+      course.level = data.level as TeacherCourse['level'];
+    }
+
+    if (data.dateFrom !== undefined) {
+      course.dateFrom = data.dateFrom;
+    }
+
+    if (data.dateTo !== undefined) {
+      course.dateTo = data.dateTo;
+    }
+
+    if (data.price !== undefined) {
+      course.price = data.price;
+    }
+
+    if (data.studio !== undefined) {
+      course.studio = data.studio;
+    }
+
+    if (data.city !== undefined) {
+      course.city = data.city;
+    }
+
+    if (data.description !== undefined) {
+      course.description = data.description;
+    }
+
+    if (data.capacity !== undefined) {
+      course.capacity = data.capacity;
+    }
+
+    if (data.schedule !== undefined) {
+      course.schedule = data.schedule.map((s) => ({
+        weekday: s.weekday,
+        timeFrom: s.timeFrom,
+        timeTo: s.timeTo,
+        location: s.location,
+      }));
+    }
+
+    courses[idx] = course;
+    MockDb._setTeacherCourses(courses);
+
+    return course;
+  }
+
+  static async cancelTeacherCourse(courseId: number): Promise<boolean> {
+    await delay();
+
+    const courses = MockDb._getTeacherCourses();
+    const idx = courses.findIndex((c) => c.id === courseId);
+
+    if (idx === -1) {
+      return false;
+    }
+
+    courses[idx].courseStatus = 'cancelled';
+    MockDb._setTeacherCourses(courses);
+
+    const lessons = MockDb._getLessons();
+
+    for (const lesson of lessons) {
+      if (lesson.courseId === courseId && lesson.status === 'scheduled') {
+        lesson.status = 'cancelled';
+      }
+    }
+
+    MockDb._setLessons(lessons);
+
+    return true;
+  }
+
+  // ── Lessons ──────────────────────────────────────────────────────────
+
+  static getCourseLessons(courseId: number): Lesson[] {
+    return MockDb._getLessons()
+      .filter((l) => l.courseId === courseId)
+      .sort((a, b) => a.date.localeCompare(b.date));
+  }
+
+  static async cancelLesson(lessonId: number): Promise<boolean> {
+    await delay();
+
+    const lessons = MockDb._getLessons();
+    const idx = lessons.findIndex((l) => l.id === lessonId);
+
+    if (idx === -1) {
+      return false;
+    }
+
+    lessons[idx].status = 'cancelled';
+    MockDb._setLessons(lessons);
+
+    return true;
+  }
+
+  static async updateLesson(
+    lessonId: number,
+    data: Partial<Pick<Lesson, 'timeFrom' | 'timeTo' | 'location'>>
+  ): Promise<Lesson | null> {
+    await delay();
+
+    const lessons = MockDb._getLessons();
+    const idx = lessons.findIndex((l) => l.id === lessonId);
+
+    if (idx === -1) {
+      return null;
+    }
+
+    Object.assign(lessons[idx], data);
+    MockDb._setLessons(lessons);
+
+    return lessons[idx];
+  }
+
+  // ── Students ─────────────────────────────────────────────────────────
+
+  static getCourseStudents(courseId: number): MockUserData[] {
+    const users = MockDb._getUsers();
+
+    return users
+      .filter((u) =>
+        u.enrollments.some(
+          (e) => e.courseId === courseId && (e.status === 'active' || e.status === 'pending')
+        )
+      )
+      .map((u) => MockDb._buildUserData(u));
+  }
+
+  // ── Attendance ───────────────────────────────────────────────────────
+
+  static async markAttendance(
+    lessonId: number,
+    studentId: number,
+    present: boolean
+  ): Promise<void> {
+    await delay(100);
+
+    const records = MockDb._getAttendance();
+    const idx = records.findIndex((r) => r.lessonId === lessonId && r.studentId === studentId);
+
+    const lesson = MockDb._getLessons().find((l) => l.id === lessonId);
+
+    if (idx === -1) {
+      records.push({
+        lessonId,
+        courseId: lesson?.courseId ?? 0,
+        studentId,
+        present,
+        markedAt: new Date().toISOString().split('T')[0],
+      });
+    } else {
+      records[idx].present = present;
+      records[idx].markedAt = new Date().toISOString().split('T')[0];
+    }
+
+    MockDb._setAttendance(records);
+  }
+
+  static getAttendanceByLesson(lessonId: number): AttendanceRecord[] {
+    return MockDb._getAttendance().filter((r) => r.lessonId === lessonId);
+  }
+
+  static getAttendanceByCourse(courseId: number): AttendanceRecord[] {
+    return MockDb._getAttendance().filter((r) => r.courseId === courseId);
+  }
+
+  static getAttendanceByStudent(studentId: number, courseId?: number): AttendanceRecord[] {
+    return MockDb._getAttendance().filter(
+      (r) => r.studentId === studentId && (courseId === undefined || r.courseId === courseId)
+    );
+  }
+
+  static getAttendanceStats(
+    courseId: number,
+    periodFrom?: string,
+    periodTo?: string
+  ): AttendanceStats {
+    const lessons = MockDb.getCourseLessons(courseId).filter((l) => {
+      if (periodFrom && l.date < periodFrom) {
+        return false;
+      }
+
+      if (periodTo && l.date > periodTo) {
+        return false;
+      }
+
+      return true;
+    });
+
+    const attendance = MockDb.getAttendanceByCourse(courseId);
+    const students = MockDb.getCourseStudents(courseId);
+
+    const scheduledLessons = lessons.filter((l) => l.status === 'scheduled');
+    const cancelledLessons = lessons.filter((l) => l.status === 'cancelled');
+
+    const perLesson = scheduledLessons.map((lesson) => {
+      const lessonAtt = attendance.filter((a) => a.lessonId === lesson.id);
+      const presentCount = lessonAtt.filter((a) => a.present).length;
+      const total = lessonAtt.length || students.length;
+
+      return {
+        lessonId: lesson.id,
+        date: lesson.date,
+        present: presentCount,
+        absent: total - presentCount,
+        total,
+        percent: total > 0 ? Math.round((presentCount / total) * 100) : 0,
+      };
+    });
+
+    const perStudent = students.map((student) => {
+      const studentAtt = attendance.filter(
+        (a) => a.studentId === student.id && scheduledLessons.some((l) => l.id === a.lessonId)
+      );
+      const attended = studentAtt.filter((a) => a.present).length;
+      const total = scheduledLessons.length;
+
+      return {
+        studentId: student.id,
+        studentName: `${student.firstName} ${student.lastName}`,
+        attended,
+        missed: total - attended,
+        total,
+        percent: total > 0 ? Math.round((attended / total) * 100) : 0,
+      };
+    });
+
+    const avgPercent =
+      perLesson.length > 0
+        ? Math.round(perLesson.reduce((sum, l) => sum + l.percent, 0) / perLesson.length)
+        : 0;
+
+    return {
+      totalLessons: lessons.length,
+      conductedLessons: scheduledLessons.length,
+      cancelledLessons: cancelledLessons.length,
+      avgAttendancePercent: avgPercent,
+      totalStudents: students.length,
+      perLesson,
+      perStudent,
+    };
   }
 }
 

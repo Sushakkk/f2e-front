@@ -11,9 +11,26 @@ import s from './Card.module.scss';
 type Props = {
   className?: string;
   item: CourseConfigItem;
+  badgeLabel?: string;
+  badgeClassName?: string;
+  compact?: boolean;
+  profile?: boolean;
+  largeImage?: boolean;
+  statusLabel?: string;
+  actions?: React.ReactNode;
 };
 
-const Card: React.FC<Props> = ({ className, item }) => {
+const Card: React.FC<Props> = ({
+  className,
+  item,
+  badgeLabel,
+  badgeClassName,
+  compact,
+  profile,
+  largeImage,
+  statusLabel,
+  actions,
+}) => {
   const { name, teacher, level, dateFrom, dateTo, price, images, id } = item;
   const navigate = useNavigate();
 
@@ -26,13 +43,25 @@ const Card: React.FC<Props> = ({ className, item }) => {
   }, [navigate, id]);
 
   return (
-    <div className={cn(s.card, className)} onClick={goToCourse}>
+    <div
+      className={cn(
+        s.card,
+        compact && s.card_compact,
+        profile && s.card_profile,
+        largeImage && s.card_largeImage,
+        className
+      )}
+      onClick={goToCourse}
+    >
       <div className={s.imageWrapper}>
         <img src={images[0]} alt={name} />
       </div>
-      <div className={s.level}>{level}</div>
+      <div className={cn(s.level, badgeClassName)}>{badgeLabel ?? level}</div>
       <div className={s.content}>
-        <div className={s.title}>{name}</div>
+        <div className={s.title}>
+          {name}
+          {statusLabel && <span className={s.statusLabel}> · {statusLabel}</span>}
+        </div>
         {teacher && <div className={s.subtitle}>{teacher.name}</div>}
         {dateFrom && dateTo && (
           <div className={s.subtitle}>
@@ -47,6 +76,11 @@ const Card: React.FC<Props> = ({ className, item }) => {
           )}
           {price && <div className={s.price}>{price.toLocaleString()} ₽</div>}
         </div>
+        {actions && (
+          <div className={s.actions} onClick={(e) => e.stopPropagation()}>
+            {actions}
+          </div>
+        )}
       </div>
     </div>
   );

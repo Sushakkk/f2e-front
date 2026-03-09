@@ -3,8 +3,6 @@
 .card {
   cursor: pointer;
   position: relative;
-
-  background: $color-bg-secondary;
   border: 2px solid $color-accent;
   border-radius: 23px;
   display: flex;
@@ -19,6 +17,63 @@
   @include mobile {
     flex-direction: row;
     padding: 10px;
+  }
+
+  &_compact {
+    flex-direction: row;
+    padding: 10px;
+
+    .imageWrapper {
+      width: 110px;
+      height: 110px;
+      border-radius: 20px;
+    }
+
+    .content {
+      padding: 16px 0;
+    }
+  }
+
+  &_profile {
+    @include media-up(xs) {
+      .imageWrapper {
+        width: 110px;
+        height: 110px;
+        border-radius: 20px;
+      }
+    }
+
+    @include media-down(xs) {
+      flex-direction: column;
+      padding: 0;
+
+      .imageWrapper {
+        width: 100%;
+        height: 110px;
+        border-radius: 0;
+      }
+
+      .content {
+        padding: 16px;
+      }
+    }
+  }
+
+  &_largeImage {
+    &.card_profile {
+      @include media-up(xs) {
+        .imageWrapper {
+          width: 180px;
+          height: 180px;
+        }
+      }
+
+      @include media-down(xs) {
+        .imageWrapper {
+          height: 180px;
+        }
+      }
+    }
   }
 }
 
@@ -68,6 +123,12 @@
   align-items: flex-end;
 }
 
+.actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 12px;
+}
+
 .level {
   position: absolute;
   top: -2px;
@@ -89,6 +150,12 @@
   font-weight: 600;
   font-size: 20px;
   line-height: 24px;
+}
+
+.statusLabel {
+  font-weight: 500;
+  font-size: 14px;
+  color: $color-white-secondary;
 }
 
 .subtitle {

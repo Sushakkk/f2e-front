@@ -1,0 +1,27 @@
+@import "styles/mixins";
+
+.root {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.title {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: $color-white-secondary;
+}
+
+.addBtn {
+  all: unset;
+  font-size: 18px;
+  color: $color-accent;
+  cursor: pointer;
+  font-weight: 500;
+
+  @include hover {
+    text-decoration: underline;
+  }
+}

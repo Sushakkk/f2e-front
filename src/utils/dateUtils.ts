@@ -87,6 +87,16 @@ export function parseDDMM(ddmm: string, referenceYear: number): Date | null {
   return new Date(referenceYear, month, day);
 }
 
+export function toDDMM(d: Date): string {
+  return `${pad2(d.getDate())}.${pad2(d.getMonth() + 1)}`;
+}
+
+export function ddmmToIso(ddmm: string, referenceYear: number): string {
+  const d = parseDDMM(ddmm, referenceYear);
+
+  return d ? toIsoDate(d) : '';
+}
+
 export function rangesOverlap(
   startA: Date | null,
   endA: Date | null,

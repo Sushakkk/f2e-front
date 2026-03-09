@@ -3,8 +3,8 @@ import * as React from 'react';
 
 import { ScreenSpinner } from 'components/common';
 import { SearchBar } from 'pages/HomePage/components';
-import { useLocalStore } from 'store/hooks';
 import { MapPageStore } from 'store/MapPageStore';
+import { useLocalStore } from 'store/hooks';
 
 import s from './MapPage.module.scss';
 import { MapFilters, StudioCard, StudioMap, ZoomControls } from './components';
@@ -31,7 +31,9 @@ const MapPage: React.FC = () => {
         />
         <ZoomControls onZoomIn={store.zoomIn} onZoomOut={store.zoomOut} />
       </div>
-      {store.selectedStudio && <StudioCard studio={store.selectedStudio} onClose={store.closeCard} />}
+      {store.selectedStudio && (
+        <StudioCard studio={store.selectedStudio} onClose={store.closeCard} />
+      )}
       {!store.selectedStudio && (
         <div className={s.bottomPanel}>
           <SearchBar

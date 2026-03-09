@@ -59,7 +59,7 @@
   &_dark {
     border-color: $color-bg-tertiary;
     color: $color-white;
-    background: $color-bg;
+    background: $color-bg-secondary;
 
     @include hover {
       transform: translateY(-1px);
