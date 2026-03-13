@@ -2,16 +2,21 @@
 
 .btn {
   width: 100%;
-  height: 44px;
+  height: 40px;
   display: flex;
   align-items: center;
   gap: 10px;
   padding: 0 12px;
   border-radius: 8px;
   border: 1px solid $color-bg-tertiary;
-  background: $color-bg;
+  background: $color-bg-secondary;
   color: $color-white;
   cursor: pointer;
+  transition: border-color 200ms ease;
+
+  @include hover {
+    border-color: $color-accent;
+  }
 
   &:focus-visible {
     outline: none;
@@ -43,7 +48,7 @@
 }
 
 .input {
-  background: $color-bg;
+  background: $color-bg-secondary;
   border: 1px solid $color-bg-tertiary;
   border-radius: 8px;
   height: 44px;
@@ -53,6 +58,11 @@
   min-width: 150px;
   font-size: 14px;
   padding-right: 40px;
+  transition: border-color 200ms ease;
+
+  @include hover {
+    border-color: $color-accent;
+  }
 
   &:focus-visible {
     outline: none;

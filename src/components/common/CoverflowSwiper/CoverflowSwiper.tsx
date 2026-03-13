@@ -1,5 +1,5 @@
 import cn from 'classnames';
-import React, { useCallback, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Autoplay, EffectCoverflow, Navigation } from 'swiper/modules';
 import { Swiper, SwiperSlide } from 'swiper/react';
 
@@ -7,7 +7,12 @@ import 'swiper/css';
 import 'swiper/css/effect-coverflow';
 import 'swiper/css/navigation';
 
+import ScreenSpinner from 'components/common/ScreenSpinner/ScreenSpinner';
+import { useMediaQuery } from 'utils/useMediaQuery';
+
 import s from './CoverflowSwiper.module.scss';
+
+const TABLET_QUERY = '(max-width: 992px)';
 
 type Props<T> = {
   items: T[];
@@ -19,6 +24,91 @@ type Props<T> = {
   children?: (item: T) => React.ReactNode;
 };
 
+const MIN_LOADER_MS = 300;
+
+function useImageOrientations<T>(items: T[], getImage: (item: T) => string) {
+  const [verticalSet, setVerticalSet] = useState<Set<number> | null>(null);
+  const getImageRef = useRef(getImage);
+
+  getImageRef.current = getImage;
+
+  useEffect(() => {
+    if (items.length === 0) {
+      setVerticalSet(new Set());
+
+      return;
+    }
+
+    let cancelled = false;
+    const verticals = new Set<number>();
+    let pending = 0;
+    let imagesReady = false;
+    let timerReady = false;
+
+    const tryFinish = () => {
+      if (!cancelled && imagesReady && timerReady) {
+        setVerticalSet(new Set(verticals));
+      }
+    };
+
+    const timer = setTimeout(() => {
+      timerReady = true;
+      tryFinish();
+    }, MIN_LOADER_MS);
+
+    const onAllImagesProcessed = () => {
+      imagesReady = true;
+      tryFinish();
+    };
+
+    items.forEach((item, index) => {
+      const img = new Image();
+
+      img.src = getImageRef.current(item);
+
+      if (img.complete && img.naturalWidth > 0) {
+        if (img.naturalHeight > img.naturalWidth) {
+          verticals.add(index);
+        }
+
+        return;
+      }
+
+      pending++;
+
+      const onDone = () => {
+        if (cancelled) {
+          return;
+        }
+
+        if (img.naturalHeight > img.naturalWidth) {
+          verticals.add(index);
+        }
+
+        pending--;
+
+        if (pending === 0) {
+          onAllImagesProcessed();
+        }
+      };
+
+      img.onload = onDone;
+      img.onerror = onDone;
+    });
+
+    if (pending === 0) {
+      onAllImagesProcessed();
+    }
+
+    return () => {
+      cancelled = true;
+      clearTimeout(timer);
+    };
+  }, [items]);
+
+  return verticalSet;
+}
+
 // eslint-disable-next-line @typescript-eslint/naming-convention
 export function CoverflowSwiper<T>({
   items,
@@ -29,40 +119,31 @@ export function CoverflowSwiper<T>({
   onItemClick,
   children,
 }: Props<T>) {
-  const [verticalSet, setVerticalSet] = useState<Set<number>>(() => new Set());
+  const verticalSet = useImageOrientations(items, getImage);
+  const isTablet = useMediaQuery(TABLET_QUERY);
 
-  const handleImageLoad = useCallback(
-    (index: number, e: React.SyntheticEvent<HTMLImageElement>) => {
-      const img = e.currentTarget;
-
-      if (img.naturalHeight > img.naturalWidth) {
-        setVerticalSet((prev) => {
-          if (prev.has(index)) {
-            return prev;
-          }
-
-          const next = new Set(prev);
-
-          next.add(index);
-
-          return next;
-        });
-      }
-    },
-    []
-  );
+  if (!verticalSet) {
+    return (
+      <div className={cn(s.root, className)}>
+        <div className={s.loader} />
+        <ScreenSpinner />
+      </div>
+    );
+  }
 
   return (
     <div className={cn(s.root, className)}>
       <Swiper
+        key={isTablet ? 'slide' : 'coverflow'}
         className={s.swiper}
         modules={[EffectCoverflow, Navigation, Autoplay]}
-        effect="coverflow"
+        effect={isTablet ? 'slide' : 'coverflow'}
         centeredSlides
         loop={items.length > 1}
         grabCursor
-        navigation
+        navigation={!isTablet}
         slidesPerView={1}
+        spaceBetween={isTablet ? 16 : 0}
         breakpoints={{
           // eslint-disable-next-line @typescript-eslint/naming-convention
           1024: {
@@ -74,14 +155,18 @@ export function CoverflowSwiper<T>({
           disableOnInteraction: false,
           pauseOnMouseEnter: true,
         }}
-        speed={650}
-        coverflowEffect={{
-          rotate: 0,
-          stretch: 0,
-          depth: 320,
-          modifier: 1,
-          slideShadows: false,
-        }}
+        speed={900}
+        coverflowEffect={
+          isTablet
+            ? undefined
+            : {
+                rotate: 0,
+                stretch: 0,
+                depth: 320,
+                modifier: 1,
+                slideShadows: false,
+              }
+        }
       >
         {items.map((it, index) => (
           <SwiperSlide key={getKey ? getKey(it, index) : index}>
@@ -94,9 +179,7 @@ export function CoverflowSwiper<T>({
                 src={getImage(it)}
                 alt={getAlt ? getAlt(it) : ''}
                 draggable={false}
-                loading="lazy"
                 decoding="async"
-                onLoad={(e) => handleImageLoad(index, e)}
               />
               {children?.(it)}
             </div>

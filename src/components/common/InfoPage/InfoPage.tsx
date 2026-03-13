@@ -33,16 +33,6 @@ const InfoPage: React.FC<Props> = ({
 
   const isLiked = externalLiked ?? internalLiked;
 
-  React.useLayoutEffect(() => {
-    if ('scrollRestoration' in history) {
-      history.scrollRestoration = 'manual';
-    }
-
-    window.scrollTo(0, 0);
-    document.documentElement.scrollTop = 0;
-    document.body.scrollTop = 0;
-  }, []);
-
   const handleGoBack = React.useCallback(() => navigate(-1), [navigate]);
 
   const handleToggleLike = React.useCallback(() => {

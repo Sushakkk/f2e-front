@@ -1,0 +1,103 @@
+@import "styles/mixins";
+
+.root {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  width: 100%;
+  min-width: 280px;
+  background: $color-bg-secondary;
+  border: 1px solid $color-bg-tertiary;
+  border-radius: 12px;
+  padding: 12px;
+  box-shadow: 0 14px 40px rgba(0, 0, 0, 0.5);
+  z-index: 20;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.title {
+  font-weight: 700;
+  font-size: 14px;
+  text-transform: capitalize;
+}
+
+.navBtn {
+  width: 32px;
+  height: 32px;
+  border-radius: 10px;
+  border: 1px solid transparent;
+  background: transparent;
+  color: $color-white;
+  cursor: pointer;
+
+  @include hover {
+    background: rgba($color-white, 0.06);
+  }
+
+  &:active {
+    background: rgba($color-white, 0.1);
+  }
+
+  &:focus-visible {
+    outline: none;
+    border-color: $color-accent;
+  }
+}
+
+.weekdays {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 6px;
+  margin-bottom: 6px;
+}
+
+.weekday {
+  text-align: center;
+  font-size: 12px;
+  color: rgba($color-white, 0.65);
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 6px;
+}
+
+.empty {
+  height: 32px;
+}
+
+.day {
+  height: 32px;
+  border-radius: 10px;
+  border: 1px solid transparent;
+  background: transparent;
+  color: $color-white;
+  cursor: pointer;
+
+  &[data-inrange="true"] {
+    background: rgba($color-accent, 0.18);
+  }
+
+  &[data-start="true"],
+  &[data-end="true"] {
+    background: rgba($color-accent, 0.32);
+    border-color: rgba($color-accent, 0.65);
+  }
+
+  @include hover {
+    background: rgba($color-accent, 0.26);
+  }
+
+  &:focus-visible {
+    outline: none;
+    border-color: $color-accent;
+  }
+}

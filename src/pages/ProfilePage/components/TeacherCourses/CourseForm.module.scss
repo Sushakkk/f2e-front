@@ -1,0 +1,201 @@
+@import "styles/mixins";
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  padding: 20px;
+  border-radius: 12px;
+  border: 1px solid $color-bg-tertiary;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.formTitle {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 600;
+}
+
+.closeBtn {
+  all: unset;
+  font-size: 24px;
+  cursor: pointer;
+  color: $color-white-secondary;
+  padding: 4px 8px;
+
+  @include hover {
+    color: $color-white;
+  }
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+
+  @include media-down(sm) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.datesPriceRow {
+  grid-column: 1 / -1;
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+
+  .field {
+    flex: 1;
+    min-width: 0;
+  }
+
+  @include media-down(sm) {
+    flex-direction: column;
+  }
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.label {
+  font-size: 13px;
+  font-weight: 500;
+  color: $color-white-secondary;
+}
+
+.input {
+  all: unset;
+  box-sizing: border-box;
+  padding: 10px 14px;
+  border-radius: 8px;
+  background: $color-bg-secondary;
+  font-size: 14px;
+  color: $color-white;
+  border: 1px solid $color-bg-tertiary;
+  transition: border-color 200ms ease;
+
+  @include hover {
+    border-color: $color-accent;
+  }
+
+  &:focus {
+    border-color: $color-accent;
+  }
+
+  option {
+    background: $color-bg-secondary;
+    color: $color-white;
+  }
+}
+
+.textarea {
+  all: unset;
+  box-sizing: border-box;
+  padding: 10px 14px;
+  border-radius: 8px;
+  background: $color-bg-secondary;
+  font-size: 14px;
+  color: $color-white;
+  border: 1px solid $color-bg-tertiary;
+  resize: vertical;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  transition: border-color 200ms ease;
+
+  @include hover {
+    border-color: $color-accent;
+  }
+
+  &:focus {
+    border-color: $color-accent;
+  }
+}
+
+.scheduleSection {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.scheduleEntry {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 12px;
+  padding: 16px;
+  border-radius: 10px;
+  border: 1px solid $color-bg-tertiary;
+}
+
+.scheduleFields {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-width: 0;
+}
+
+.scheduleField {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.scheduleLabel {
+  font-size: 12px;
+  font-weight: 500;
+  color: $color-white-secondary;
+}
+
+.scheduleTimeRow {
+  display: flex;
+  gap: 8px;
+
+  .input {
+    flex: 1;
+    min-width: 0;
+    height: 44px;
+    box-sizing: border-box;
+  }
+}
+
+.scheduleEntry .input {
+  height: 44px;
+  box-sizing: border-box;
+}
+
+.scheduleEntry .removeBtn {
+  flex-shrink: 0;
+}
+
+.removeBtn {
+  all: unset;
+  font-size: 24px;
+  cursor: pointer;
+  color: $color-status-danger;
+  padding: 4px 8px;
+  flex-shrink: 0;
+
+  @include hover {
+    color: $color-status-danger-hover;
+  }
+}
+
+.formActions {
+  display: flex;
+  gap: 12px;
+}
+
+.submitBtn {
+  padding: 10px 24px;
+  font-size: 14px;
+  border-radius: 10px;
+}

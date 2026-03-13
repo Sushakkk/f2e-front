@@ -1,0 +1,35 @@
+@import "styles/mixins";
+
+.root {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.courseList {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 16px;
+}
+
+.cardWrapper {
+  &[data-completed] {
+    opacity: 0.5;
+  }
+}
+
+.courseCard {
+  width: 100%;
+}
+
+.empty {
+  font-size: 14px;
+  color: $color-white-secondary;
+  padding: 24px 0;
+}

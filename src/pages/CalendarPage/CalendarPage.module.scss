@@ -5,7 +5,6 @@
 
   display: flex;
   flex-direction: column;
-  min-height: 100vh;
   padding-bottom: 0;
 }
 
@@ -15,13 +14,55 @@
   font-weight: 600;
 }
 
+.filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.filterField {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 200px;
+}
+
+.filterLabel {
+  font-size: 13px;
+  font-weight: 500;
+  color: $color-white-secondary;
+}
+
+.legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px 16px;
+  margin-bottom: 24px;
+}
+
+.legendItem {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  color: $color-white-secondary;
+}
+
+.legendDot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
 .calendarWrapper {
   flex: 1;
   min-height: 0;
   display: flex;
   flex-direction: column;
   border-radius: 12px;
-  background: $color-bg-tertiary;
+  background: $color-bg-secondary;
   padding: 20px;
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
@@ -44,7 +85,7 @@
 
       button {
         color: $color-white;
-        background: $color-bg;
+        background: $color-bg-secondary;
         border: 1px solid rgba($color-white, 0.15);
         border-radius: 8px;
         padding: 6px 16px;
@@ -226,9 +267,6 @@
 
     .rbc-time-header-gutter {
       border-bottom: none;
-      min-width: 42px !important;
-      max-width: 42px !important;
-      width: 42px !important;
     }
 
     .rbc-allday-cell {
@@ -238,10 +276,11 @@
     .rbc-time-content {
       border-top: 1px solid rgba($color-white, 0.1);
 
-      /* stylelint-disable-next-line selector-max-combinators, selector-max-compound-selectors, selector-max-universal */
+      /* stylelint-disable selector-max-combinators, selector-max-compound-selectors, selector-max-universal */
       > * + * > * {
         border-left: 1px solid rgba($color-white, 0.06);
       }
+      /* stylelint-enable selector-max-combinators, selector-max-compound-selectors, selector-max-universal */
     }
 
     .rbc-timeslot-group {
@@ -249,36 +288,13 @@
     }
 
     .rbc-label {
-      font-size: 10px;
+      font-size: 12px;
       color: rgba($color-white, 0.5);
-      padding: 0 4px;
-      white-space: nowrap;
-      text-align: center;
-    }
-
-    .rbc-time-gutter {
-      min-width: 42px !important;
-      max-width: 42px !important;
-      width: 42px !important;
-    }
-
-    .rbc-time-gutter .rbc-timeslot-group {
-      display: flex;
-      align-items: center;
-      justify-content: center;
+      padding: 0 8px;
     }
 
     .rbc-day-slot .rbc-time-slot {
       border-top: 1px solid rgba($color-white, 0.03);
-    }
-
-    .rbc-day-slot .rbc-events-container {
-      margin-right: 0;
-    }
-
-    .rbc-day-slot .rbc-event {
-      width: 100% !important;
-      left: 0 !important;
     }
 
     .rbc-current-time-indicator {
@@ -289,7 +305,7 @@
     /* ---- Overlay popup (show more) ---- */
 
     .rbc-overlay {
-      background: $color-bg;
+      background: $color-bg-secondary;
       border: 1px solid rgba($color-white, 0.15);
       border-radius: 8px;
       box-shadow: 0 8px 32px rgba($color-black, 0.5);
@@ -335,49 +351,6 @@
         font-size: 10px;
         padding: 1px 3px;
       }
-
-      .rbc-day-slot .rbc-event-content {
-        font-size: 9px;
-        line-height: 1.2;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        white-space: nowrap;
-      }
-    }
-  }
-}
-
-/* ---- Week view ---- */
-
-.calendarWrapper[data-view="week"] {
-  :global {
-    .rbc-day-slot .rbc-event-label {
-      white-space: nowrap;
-      line-height: 1.2;
-      font-size: 10px;
-    }
-  }
-
-  @include mobile {
-    :global {
-      .rbc-day-slot .rbc-event-label {
-        white-space: pre-line;
-        font-size: 8px;
-        line-height: 1.1;
-      }
-    }
-  }
-}
-
-/* ---- Day view: always 1 line ---- */
-
-.calendarWrapper[data-view="day"] {
-  :global {
-    .rbc-day-slot .rbc-event-label {
-      display: block;
-      font-size: 11px;
-      white-space: nowrap;
-      line-height: 1.2;
     }
   }
 }
@@ -397,7 +370,7 @@
 }
 
 .popup {
-  background: $color-bg;
+  background: $color-bg-secondary;
   border: 1px solid rgba($color-white, 0.12);
   border-radius: 16px;
   padding: 24px;

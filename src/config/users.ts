@@ -2,6 +2,8 @@ import { teacherImages } from 'assets/images/teachers';
 
 export type EnrollmentStatus = 'active' | 'completed' | 'cancelled' | 'pending';
 
+export type UserRole = 'teacher' | 'student';
+
 export type Enrollment = {
   courseId: number;
   enrolledAt: string;
@@ -19,6 +21,7 @@ export type UserConfig = {
   avatar?: string;
   city: string;
   level: string;
+  role: UserRole;
   registeredAt: string;
   enrollments: Enrollment[];
 };
@@ -34,6 +37,7 @@ export const USERS_CONFIG: UserConfig[] = [
     avatar: teacherImages.woman,
     city: 'Москва',
     level: 'Intermediate',
+    role: 'student',
     registeredAt: '2024-09-15',
     enrollments: [
       { courseId: 1, enrolledAt: '2025-05-28', status: 'active', paid: true },
@@ -51,9 +55,12 @@ export const USERS_CONFIG: UserConfig[] = [
     avatar: teacherImages.woman2,
     city: 'Москва',
     level: 'Beginner',
+    role: 'student',
     registeredAt: '2024-12-01',
     enrollments: [
       { courseId: 2, enrolledAt: '2025-01-20', status: 'active', paid: true },
+      { courseId: 1, enrolledAt: '2025-06-01', status: 'active', paid: true },
+      { courseId: 5, enrolledAt: '2025-02-15', status: 'active', paid: true },
       { courseId: 9, enrolledAt: '2025-02-25', status: 'pending', paid: false },
     ],
   },
@@ -67,6 +74,7 @@ export const USERS_CONFIG: UserConfig[] = [
     avatar: teacherImages.man,
     city: 'Москва',
     level: 'Advanced',
+    role: 'student',
     registeredAt: '2024-08-20',
     enrollments: [
       { courseId: 5, enrolledAt: '2025-02-01', status: 'active', paid: true },
@@ -84,9 +92,12 @@ export const USERS_CONFIG: UserConfig[] = [
     password: 'Kris_bel78',
     city: 'Санкт-Петербург',
     level: 'Beginner',
+    role: 'student',
     registeredAt: '2025-01-10',
     enrollments: [
       { courseId: 4, enrolledAt: '2025-02-05', status: 'active', paid: true },
+      { courseId: 1, enrolledAt: '2025-06-02', status: 'active', paid: true },
+      { courseId: 8, enrolledAt: '2025-02-20', status: 'active', paid: true },
       { courseId: 7, enrolledAt: '2025-02-12', status: 'active', paid: true },
       { courseId: 9, enrolledAt: '2025-02-28', status: 'pending', paid: false },
     ],
@@ -101,9 +112,12 @@ export const USERS_CONFIG: UserConfig[] = [
     avatar: teacherImages.man,
     city: 'Санкт-Петербург',
     level: 'Intermediate',
+    role: 'student',
     registeredAt: '2024-10-05',
     enrollments: [
       { courseId: 6, enrolledAt: '2025-02-10', status: 'active', paid: true },
+      { courseId: 5, enrolledAt: '2025-02-12', status: 'active', paid: true },
+      { courseId: 8, enrolledAt: '2025-02-22', status: 'active', paid: true },
       { courseId: 4, enrolledAt: '2025-01-28', status: 'completed', paid: true },
     ],
   },
@@ -117,6 +131,7 @@ export const USERS_CONFIG: UserConfig[] = [
     avatar: teacherImages.woman,
     city: 'Москва',
     level: 'Advanced',
+    role: 'student',
     registeredAt: '2024-07-12',
     enrollments: [
       { courseId: 10, enrolledAt: '2025-02-28', status: 'active', paid: true },
@@ -134,9 +149,11 @@ export const USERS_CONFIG: UserConfig[] = [
     password: 'YuliaKuz55',
     city: 'Москва',
     level: 'Beginner',
+    role: 'student',
     registeredAt: '2025-01-20',
     enrollments: [
       { courseId: 7, enrolledAt: '2025-02-14', status: 'active', paid: true },
+      { courseId: 1, enrolledAt: '2025-06-03', status: 'active', paid: true },
       { courseId: 2, enrolledAt: '2025-01-25', status: 'cancelled', paid: false },
     ],
   },
@@ -150,6 +167,7 @@ export const USERS_CONFIG: UserConfig[] = [
     avatar: teacherImages.man,
     city: 'Москва',
     level: 'Intermediate',
+    role: 'student',
     registeredAt: '2024-11-03',
     enrollments: [
       { courseId: 5, enrolledAt: '2025-02-03', status: 'active', paid: true },
@@ -167,9 +185,12 @@ export const USERS_CONFIG: UserConfig[] = [
     avatar: teacherImages.woman2,
     city: 'Санкт-Петербург',
     level: 'Beginner',
+    role: 'student',
     registeredAt: '2024-12-18',
     enrollments: [
       { courseId: 2, enrolledAt: '2025-01-30', status: 'active', paid: true },
+      { courseId: 5, enrolledAt: '2025-02-18', status: 'active', paid: true },
+      { courseId: 8, enrolledAt: '2025-02-25', status: 'active', paid: true },
       { courseId: 9, enrolledAt: '2025-02-26', status: 'active', paid: true },
       { courseId: 4, enrolledAt: '2025-02-08', status: 'active', paid: true },
     ],
@@ -184,6 +205,7 @@ export const USERS_CONFIG: UserConfig[] = [
     avatar: teacherImages.woman,
     city: 'Москва',
     level: 'Intermediate',
+    role: 'student',
     registeredAt: '2024-10-22',
     enrollments: [
       { courseId: 10, enrolledAt: '2025-02-27', status: 'active', paid: true },
@@ -192,5 +214,33 @@ export const USERS_CONFIG: UserConfig[] = [
       { courseId: 3, enrolledAt: '2024-12-01', status: 'completed', paid: true },
       { courseId: 6, enrolledAt: '2025-01-10', status: 'cancelled', paid: true },
     ],
+  },
+  {
+    id: 11,
+    firstName: 'Ксения',
+    lastName: 'Карпова',
+    email: 'kseniya.karpova@mail.ru',
+    phone: '+7 (916) 100-20-30',
+    password: 'KseniaK_25!',
+    avatar: teacherImages.woman2,
+    city: 'Москва',
+    level: 'Advanced',
+    role: 'teacher',
+    registeredAt: '2024-01-10',
+    enrollments: [],
+  },
+  {
+    id: 12,
+    firstName: 'Артём',
+    lastName: 'Кузнецов',
+    email: 'artem.kuznetsov@mail.ru',
+    phone: '+7 (903) 200-30-40',
+    password: 'ArtemK_25!',
+    avatar: teacherImages.man,
+    city: 'Москва',
+    level: 'Advanced',
+    role: 'teacher',
+    registeredAt: '2024-03-05',
+    enrollments: [],
   },
 ];

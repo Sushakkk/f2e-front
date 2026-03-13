@@ -25,7 +25,7 @@ const AuthPage: React.FC = () => {
 
       if (result?.success) {
         userStore.login(result.user as UserServer);
-        navigate(RoutePath.home);
+        navigate(store.isLogin ? RoutePath.home : RoutePath.survey);
       }
     },
     [store, userStore, navigate]

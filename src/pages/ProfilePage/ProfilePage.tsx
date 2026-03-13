@@ -2,43 +2,46 @@ import { observer } from 'mobx-react';
 import * as React from 'react';
 import { Navigate, generatePath, useNavigate } from 'react-router-dom';
 
-import Button from 'components/common/Button/Button';
-import { COURSES_CONFIG } from 'config/cards';
 import { RoutePath } from 'config/router/paths';
-import { useUserStore } from 'store/hooks';
+import type { Enrollment } from 'config/users';
+import { ProfilePageStore } from 'store/ProfilePageStore';
+import { useLocalStore, useUserStore } from 'store/hooks';
 
 import s from './ProfilePage.module.scss';
+import Favorites from './components/Favorites/Favorites';
+import ProfileInfo from './components/ProfileInfo/ProfileInfo';
+import ProfileSidebar from './components/ProfileSidebar/ProfileSidebar';
+import StudentEnrollments from './components/StudentEnrollments/StudentEnrollments';
+import TeacherCourses from './components/TeacherCourses/TeacherCourses';
+import TeacherStats from './components/TeacherStats/TeacherStats';
+import TeacherStudents from './components/TeacherStudents/TeacherStudents';
+
+const SECTION_TITLES: Record<string, string> = {
+  profile: 'Профиль',
+  enrollments: 'Мои записи',
+  favorites: 'Избранное',
+  teacherCourses: 'Мои курсы',
+  students: 'Ученики',
+  stats: 'Статистика',
+};
+
+const MOCK_ENROLLMENTS: Enrollment[] = [
+  { courseId: 1, enrolledAt: '2025-05-28', status: 'active', paid: true },
+  { courseId: 3, enrolledAt: '2025-02-01', status: 'active', paid: true },
+  { courseId: 8, enrolledAt: '2025-02-10', status: 'active', paid: true },
+  { courseId: 5, enrolledAt: '2024-12-15', status: 'completed', paid: true },
+  { courseId: 4, enrolledAt: '2024-11-20', status: 'completed', paid: true },
+];
+
+const MOCK_FAVORITE_COURSES = [1, 3, 10];
+const MOCK_FAVORITE_TEACHERS = ['Карпова Ксения', 'Кузнецов Артём', 'Смирнова Анна'];
 
 const ProfilePage: React.FC = () => {
   const userStore = useUserStore();
   const navigate = useNavigate();
+  const store = useLocalStore(() => new ProfilePageStore());
 
   const user = userStore.user;
-
-  const activeEnrollments = React.useMemo(
-    () => (user?.enrollments ?? []).filter((e) => e.status === 'active'),
-    [user?.enrollments]
-  );
-
-  const completedEnrollments = React.useMemo(
-    () => (user?.enrollments ?? []).filter((e) => e.status === 'completed'),
-    [user?.enrollments]
-  );
-
-  const favoriteCourses = React.useMemo(
-    () =>
-      (user?.favoriteCourseIds ?? [])
-        .map((id) => COURSES_CONFIG.find((c) => c.id === id))
-        .filter(Boolean),
-    [user?.favoriteCourseIds]
-  );
-
-  const goToCourse = React.useCallback(
-    (courseId: number) => {
-      navigate(generatePath(RoutePath.course, { id: String(courseId) }));
-    },
-    [navigate]
-  );
 
   const goToTeacher = React.useCallback(
     (teacherName: string) => {
@@ -56,97 +59,69 @@ const ProfilePage: React.FC = () => {
     return <Navigate to={RoutePath.auth} replace />;
   }
 
-  const favoriteTeachers = user.favoriteTeacherNames ?? [];
+  const enrollments = (user.enrollments ?? []).length > 0 ? user.enrollments! : MOCK_ENROLLMENTS;
+  const favCourses =
+    (user.favoriteCourseIds ?? []).length > 0 ? user.favoriteCourseIds! : MOCK_FAVORITE_COURSES;
+  const favTeachers =
+    (user.favoriteTeacherNames ?? []).length > 0
+      ? user.favoriteTeacherNames!
+      : MOCK_FAVORITE_TEACHERS;
+
+  const renderContent = () => {
+    switch (store.activeSection) {
+      case 'profile':
+        return <ProfileInfo user={user} onLogout={handleLogout} />;
+
+      case 'enrollments':
+        return <StudentEnrollments enrollments={enrollments} />;
+
+      case 'favorites':
+        return (
+          <Favorites
+            favoriteCourseIds={favCourses}
+            favoriteTeacherNames={favTeachers}
+            onTeacherClick={goToTeacher}
+          />
+        );
+
+      case 'teacherCourses':
+        if (!store.isTeacherView) {
+          return null;
+        }
+
+        return <TeacherCourses store={store} teacherId={store.mockTeacherId} />;
+
+      case 'students':
+        if (!store.isTeacherView) {
+          return null;
+        }
+
+        return <TeacherStudents store={store} />;
+
+      case 'stats':
+        if (!store.isTeacherView) {
+          return null;
+        }
+
+        return <TeacherStats store={store} />;
+
+      default:
+        return null;
+    }
+  };
 
   return (
     <div className={s.page}>
-      <h1 className={s.title}>Профиль</h1>
-      <div className={s.section}>
-        <div className={s.userInfo}>
-          {user.avatar && <img className={s.avatar} src={user.avatar} alt="Аватар" />}
-          <div className={s.userDetails}>
-            <div className={s.userName}>
-              {user.firstName} {user.lastName}
-            </div>
-            <div className={s.userMeta}>{user.email}</div>
-            {user.phone && <div className={s.userMeta}>{user.phone}</div>}
-            {user.city && <div className={s.userMeta}>{user.city}</div>}
-            <div className={s.userMeta}>Уровень: {user.level}</div>
-          </div>
-        </div>
+      <ProfileSidebar
+        activeSection={store.activeSection}
+        viewMode={store.viewMode}
+        onSelect={store.setSection}
+        onViewModeChange={store.setViewMode}
+      />
+      <div className={s.content}>
+        <h1 className={s.title}>{SECTION_TITLES[store.activeSection]}</h1>
+        {renderContent()}
       </div>
-      {activeEnrollments.length > 0 && (
-        <div className={s.section}>
-          <h2 className={s.sectionTitle}>Активные курсы</h2>
-          <div className={s.list}>
-            {activeEnrollments.map((e) => {
-              const course = COURSES_CONFIG.find((c) => c.id === e.courseId);
-
-              if (!course) {
-                return null;
-              }
-
-              return (
-                <div key={e.courseId} className={s.listItem} onClick={() => goToCourse(course.id)}>
-                  <span className={s.listItemName}>{course.name}</span>
-                  <span className={s.listItemMeta}>
-                    {course.type} &middot; {course.dateFrom}–{course.dateTo}
-                  </span>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      )}
-      {completedEnrollments.length > 0 && (
-        <div className={s.section}>
-          <h2 className={s.sectionTitle}>Завершённые курсы</h2>
-          <div className={s.list}>
-            {completedEnrollments.map((e) => {
-              const course = COURSES_CONFIG.find((c) => c.id === e.courseId);
-
-              if (!course) {
-                return null;
-              }
-
-              return (
-                <div key={e.courseId} className={s.listItem} onClick={() => goToCourse(course.id)}>
-                  <span className={s.listItemName}>{course.name}</span>
-                  <span className={s.listItemMeta}>{course.type}</span>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      )}
-      {favoriteCourses.length > 0 && (
-        <div className={s.section}>
-          <h2 className={s.sectionTitle}>Избранные курсы</h2>
-          <div className={s.list}>
-            {favoriteCourses.map((course) => (
-              <div key={course!.id} className={s.listItem} onClick={() => goToCourse(course!.id)}>
-                <span className={s.listItemName}>{course!.name}</span>
-                <span className={s.listItemMeta}>{course!.type}</span>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-      {favoriteTeachers.length > 0 && (
-        <div className={s.section}>
-          <h2 className={s.sectionTitle}>Избранные преподаватели</h2>
-          <div className={s.list}>
-            {favoriteTeachers.map((name) => (
-              <div key={name} className={s.listItem} onClick={() => goToTeacher(name)}>
-                <span className={s.listItemName}>{name}</span>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-      <Button mode="dark" className={s.logoutBtn} onClick={handleLogout}>
-        Выйти
-      </Button>
     </div>
   );
 };

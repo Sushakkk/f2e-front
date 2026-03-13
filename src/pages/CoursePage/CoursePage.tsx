@@ -6,7 +6,6 @@ import { Navigate, generatePath, useNavigate, useParams } from 'react-router-dom
 import Button from 'components/common/Button/Button';
 import { InfoPage } from 'components/common/InfoPage';
 import { Row } from 'components/common/Row';
-import { formatCourseLevel } from 'config';
 import { RoutePath } from 'config/router/paths';
 import { MockDb } from 'services/mockDb';
 import { useUserStore } from 'store/hooks';
@@ -135,7 +134,7 @@ const CoursePage: React.FC = () => {
         </div>
       </Row>
       <Row label="Направление:">{courseData.type}</Row>
-      <Row label="Уровень:">{formatCourseLevel(courseData.level)}</Row>
+      <Row label="Уровень:">{courseData.level}</Row>
       {courseData.city && <Row label="Город:">{courseData.city}</Row>}
       {courseData.dateFrom && courseData.dateTo && (
         <Row label="Дата:">

@@ -2,19 +2,27 @@ import { format, parse, startOfWeek, getDay } from 'date-fns';
 import { ru } from 'date-fns/locale';
 import { observer } from 'mobx-react';
 import * as React from 'react';
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useEffect } from 'react';
 import { Calendar, dateFnsLocalizer } from 'react-big-calendar';
-import type { View } from 'react-big-calendar';
 import { Navigate, generatePath, useNavigate } from 'react-router-dom';
 
 import 'react-big-calendar/lib/css/react-big-calendar.css';
 
+import { SelectDropdown } from 'components/common';
+import {
+  CALENDAR_FORMATS,
+  CALENDAR_MESSAGES,
+  FILTER_MODE_OPTIONS,
+  MAX_TIME,
+  MIN_TIME,
+  type CalendarFilterMode,
+} from 'config/calendar';
 import { RoutePath } from 'config/router/paths';
-import { MockDb } from 'services/mockDb';
-import { useUserStore } from 'store/hooks';
+import { CalendarPageStore } from 'store/CalendarPageStore';
+import { useLocalStore, useUserStore } from 'store/hooks';
 
 import s from './CalendarPage.module.scss';
-import { generateCalendarEvents, getCourseColor } from './utils';
+import { getCourseColor } from './utils';
 import type { CalendarEvent } from './utils';
 
 const locales = { ru };
@@ -27,70 +35,20 @@ const localizer = dateFnsLocalizer({
   locales,
 });
 
-const MESSAGES = {
-  today: 'Сегодня',
-  previous: '←',
-  next: '→',
-  month: 'Месяц',
-  week: 'Неделя',
-  day: 'День',
-  agenda: 'Список',
-  date: 'Дата',
-  time: 'Время',
-  event: 'Событие',
-  noEventsInRange: 'Нет занятий в этом периоде',
-  showMore: (total: number) => `ещё ${total}`,
-};
-
-const MIN_TIME = new Date(1970, 0, 1, 8, 0);
-const MAX_TIME = new Date(1970, 0, 1, 23, 59);
-
-const FORMATS = {
-  weekdayFormat: (date: Date, culture?: string, loc?: typeof localizer) =>
-    loc ? loc.format(date, 'EEEEEE', culture) : '',
-  dayFormat: (date: Date, culture?: string, loc?: typeof localizer) =>
-    loc ? loc.format(date, 'EEEEEE d', culture) : '',
-  dayHeaderFormat: (date: Date, culture?: string, loc?: typeof localizer) =>
-    loc ? loc.format(date, 'EEEEEE, d MMMM', culture) : '',
-  dayRangeHeaderFormat: (
-    { start, end }: { start: Date; end: Date },
-    culture?: string,
-    loc?: typeof localizer
-  ) => (loc ? `${loc.format(start, 'd MMM', culture)} – ${loc.format(end, 'd MMM', culture)}` : ''),
-  timeGutterFormat: (date: Date, culture?: string, loc?: typeof localizer) =>
-    loc ? loc.format(date, 'H:mm', culture) : '',
-  eventTimeRangeFormat: (
-    { start, end }: { start: Date; end: Date },
-    culture?: string,
-    loc?: typeof localizer
-  ) => (loc ? `${loc.format(start, 'H:mm', culture)} –\n${loc.format(end, 'H:mm', culture)}` : ''),
-};
-
 const CalendarPage: React.FC = () => {
   const userStore = useUserStore();
   const navigate = useNavigate();
-  const [view, setView] = useState<View>('month');
-  const [date, setDate] = useState(new Date());
-  const [selectedEvent, setSelectedEvent] = useState<CalendarEvent | null>(null);
+  const store = useLocalStore(() => new CalendarPageStore(userStore));
 
-  const enrolledCourses = useMemo(() => {
-    const enrollments = MockDb.getUserEnrollments();
-    const activeIds = enrollments
-      .filter((e) => e.status === 'active' || e.status === 'pending')
-      .map((e) => e.courseId);
-
-    return MockDb.getCourses().filter((c) => activeIds.includes(c.id));
+  useEffect(() => {
+    store.navigateToAppropriateDate();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [userStore.user]);
-
-  const events = useMemo(() => generateCalendarEvents(enrolledCourses), [enrolledCourses]);
-
-  const courseIds = useMemo(() => enrolledCourses.map((c) => c.id), [enrolledCourses]);
+  }, [store.selectedCourseId, store.filterMode]);
 
   const eventPropGetter = useCallback(
     (event: CalendarEvent) => ({
       style: {
-        backgroundColor: getCourseColor(event.courseId, courseIds),
+        backgroundColor: getCourseColor(event.courseId, store.courseIds),
         borderRadius: '6px',
         border: 'none',
         color: '#fff',
@@ -99,22 +57,14 @@ const CalendarPage: React.FC = () => {
         cursor: 'pointer',
       },
     }),
-    [courseIds]
+    [store.courseIds]
   );
 
-  const handleSelectEvent = useCallback((event: CalendarEvent) => {
-    setSelectedEvent(event);
-  }, []);
-
   const handleNavigateToCourse = useCallback(() => {
-    if (selectedEvent) {
-      navigate(generatePath(RoutePath.course, { id: String(selectedEvent.courseId) }));
+    if (store.selectedEvent) {
+      navigate(generatePath(RoutePath.course, { id: String(store.selectedEvent.courseId) }));
     }
-  }, [navigate, selectedEvent]);
-
-  const closePopup = useCallback(() => {
-    setSelectedEvent(null);
-  }, []);
+  }, [navigate, store.selectedEvent]);
 
   if (!userStore.user) {
     return <Navigate to={RoutePath.auth} replace />;
@@ -123,73 +73,99 @@ const CalendarPage: React.FC = () => {
   return (
     <div className={s.page}>
       <h1 className={s.title}>Календарь курсов</h1>
-      <div className={s.calendarWrapper} data-view={view}>
+      <div className={s.filters}>
+        <div className={s.filterField}>
+          <label className={s.filterLabel}>Отображение</label>
+          <SelectDropdown
+            mode="single"
+            value={store.effectiveFilterMode}
+            options={FILTER_MODE_OPTIONS}
+            placeholder="Выберите"
+            onChange={(v) => store.handleFilterModeChange(v as CalendarFilterMode)}
+          />
+        </div>
+        {store.courseOptionsForMode.length > 1 && (
+          <div className={s.filterField}>
+            <label className={s.filterLabel}>Курс</label>
+            <SelectDropdown
+              mode="single"
+              value={store.selectedCourseId}
+              options={store.courseOptionsForMode}
+              placeholder="Выберите курс"
+              onChange={store.setSelectedCourseId}
+            />
+          </div>
+        )}
+      </div>
+      <div className={s.calendarWrapper} data-view={store.view}>
         <Calendar<CalendarEvent>
           localizer={localizer}
-          events={events}
-          view={view}
-          onView={setView}
-          date={date}
-          onNavigate={setDate}
+          events={store.events}
+          view={store.view}
+          onView={store.setView}
+          date={store.date}
+          onNavigate={store.setDate}
           views={['month', 'week', 'day']}
           culture="ru"
-          messages={MESSAGES}
-          formats={FORMATS}
+          messages={CALENDAR_MESSAGES}
+          formats={CALENDAR_FORMATS}
           eventPropGetter={eventPropGetter}
-          onSelectEvent={handleSelectEvent}
+          onSelectEvent={store.setSelectedEvent}
           popup
+          showAllEvents
           min={MIN_TIME}
           max={MAX_TIME}
           step={30}
           timeslots={2}
         />
       </div>
-      {selectedEvent && (
-        <div className={s.overlay} onClick={closePopup}>
+      {store.selectedEvent && (
+        <div className={s.overlay} onClick={() => store.setSelectedEvent(null)}>
           <div className={s.popup} onClick={(e) => e.stopPropagation()}>
-            <button className={s.popupClose} onClick={closePopup}>
+            <button className={s.popupClose} onClick={() => store.setSelectedEvent(null)}>
               ×
             </button>
             <div
               className={s.popupType}
-              style={{ backgroundColor: getCourseColor(selectedEvent.courseId, courseIds) }}
+              style={{
+                backgroundColor: getCourseColor(store.selectedEvent.courseId, store.courseIds),
+              }}
             >
-              {selectedEvent.type}
+              {store.selectedEvent.type}
             </div>
-            <h2 className={s.popupTitle}>{selectedEvent.title}</h2>
+            <h2 className={s.popupTitle}>{store.selectedEvent.title}</h2>
             <div className={s.popupDetails}>
               <div className={s.popupRow}>
                 <span className={s.popupLabel}>Преподаватель</span>
-                <span>{selectedEvent.teacher}</span>
+                <span>{store.selectedEvent.teacher}</span>
               </div>
               <div className={s.popupRow}>
                 <span className={s.popupLabel}>Студия</span>
-                <span>{selectedEvent.studio}</span>
+                <span>{store.selectedEvent.studio}</span>
               </div>
               <div className={s.popupRow}>
                 <span className={s.popupLabel}>Уровень</span>
-                <span>{selectedEvent.level}</span>
+                <span>{store.selectedEvent.level}</span>
               </div>
-              {selectedEvent.location && (
+              {store.selectedEvent.location && (
                 <div className={s.popupRow}>
                   <span className={s.popupLabel}>Место</span>
-                  <span>{selectedEvent.location}</span>
+                  <span>{store.selectedEvent.location}</span>
                 </div>
               )}
               <div className={s.popupRow}>
-                <span className={s.popupLabel}>Даты курса</span>
-                <span>
-                  {selectedEvent.courseFrom} – {selectedEvent.courseTo}
-                </span>
-              </div>
-              <div className={s.popupRow}>
                 <span className={s.popupLabel}>Дата занятия</span>
-                <span>{format(selectedEvent.start, 'd MMMM yyyy', { locale: ru })}</span>
+                <span>
+                  {format(store.selectedEvent.start, 'd MMMM yyyy', {
+                    locale: ru,
+                  })}
+                </span>
               </div>
               <div className={s.popupRow}>
                 <span className={s.popupLabel}>Время</span>
                 <span>
-                  {format(selectedEvent.start, 'HH:mm')} – {format(selectedEvent.end, 'HH:mm')}
+                  {format(store.selectedEvent.start, 'HH:mm')} –{' '}
+                  {format(store.selectedEvent.end, 'HH:mm')}
                 </span>
               </div>
             </div>

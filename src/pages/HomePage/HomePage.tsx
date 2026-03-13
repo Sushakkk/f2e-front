@@ -2,38 +2,17 @@ import cn from 'classnames';
 import { observer } from 'mobx-react';
 import * as React from 'react';
 
+import { Card } from 'components/common';
 import { COURSES_CONFIG, CourseConfigItem } from 'config';
 import { FiltersStore } from 'store/FiltersStore';
 import { PaginationStore } from 'store/PaginationStore';
 import { QueryStore, parseQueryFromURL } from 'store/QueryStore';
 import { useLocalStore } from 'store/hooks/useLocalStore';
 import { useCoursesSearch } from 'utils/useCoursesSearch';
+import { useMediaQuery } from 'utils/useMediaQuery';
 
 import s from './HomePage.module.scss';
-import { Card, Filters, Pagination, Recommendations, SearchBar } from './components';
-
-function useMediaQuery(query: string) {
-  const [matches, setMatches] = React.useState(() => window.matchMedia(query).matches);
-
-  React.useEffect(() => {
-    const mq = window.matchMedia(query);
-    const onChange = () => setMatches(mq.matches);
-
-    onChange();
-
-    if (typeof mq.addEventListener === 'function') {
-      mq.addEventListener('change', onChange);
-
-      return () => mq.removeEventListener('change', onChange);
-    }
-
-    mq.addListener(onChange);
-
-    return () => mq.removeListener(onChange);
-  }, [query]);
-
-  return matches;
-}
+import { Filters, Pagination, Recommendations, SearchBar } from './components';
 
 const HomePage: React.FC = () => {
   const isMobile = useMediaQuery('(max-width: 992px)');
@@ -116,18 +95,21 @@ const HomePage: React.FC = () => {
     [paginationStore]
   );
 
+  const scrollToAnchor = React.useCallback(() => {
+    anchorRef.current?.scrollIntoView({
+      behavior: 'smooth',
+      block: 'start',
+    });
+  }, []);
+
   React.useEffect(() => {
     if (!userChangedPage.current) {
       return;
     }
 
     userChangedPage.current = false;
-
-    anchorRef.current?.scrollIntoView({
-      behavior: 'smooth',
-      block: 'start',
-    });
-  }, [currentPage]);
+    scrollToAnchor();
+  }, [currentPage, scrollToAnchor]);
 
   return (
     <div className={s.page}>
@@ -156,7 +138,11 @@ const HomePage: React.FC = () => {
           aria-label="Фильтры"
           aria-hidden={isMobile ? !isFiltersOpen : false}
         >
-          <Filters store={filtersStore} onClose={isMobile ? handleClose : undefined} />
+          <Filters
+            store={filtersStore}
+            onClose={isMobile ? handleClose : undefined}
+            onScrollToTop={scrollToAnchor}
+          />
         </aside>
       </div>
       <Pagination

@@ -1,6 +1,77 @@
 import { addDays, getDay } from 'date-fns';
 
+import type { CalendarFilterMode } from 'config/calendar';
 import type { CourseConfigItem, ScheduleEntry } from 'config/cards';
+
+export function parseCourseStartDate(dateStr: string): Date {
+  if (dateStr.includes('-')) {
+    return new Date(dateStr);
+  }
+
+  const [day, month] = dateStr.split('.').map(Number);
+
+  return new Date(new Date().getFullYear(), month - 1, day);
+}
+
+export function getDateToNavigate(
+  selectedCourseId: string,
+  filteredCourses: CourseConfigItem[],
+  currentDate: Date
+): Date | null {
+  if (selectedCourseId === 'all') {
+    return new Date();
+  }
+
+  if (filteredCourses.length === 0) {
+    return null;
+  }
+
+  const course = filteredCourses[0];
+  const courseStart = parseCourseStartDate(course.dateFrom);
+  const sameMonth =
+    currentDate.getMonth() === courseStart.getMonth() &&
+    currentDate.getFullYear() === courseStart.getFullYear();
+
+  return sameMonth ? null : courseStart;
+}
+
+export function getCourseOptionsForMode(
+  mode: CalendarFilterMode,
+  allCourses: CourseConfigItem[],
+  enrolledCourses: CourseConfigItem[],
+  myCourses: CourseConfigItem[]
+): SelectOption[] {
+  const allLabel =
+    mode === 'all' ? 'Все курсы' : mode === 'enrolled' ? 'Все мои записи' : 'Все мои курсы';
+  const opts: SelectOption[] = [{ value: 'all', label: allLabel }];
+  const list = mode === 'all' ? allCourses : mode === 'enrolled' ? enrolledCourses : myCourses;
+
+  for (const c of list) {
+    opts.push({ value: String(c.id), label: c.name });
+  }
+
+  return opts;
+}
+
+export function getFilteredCourses(
+  mode: CalendarFilterMode,
+  selectedCourseId: string,
+  allCourses: CourseConfigItem[],
+  enrolledCourses: CourseConfigItem[],
+  myCourses: CourseConfigItem[]
+): CourseConfigItem[] {
+  const list = mode === 'enrolled' ? enrolledCourses : mode === 'my' ? myCourses : allCourses;
+
+  if (selectedCourseId === 'all') {
+    return list;
+  }
+
+  const id = Number(selectedCourseId);
+
+  return list.filter((c) => c.id === id);
+}
+
+export type SelectOption = { value: string; label: string };
 
 export type CalendarEvent = {
   id: number;

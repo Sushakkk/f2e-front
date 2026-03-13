@@ -1,0 +1,322 @@
+@import "styles/mixins";
+
+.page {
+  @include page;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden auto;
+}
+
+.bg {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+
+  &::before,
+  &::after {
+    content: "";
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(120px);
+    opacity: 0.35;
+
+    @include mobile {
+      filter: blur(100px);
+      opacity: 0.3;
+    }
+  }
+
+  &::before {
+    width: 500px;
+    height: 500px;
+    background: $color-accent;
+    top: -10%;
+    left: -10%;
+
+    @include mobile {
+      width: 350px;
+      height: 350px;
+      top: -5%;
+      left: -30%;
+    }
+  }
+
+  &::after {
+    width: 400px;
+    height: 400px;
+    background: lighten($color-accent, 15%);
+    bottom: -5%;
+    right: -5%;
+
+    @include mobile {
+      width: 300px;
+      height: 300px;
+      bottom: 0;
+      right: -30%;
+    }
+  }
+}
+
+.card {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  max-width: 520px;
+  padding: 40px 36px 36px;
+  border-radius: 24px;
+  background: rgba($color-bg-tertiary, 0.6);
+  backdrop-filter: blur(24px);
+  border: 1px solid rgba($color-white, 0.06);
+  box-shadow:
+    0 8px 32px rgba($color-black, 0.4),
+    inset 0 1px 0 rgba($color-white, 0.04);
+  margin: 0 10px;
+
+  @include mobile {
+    padding: 32px 24px 28px;
+    max-width: 100%;
+  }
+}
+
+.cardHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  margin-bottom: 8px;
+}
+
+.headerSpacer {
+  width: 40px;
+  min-width: 40px;
+  flex-shrink: 0;
+}
+
+.backArrow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  flex-shrink: 0;
+  padding: 0;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: $color-white-secondary;
+  border-radius: 12px;
+  transition:
+    color 200ms ease,
+    background 200ms ease;
+
+  @include hover {
+    color: $color-accent;
+    background: rgba($color-accent, 0.1);
+  }
+
+  svg {
+    width: 20px;
+    height: 24px;
+  }
+}
+
+.logo {
+  @include font-primary(600);
+  font-size: 28px;
+  color: $color-accent;
+
+  @include mobile {
+    font-size: 24px;
+  }
+}
+
+.title {
+  margin: 0 0 4px;
+  font-size: 22px;
+  font-weight: 600;
+  text-align: center;
+
+  @include mobile {
+    font-size: 18px;
+  }
+}
+
+.subtitle {
+  margin: 0 0 24px;
+  font-size: 14px;
+  color: $color-white-secondary;
+  text-align: center;
+
+  @include mobile {
+    margin-bottom: 20px;
+    font-size: 13px;
+  }
+}
+
+.progress {
+  width: 100%;
+  height: 4px;
+  background: rgba($color-white, 0.08);
+  border-radius: 2px;
+  overflow: hidden;
+  margin-bottom: 16px;
+}
+
+.progressBar {
+  height: 100%;
+  background: $color-accent;
+  border-radius: 2px;
+  transition: width 300ms ease;
+}
+
+.stepIndicator {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 28px;
+}
+
+.stepDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: rgba($color-white, 0.2);
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  transition: background 200ms ease;
+
+  @include hover {
+    background: rgba($color-white, 0.35);
+  }
+}
+
+.stepDotActive {
+  background: $color-accent;
+  transform: scale(1.2);
+}
+
+.stepDotDone {
+  background: rgba($color-accent, 0.6);
+}
+
+.stepContent {
+  width: 100%;
+  margin-bottom: 28px;
+}
+
+.stepTitle {
+  margin: 0 0 6px;
+  font-size: 18px;
+  font-weight: 600;
+  text-align: center;
+
+  @include mobile {
+    font-size: 16px;
+  }
+}
+
+.stepSubtitle {
+  margin: 0 0 20px;
+  font-size: 13px;
+  color: $color-white-secondary;
+  text-align: center;
+}
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: center;
+}
+
+.chip {
+  padding: 10px 18px;
+  border-radius: 20px;
+  font-size: 14px;
+  font-weight: 500;
+  color: $color-white-secondary;
+  background: rgba($color-bg, 0.7);
+  border: 1px solid rgba($color-white, 0.08);
+  cursor: pointer;
+  transition:
+    border-color 200ms ease,
+    background 200ms ease,
+    color 200ms ease;
+
+  @include hover {
+    border-color: rgba($color-accent, 0.5);
+    background: rgba($color-accent, 0.08);
+    color: $color-white;
+  }
+}
+
+.chipActive {
+  border-color: $color-accent;
+  background: rgba($color-accent, 0.2);
+  color: $color-white;
+}
+
+.options {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.option {
+  padding: 14px 20px;
+  border-radius: 12px;
+  font-size: 15px;
+  font-weight: 500;
+  color: $color-white-secondary;
+  background: rgba($color-bg, 0.7);
+  border: 1px solid rgba($color-white, 0.08);
+  cursor: pointer;
+  text-align: left;
+  transition:
+    border-color 200ms ease,
+    background 200ms ease,
+    color 200ms ease;
+
+  @include hover {
+    border-color: rgba($color-accent, 0.5);
+    background: rgba($color-accent, 0.08);
+    color: $color-white;
+  }
+}
+
+.optionActive {
+  border-color: $color-accent;
+  background: rgba($color-accent, 0.2);
+  color: $color-white;
+}
+
+.actions {
+  display: flex;
+  width: 100%;
+  justify-content: center;
+}
+
+.nextBtn {
+  width: 100%;
+}
+
+.skipLink {
+  margin-top: 20px;
+  font-size: 13px;
+  color: rgba($color-white, 0.5);
+  background: none;
+  border: none;
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  transition: color 200ms ease;
+
+  @include hover {
+    color: $color-white-secondary;
+  }
+}

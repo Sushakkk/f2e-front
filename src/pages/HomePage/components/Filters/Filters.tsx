@@ -1,21 +1,20 @@
 import { observer } from 'mobx-react';
 import * as React from 'react';
 
-import { Button } from 'components/common';
-import { SelectDropdown } from 'components/common/SelectDropdown';
+import { Button, DateRangePicker, SelectDropdown } from 'components/common';
 import { FiltersStore } from 'store/FiltersStore';
 
 import s from './Filters.module.scss';
-import { DateRangePicker } from './components/DateRangePicker';
 import { TimeInput } from './components/TimeInput';
 import type { CoursesFiltersValue } from './types';
 
 type Props = {
   store: FiltersStore;
   onClose?: () => void;
+  onScrollToTop?: () => void;
 };
 
-const Filters: React.FC<Props> = observer(({ store, onClose }) => {
+const Filters: React.FC<Props> = observer(({ store, onClose, onScrollToTop }) => {
   const { draft } = store;
 
   const handleTypesChange = React.useCallback((v: string[]) => store.setTypes(v), [store]);
@@ -52,9 +51,15 @@ const Filters: React.FC<Props> = observer(({ store, onClose }) => {
     [store]
   );
 
-  const handleReset = React.useCallback(() => store.reset(), [store]);
+  const handleReset = React.useCallback(() => {
+    store.reset();
+    onScrollToTop?.();
+  }, [store, onScrollToTop]);
 
-  const handleSubmit = React.useCallback(() => store.submit(), [store]);
+  const handleSubmit = React.useCallback(() => {
+    store.submit();
+    onScrollToTop?.();
+  }, [store, onScrollToTop]);
 
   return (
     <div className={s.root}>

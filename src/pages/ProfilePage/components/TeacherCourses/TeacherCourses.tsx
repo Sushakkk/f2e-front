@@ -1,0 +1,123 @@
+import { observer } from 'mobx-react';
+import * as React from 'react';
+
+import { SectionHeader, Card } from 'components/common';
+import Button from 'components/common/Button/Button';
+import type { ProfilePageStore } from 'store/ProfilePageStore';
+
+import CourseForm from './CourseForm';
+import s from './TeacherCourses.module.scss';
+
+type Props = {
+  store: ProfilePageStore;
+  teacherId: number;
+};
+
+const STATUS_LABELS: Record<string, string> = {
+  active: 'Активные',
+  completed: 'Завершённые',
+  cancelled: 'Отменённые',
+};
+
+const TeacherCourses: React.FC<Props> = ({ store, teacherId }) => {
+  const handleCancel = React.useCallback(
+    (e: React.MouseEvent, courseId: number) => {
+      e.stopPropagation();
+      void store.cancelCourse(courseId, teacherId);
+    },
+    [store, teacherId]
+  );
+
+  const handleEdit = React.useCallback(
+    (e: React.MouseEvent, course: (typeof store.teacherCourses)[0]) => {
+      e.stopPropagation();
+      store.openEditForm(course);
+    },
+    [store]
+  );
+
+  if (store.isFormOpen) {
+    return (
+      <CourseForm store={store} teacherId={teacherId} isEditing={store.editingCourseId !== null} />
+    );
+  }
+
+  const activeCourses = store.teacherCourses.filter((c) => c.courseStatus === 'active');
+  const completedCourses = store.teacherCourses.filter((c) => c.courseStatus === 'completed');
+  const cancelledCourses = store.teacherCourses.filter((c) => c.courseStatus === 'cancelled');
+
+  return (
+    <div className={s.root}>
+      {store.teacherCourses.length === 0 && (
+        <>
+          <SectionHeader title="Мои курсы" onAdd={store.openCreateForm} addLabel="Создать курс" />
+          <div className={s.empty}>У вас пока нет курсов</div>
+        </>
+      )}
+      {store.teacherCourses.length > 0 && (
+        <div className={s.list}>
+          <div className={s.section}>
+            <SectionHeader
+              title={STATUS_LABELS.active}
+              onAdd={store.openCreateForm}
+              addLabel="Создать курс"
+            />
+            <div className={s.sectionList}>
+              {activeCourses.map((course) => (
+                <div key={course.id} className={s.cardWrapper}>
+                  <Card
+                    item={course}
+                    compact
+                    profile
+                    largeImage
+                    className={s.card}
+                    actions={
+                      <>
+                        <Button
+                          mode="dark"
+                          className={s.actionBtn}
+                          onClick={(e) => handleEdit(e, course)}
+                        >
+                          Редактировать
+                        </Button>
+                        <button className={s.cancelBtn} onClick={(e) => handleCancel(e, course.id)}>
+                          Отменить курс
+                        </button>
+                      </>
+                    }
+                  />
+                </div>
+              ))}
+            </div>
+          </div>
+          {completedCourses.length > 0 && (
+            <div className={s.section}>
+              <SectionHeader title={STATUS_LABELS.completed} />
+              <div className={s.sectionList}>
+                {completedCourses.map((course) => (
+                  <div key={course.id} className={s.cardWrapper} data-completed>
+                    <Card item={course} compact profile largeImage className={s.card} />
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+          {cancelledCourses.length > 0 && (
+            <div className={s.section}>
+              <SectionHeader title={STATUS_LABELS.cancelled} />
+              <div className={s.sectionList}>
+                {cancelledCourses.map((course) => (
+                  <div key={course.id} className={s.cardWrapper} data-completed>
+                    <Card item={course} compact profile largeImage className={s.card} />
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+};
+
+export default observer(TeacherCourses);
