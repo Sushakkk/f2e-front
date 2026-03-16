@@ -1,5 +1,7 @@
 # Медиапроект f2e-front
 
+**Приложение:** [fivetoeight.vercel.app](https://fivetoeight.vercel.app)
+
 ### Технологии
 
 - React
@@ -31,8 +33,16 @@
    |--App.tsx <- главный компонент приложения
    |- main.tsx <- точка входа в приложение
 |--/static <- папка со статикой, которая копируется при сборке
+|--/diagrams <- диаграммы проекта (PNG)
 |--index.html
 ```
+
+### Диаграммы
+
+| Диаграмма | Путь | Описание |
+|-----------|------|----------|
+| Use Case | `diagrams/use-case-diagram.png` | Диаграмма прецедентов (акторы: гость, ученик, преподаватель) |
+| Activity — курс | `diagrams/activity-diagram-course.png` | Диаграмма деятельности: просмотр, запись на курс, избранное |
 
 ### Описание проекта
 
@@ -49,60 +59,9 @@
 
 Для внедрения шрифтов используются конфиг [tools/fonts/config.ts](tools/fonts/config.ts):
 ```typescript
-/*
-  например для файлов шрифтов `SF Pro Display` и `VK Sans Display`
 
-    path_or_url/to/font/SFProDisplay/SFProDisplay-Regular.woff
-    path_or_url/to/font/SFProDisplay/SFProDisplay-Regular.woff2
-    path_or_url/to/font/SFProDisplay/SFProDisplay-Bold.woff
-    path_or_url/to/font/SFProDisplay/SFProDisplay-Bold.woff2
-    path_or_url/to/font/VKSansDisplay/VKSansDisplay_Light.woff
-    path_or_url/to/font/VKSansDisplay/VKSansDisplay_Light.woff2
-    path_or_url/to/font/VKSansDisplay/VKSansDisplay_Medium.woff
-    path_or_url/to/font/VKSansDisplay/VKSansDisplay_Medium.woff2
 
-  конфиг может выглядеть так:
-*/
-
-export type Font = 'VK_SANS_DISPLAY' | 'SF_PRO_DISPLAY';
-
-export const FONT_PROPS: Record<Font, FontProps> = {
-  SF_PRO_DISPLAY: {
-    name: 'SF Pro Display',
-    genericFamily: 'sans-serif',
-    basePath: 'path_or_url/to/font/SFProDisplay/SFProDisplay',
-    variants: [
-      {
-        fileNamePostfix: '-Regular',
-        weight: 400,
-      },
-      {
-        fileNamePostfix: '-Bold',
-        weight: 700,
-      },
-    ],
-    formats: ['woff2'],
-    display: 'swap',
-  },
-  VK_SANS_DISPLAY: {
-    name: 'VK Sans Display',
-    genericFamily: 'sans-serif',
-    basePath: 'path_or_url/to/font/VKSansDisplay/VKSansDisplayy',
-    variants: [
-      {
-        fileNamePostfix: '_Light',
-        weight: 300,
-      },
-      {
-        fileNamePostfix: '_Medium',
-        weight: 500,
-      },
-    ],
-    formats: ['woff2'],
-    display: 'swap',
-  },
-};
-```
+e
 
 Заполненный конфиг с помощью утилит [src/build/fonts/utils.ts](src/build/fonts/utils.ts) преобразуется в ссылки для предзагрузки и наборы правил `@font-face`, которые на этапе сборки внедряются в шаблон страницы плагином `vite-plugin-html`
 
@@ -124,19 +83,6 @@ export const FONT_PROPS: Record<Font, FontProps> = {
 - Для получения react-компонента в конец пути к файлу нужно добавить параметр `react`: `path/to/image.svg?react`
 - Без параметра в пути, в зависимости от размера файла, будет получена ссылка или base64-строка на изображение
 
-Для примера:
-
-```typescript
-import logoImg from 'assets/images/logo.svg';
-import LogoComponent from 'assets/images/logo.svg?react';
-
-const Demo: React.FC = () => (
-  <div>
-    <img src={logoImg} alt="logo" className="logo" />
-    <LogoComponent  className="logo" />
-  </div>
-);
-```
 
 ### Основные скрипты
 
@@ -171,12 +117,8 @@ yarn stylelint
 или
 ```
 yarn stylelint:fix
-```
-
-* Запуск ts:
+```* Запуск ts:
 ```
 yarn tsc:check
-```
-
-Чтобы версия Node.js переключалась на требуемую для этого проекта (версию можно посмотреть в .nvmrc), можно использовать nvm:
+```Чтобы версия Node.js переключалась на требуемую для этого проекта (версию можно посмотреть в .nvmrc), можно использовать nvm:
   https://github.com/nvm-sh/nvm
