@@ -53,15 +53,17 @@ export default defineConfig(({ mode }) => {
   const { INJECT_FONTS_PRELOAD_LINKS, INJECT_FONTS_FACES } = buildFontsInject();
 
   const proxyPort = process.env.API_PROXY_PORT;
+  const proxyTargetEnv = process.env.VITE_API_PROXY_TARGET;
 
-  const proxyTarget = proxyPort ? `https://localhost:${proxyPort}` : 'http://localhost:3000';
+  const proxyTarget =
+    proxyTargetEnv ?? (proxyPort ? `http://localhost:${proxyPort}` : 'http://localhost:3000');
 
   const serverConfig = {
     proxy: {
       '/api': {
         target: proxyTarget,
         changeOrigin: true,
-        secure: true,
+        secure: false, // HTTP-бэкенд; true ломает прокси на некоторых системах
       },
     },
   } satisfies import('vite').UserConfig['server'];

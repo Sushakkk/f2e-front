@@ -42,6 +42,7 @@ export class FiltersStore implements ILocalStore {
       cityOptions: computed,
       weekdayOptions: computed,
       syncFromValue: action,
+      setCourses: action,
       setDraft: action,
       setTypes: action,
       toggleType: action,
@@ -177,6 +178,10 @@ export class FiltersStore implements ILocalStore {
 
   get weekdayOptions(): { value: string; label: string }[] {
     return WEEKDAYS;
+  }
+
+  setCourses(courses: CourseConfigItem[]): void {
+    this._courses = courses;
   }
 
   syncFromValue(value: CoursesFiltersValue): void {

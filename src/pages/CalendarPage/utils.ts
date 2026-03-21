@@ -138,20 +138,7 @@ function parseCourseDate(dateStr: string, year: number): Date {
 }
 
 function getScheduleEntries(course: CourseConfigItem): ScheduleEntry[] {
-  if (course.schedule) {
-    return course.schedule;
-  }
-
-  if (course.weekdays && course.timeFrom && course.timeTo) {
-    return course.weekdays.map((weekday) => ({
-      weekday,
-      timeFrom: course.timeFrom!,
-      timeTo: course.timeTo!,
-      location: course.location,
-    }));
-  }
-
-  return [];
+  return course.schedule ?? [];
 }
 
 function getWeekdayNumbers(weekdayStr: string): number[] {
@@ -187,7 +174,7 @@ export function generateCalendarEvents(courses: CourseConfigItem[]): CalendarEve
             teacher: course.teacher.name,
             studio: course.studio,
             level: course.level,
-            location: entry.location ?? course.location,
+            location: entry.location,
             courseFrom: course.dateFrom,
             courseTo: course.dateTo,
           });

@@ -103,3 +103,15 @@
     top: -50px;
   }
 }
+
+.loading {
+  padding: 16px;
+  text-align: center;
+  color: $color-white-secondary;
+}
+
+.empty {
+  padding: 24px;
+  text-align: center;
+  color: $color-white-secondary;
+}

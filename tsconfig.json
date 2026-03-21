@@ -35,7 +35,8 @@
       "types/*": ["types/*"],
       "utils/*": ["utils/*"],
       "layouts/*": ["layouts/*"],
-      "services/*": ["services/*"]
+      "services/*": ["services/*"],
+      "entities/*": ["entities/*"]
     }
   },
   "include": ["src"]

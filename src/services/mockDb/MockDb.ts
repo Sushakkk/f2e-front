@@ -95,22 +95,7 @@ function generateLessonsFromSchedule(
 }
 
 function buildScheduleFromCourse(course: CourseConfigItem): ScheduleEntry[] {
-  if (course.schedule && course.schedule.length > 0) {
-    return course.schedule;
-  }
-
-  if (course.weekdays && course.timeFrom && course.timeTo) {
-    return [
-      {
-        weekday: course.weekdays.join(', '),
-        timeFrom: course.timeFrom,
-        timeTo: course.timeTo,
-        location: course.location,
-      },
-    ];
-  }
-
-  return [];
+  return course.schedule ?? [];
 }
 
 const DB_VERSION = '3';

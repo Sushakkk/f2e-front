@@ -3,10 +3,12 @@ import { observer } from 'mobx-react';
 import * as React from 'react';
 
 import { Card } from 'components/common';
-import { COURSES_CONFIG, CourseConfigItem } from 'config';
+import { CourseConfigItem } from 'config';
 import { FiltersStore } from 'store/FiltersStore';
+import { HomePageStore } from 'store/HomePageStore';
 import { PaginationStore } from 'store/PaginationStore';
 import { QueryStore, parseQueryFromURL } from 'store/QueryStore';
+import { useRootStore } from 'store/globals/root';
 import { useLocalStore } from 'store/hooks/useLocalStore';
 import { useCoursesSearch } from 'utils/useCoursesSearch';
 import { useMediaQuery } from 'utils/useMediaQuery';
@@ -15,18 +17,29 @@ import s from './HomePage.module.scss';
 import { Filters, Pagination, Recommendations, SearchBar } from './components';
 
 const HomePage: React.FC = () => {
+  const rootStore = useRootStore();
   const isMobile = useMediaQuery('(max-width: 992px)');
   const [isFiltersOpen, setIsFiltersOpen] = React.useState(false);
 
   const handleClose = React.useCallback(() => setIsFiltersOpen(false), []);
 
+  const homeStore = useLocalStore(() => new HomePageStore(rootStore));
+
   // Parse URL query params once on mount
   const queryParams = React.useRef(parseQueryFromURL()).current;
 
   const filtersStore = useLocalStore(
-    () => new FiltersStore(COURSES_CONFIG, queryParams.filters, isMobile ? handleClose : undefined),
+    () => new FiltersStore([], queryParams.filters, isMobile ? handleClose : undefined),
     [handleClose]
   );
+
+  React.useEffect(() => {
+    void homeStore.loadCourses();
+  }, [homeStore]);
+
+  React.useEffect(() => {
+    filtersStore.setCourses(homeStore.courses);
+  }, [filtersStore, homeStore.courses]);
 
   const sidebarRef = React.useRef<HTMLElement | null>(null);
 
@@ -111,9 +124,12 @@ const HomePage: React.FC = () => {
     scrollToAnchor();
   }, [currentPage, scrollToAnchor]);
 
+  const recommendationsItems = filteredCourses.slice(0, 6);
+
   return (
     <div className={s.page}>
-      <Recommendations items={COURSES_CONFIG} />
+      {homeStore.isLoading && <div className={s.loading}>Загрузка курсов…</div>}
+      <Recommendations items={recommendationsItems} />
       <div className={s.searchBarWrapper}>
         <div ref={anchorRef} className={s.scrollAnchor} />
         <SearchBar
@@ -130,7 +146,7 @@ const HomePage: React.FC = () => {
               <Card key={item.id} item={item} />
             ))}
           </div>
-          {isEmpty && <div className={s.empty}>Ничего не найдено</div>}
+          {isEmpty && !homeStore.isLoading && <div className={s.empty}>Ничего не найдено</div>}
         </div>
         <aside
           ref={sidebarRef}

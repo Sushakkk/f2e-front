@@ -11,4 +11,9 @@ export const ENDPOINTS = {
   flag: createApiEndpoint('user/flag', 'POST'),
   restart: createApiEndpoint('user/restart', 'POST'),
   getUser: createApiEndpoint('user/get', 'GET'),
+
+  courses: {
+    list: createApiEndpoint('courses/', 'GET'),
+    detail: (id: number): EndpointType => createApiEndpoint(`courses/${id}/`, 'GET'),
+  },
 } as const;

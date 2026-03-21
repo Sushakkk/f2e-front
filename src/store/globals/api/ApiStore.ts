@@ -4,6 +4,7 @@ import { SnackbarServerMessageList } from 'config/snackbars';
 import { ErrorResponse as BaseErrorResponse, LSKey } from 'store/globals/api/types';
 import { ApiRequest } from 'store/models/ApiRequest';
 import { ApiCallArgs, IApiRequest } from 'store/models/ApiRequest/declaration';
+import { isJwtExpired } from 'utils/jwtUtils';
 
 import { type IRootStore } from '../root/declaration';
 
@@ -47,6 +48,12 @@ export default class ApiStore implements IApiStore {
     const token = this._rootStore.storageStore.getItem(LSKey.token);
 
     if (!token) {
+      return config;
+    }
+
+    if (isJwtExpired(token)) {
+      this._rootStore.storageStore.removeItem(LSKey.token);
+
       return config;
     }
 

@@ -40,6 +40,11 @@ const CoursePage: React.FC = () => {
     [courseData]
   );
 
+  const locationsFromSchedule = React.useMemo(
+    () => [...new Set(scheduleLines.map((l) => l.location).filter(Boolean))] as string[],
+    [scheduleLines]
+  );
+
   const handleEnroll = React.useCallback(async () => {
     if (!isLoggedIn) {
       navigate(RoutePath.auth);
@@ -92,29 +97,15 @@ const CoursePage: React.FC = () => {
     userStore.refreshUser();
   }, [isLoggedIn, courseData, navigate, userStore]);
 
+  const handleEnrollClick = React.useCallback(() => {
+    void (isEnrolled ? handleCancel() : handleEnroll());
+  }, [isEnrolled, handleCancel, handleEnroll]);
+
   if (!id || !courseData) {
     return <Navigate to={RoutePath.root} />;
   }
 
-  const enrollButton = isEnrolled ? (
-    <Button
-      mode="dark"
-      className={s.enrollBtn}
-      onClick={() => void handleCancel()}
-      disabled={enrolling}
-    >
-      {enrolling ? 'Загрузка...' : 'Отменить запись'}
-    </Button>
-  ) : (
-    <Button
-      mode="purple"
-      className={s.enrollBtn}
-      onClick={() => void handleEnroll()}
-      disabled={enrolling}
-    >
-      {enrolling ? 'Загрузка...' : 'Записаться'}
-    </Button>
-  );
+  const scheduleLength = scheduleLines.length;
 
   return (
     <InfoPage
@@ -123,7 +114,16 @@ const CoursePage: React.FC = () => {
       images={courseData.images}
       liked={isFavorite}
       onToggleLike={handleToggleFavorite}
-      button={enrollButton}
+      button={
+        <Button
+          mode={isEnrolled ? 'dark' : 'purple'}
+          className={s.enrollBtn}
+          onClick={handleEnrollClick}
+          disabled={enrolling}
+        >
+          {enrolling ? 'Загрузка...' : isEnrolled ? 'Отменить запись' : 'Записаться'}
+        </Button>
+      }
     >
       <Row label="Преподаватель:" accent>
         <div
@@ -141,18 +141,18 @@ const CoursePage: React.FC = () => {
           {courseData.dateFrom}-{courseData.dateTo}
         </Row>
       )}
-      {scheduleLines.length > 0 && (
+      {scheduleLength > 0 && (
         <Row label="Расписание:">
           {scheduleLines.map((line, i) => (
             <React.Fragment key={i}>
               {line.day} {line.time}
-              {line.location && ` (${line.location})`}
+              {scheduleLength > 1 && line.location && ` (${line.location})`}
               {i < scheduleLines.length - 1 && <br />}
             </React.Fragment>
           ))}
         </Row>
       )}
-      {courseData.location && <Row label="Место:">{courseData.location}</Row>}
+      {scheduleLength === 1 && <Row label="Место:">{locationsFromSchedule}</Row>}
       <Row label="Студия:">{courseData.studio}</Row>
       <Row label="Количество мест:">
         {courseData.capacity} (осталось {courseData.spotsLeft})

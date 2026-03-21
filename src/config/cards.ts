@@ -39,13 +39,9 @@ export type CourseConfigItem = {
   price: number;
   images: string[];
   studio: string;
-  weekdays?: string[];
-  timeFrom?: string;
-  timeTo?: string;
   schedule?: ScheduleEntry[];
   city: string;
   description: string;
-  location?: string;
   capacity: number;
   spotsLeft: number;
   music: {
@@ -147,12 +143,9 @@ export const COURSES_CONFIG: CourseConfigItem[] = [
     price: 8000,
     images: [courseImages.highHeels2, courseImages.highHeels2, courseImages.highHeels2],
     studio: 'DanceLab',
-    weekdays: ['Вт', 'Чт'],
-    timeFrom: '18:00',
-    timeTo: '19:30',
+    schedule: [{ weekday: 'Вт, Чт', timeFrom: '18:00', timeTo: '19:30', location: 'м. Курская' }],
     city: 'Москва',
     description: 'Первый шаг в мир каблуков.',
-    location: 'м. Курская',
     capacity: 30,
     spotsLeft: 12,
     music: {
@@ -200,12 +193,9 @@ export const COURSES_CONFIG: CourseConfigItem[] = [
     price: 9500,
     images: [courseImages.contemporary, courseImages.contemporary, courseImages.contemporary],
     studio: 'Студия движения',
-    weekdays: ['Пн', 'Ср'],
-    timeFrom: '17:00',
-    timeTo: '18:30',
+    schedule: [{ weekday: 'Пн, Ср', timeFrom: '17:00', timeTo: '18:30', location: 'м. Чистые пруды' },],
     city: 'Москва',
     description: 'Импровизация и работа с телом.',
-    location: 'м. Чистые пруды',
     capacity: 25,
     spotsLeft: 8,
     music: {
@@ -247,12 +237,11 @@ export const COURSES_CONFIG: CourseConfigItem[] = [
     price: 7000,
     images: [courseImages.jazzFunk, courseImages.jazzFunk, courseImages.jazzFunk],
     studio: 'Арт-пространство',
-    weekdays: ['Вт', 'Чт', 'Сб'],
-    timeFrom: '12:00',
-    timeTo: '13:30',
+    schedule: [
+      { weekday: 'Вт, Чт, Сб', timeFrom: '12:00', timeTo: '13:30', location: 'м. Таганская' },
+    ],
     city: 'Санкт-Петербург',
     description: 'Яркие связки и музыкальность.',
-    location: 'м. Таганская',
     capacity: 35,
     spotsLeft: 18,
     music: {
@@ -304,12 +293,9 @@ export const COURSES_CONFIG: CourseConfigItem[] = [
     price: 12000,
     images: [courseImages.vogue, courseImages.vogue, courseImages.vogue],
     studio: 'Грация',
-    weekdays: ['Ср', 'Пт'],
-    timeFrom: '20:00',
-    timeTo: '21:30',
+    schedule: [{ weekday: 'Ср, Пт', timeFrom: '20:00', timeTo: '21:30', location: 'м. Новослободская' },],
     city: 'Москва',
     description: 'Подготовка к баттлам.',
-    location: 'м. Новослободская',
     capacity: 20,
     spotsLeft: 5,
     music: {
@@ -351,12 +337,9 @@ export const COURSES_CONFIG: CourseConfigItem[] = [
     price: 9000,
     images: [courseImages.hipHop, courseImages.hipHop, courseImages.hipHop],
     studio: 'ТанцХаб',
-    weekdays: ['Пн', 'Чт'],
-    timeFrom: '18:00',
-    timeTo: '19:30',
+    schedule: [{ weekday: 'Пн, Чт', timeFrom: '18:00', timeTo: '19:30', location: 'м. Павелецкая' },],
     city: 'Санкт-Петербург',
     description: 'Грув и актуальные стили.',
-    location: 'м. Павелецкая',
     capacity: 40,
     spotsLeft: 22,
     music: {
@@ -404,12 +387,9 @@ export const COURSES_CONFIG: CourseConfigItem[] = [
     price: 7500,
     images: [courseImages.dancehall, courseImages.dancehall, courseImages.dancehall],
     studio: 'DanceLab',
-    weekdays: ['Вт', 'Сб'],
-    timeFrom: '14:00',
-    timeTo: '15:30',
+    schedule: [{ weekday: 'Вт, Сб', timeFrom: '14:00', timeTo: '15:30', location: 'м. Курская' }],
     city: 'Москва',
     description: 'Ямайские ритмы.',
-    location: 'м. Курская',
     capacity: 30,
     spotsLeft: 15,
     music: {
@@ -461,12 +441,11 @@ export const COURSES_CONFIG: CourseConfigItem[] = [
     price: 13000,
     images: [courseImages.frameUp, courseImages.frameUp, courseImages.frameUp],
     studio: 'Арт-пространство',
-    weekdays: ['Пн', 'Ср', 'Пт'],
-    timeFrom: '20:00',
-    timeTo: '21:30',
+    schedule: [
+      { weekday: 'Пн, Ср, Пт', timeFrom: '20:00', timeTo: '21:30', location: 'м. Таганская' },
+    ],
     city: 'Москва',
     description: 'Сценическая подача.',
-    location: 'м. Таганская',
     capacity: 25,
     spotsLeft: 7,
     music: {
@@ -514,12 +493,11 @@ export const COURSES_CONFIG: CourseConfigItem[] = [
     price: 6000,
     images: [courseImages.stretching, courseImages.stretching, courseImages.stretching],
     studio: 'Студия движения',
-    weekdays: ['Вт', 'Чт', 'Сб'],
-    timeFrom: '10:00',
-    timeTo: '11:30',
+    schedule: [
+      { weekday: 'Вт, Чт, Сб', timeFrom: '10:00', timeTo: '11:30', location: 'м. Чистые пруды' },
+    ],
     city: 'Санкт-Петербург',
     description: 'Мягкая растяжка.',
-    location: 'м. Чистые пруды',
     capacity: 20,
     spotsLeft: 10,
     music: {
@@ -567,12 +545,9 @@ export const COURSES_CONFIG: CourseConfigItem[] = [
     price: 9000,
     images: [courseImages.ladyStyle, courseImages.ladyStyle, courseImages.ladyStyle],
     studio: 'Грация',
-    weekdays: ['Пн', 'Ср'],
-    timeFrom: '19:00',
-    timeTo: '20:30',
+    schedule: [{ weekday: 'Пн, Ср', timeFrom: '19:00', timeTo: '20:30', location: 'м. Новослободская' },],
     city: 'Москва',
     description: 'Плавность и женственность.',
-    location: 'м. Новослободская',
     capacity: 30,
     spotsLeft: 14,
     music: {

@@ -1,19 +1,7 @@
 import type { CourseConfigItem, ScheduleEntry } from 'config/cards';
 
 function getEntries(course: CourseConfigItem): ScheduleEntry[] {
-  if (course.schedule) {
-    return course.schedule;
-  }
-
-  if (course.weekdays && course.timeFrom && course.timeTo) {
-    return course.weekdays.map((weekday) => ({
-      weekday,
-      timeFrom: course.timeFrom!,
-      timeTo: course.timeTo!,
-    }));
-  }
-
-  return [];
+  return course.schedule ?? [];
 }
 
 function isUniform(entries: ScheduleEntry[]): boolean {
@@ -47,7 +35,7 @@ export function getCourseTimeTo(course: CourseConfigItem): string {
 
 /* ---- Для карточки (Card) ---- */
 
-export type ScheduleDisplay = { days: string; time: string };
+export type ScheduleDisplay = { days: string; time: string; location?: string };
 
 export function getScheduleDisplay(course: CourseConfigItem): ScheduleDisplay | null {
   const entries = getEntries(course);
@@ -59,7 +47,13 @@ export function getScheduleDisplay(course: CourseConfigItem): ScheduleDisplay | 
   const days = entries.map((e) => e.weekday).join(', ');
 
   if (isUniform(entries)) {
-    return { days, time: timeRange(entries[0].timeFrom, entries[0].timeTo) };
+    const first = entries[0];
+
+    return {
+      days,
+      time: timeRange(first.timeFrom, first.timeTo),
+      location: first.location,
+    };
   }
 
   return { days, time: 'разное время' };
@@ -78,8 +72,15 @@ export function getScheduleLines(course: CourseConfigItem): ScheduleLineItem[] {
 
   if (isUniform(entries)) {
     const days = entries.map((e) => e.weekday).join(', ');
+    const first = entries[0];
 
-    return [{ day: days, time: timeRange(entries[0].timeFrom, entries[0].timeTo) }];
+    return [
+      {
+        day: days,
+        time: timeRange(first.timeFrom, first.timeTo),
+        location: first.location,
+      },
+    ];
   }
 
   return entries.map((e) => ({
