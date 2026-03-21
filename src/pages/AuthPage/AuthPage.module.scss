@@ -2,6 +2,56 @@
 
 .page {
   @include page;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.backBtn {
+  position: relative;
+  z-index: 1;
+  align-self: flex-start;
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  flex-shrink: 0;
+  padding: 0;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: $color-white-secondary;
+  border-radius: 12px;
+  transition:
+    color 200ms ease,
+    background 200ms ease;
+
+  svg {
+    width: 20px;
+    height: 24px;
+  }
+
+  @include hover {
+    color: $color-accent;
+    background: rgba($color-accent, 0.1);
+  }
+
+  @include mobile {
+    svg {
+      width: 18px;
+      height: 22px;
+    }
+  }
+}
+
+.center {
+  position: relative;
+  z-index: 1;
+  flex: 1;
+  width: 100%;
   display: flex;
   align-items: center;
   justify-content: center;
