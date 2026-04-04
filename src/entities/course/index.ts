@@ -1,5 +1,5 @@
-export type { CourseListItemClient } from './client';
+export type { CourseDetailClient } from './client';
 
-export type { CourseListItemServer, CourseListResponseServer } from './server';
+export type { CourseDetailResponseServer, CourseDetailServer, ScheduleEntryServer } from './server';
 
-export { normalizeCourseListItem } from './normalize';
+export { normalizeCourseDetail } from './normalize';

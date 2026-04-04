@@ -1,8 +1,8 @@
 import type { ScheduleEntry } from 'config/cards';
 import type { CourseLevel } from 'config/levels';
 
-import type { CourseDetailClient } from './client';
-import type { CourseDetailServer, ScheduleEntryServer } from './server';
+import type { CourseListItemClient } from './client';
+import type { CourseListItemServer, ScheduleEntryServer } from './server';
 
 const LEVEL_MAP: Record<string, CourseLevel> = {
   beginner: 'Начинающие',
@@ -26,11 +26,13 @@ function normalizeScheduleEntry(entry: ScheduleEntryServer): ScheduleEntry {
     weekday: entry.weekday,
     timeFrom: entry.time_from,
     timeTo: entry.time_to,
-    location: entry.location ?? undefined,
   };
 }
 
-export function normalizeCourseDetail(data: CourseDetailServer): CourseDetailClient {
+/**
+ * Преобразует ответ списка курсов API в формат CourseConfigItem.
+ */
+export function normalizeCourseListItem(data: CourseListItemServer): CourseListItemClient {
   return {
     id: data.id,
     name: data.name,
@@ -49,17 +51,17 @@ export function normalizeCourseDetail(data: CourseDetailServer): CourseDetailCli
     dateFrom: formatShortDate(data.date_from),
     dateTo: formatShortDate(data.date_to),
     price: data.price,
-    images: data.images ?? [],
+    images: data.image ? [data.image] : [],
     studio: data.studio,
     schedule: (data.schedule ?? []).map(normalizeScheduleEntry),
     city: data.city,
-    description: data.description,
-    capacity: data.capacity,
-    spotsLeft: data.spots_left,
+    description: '',
+    capacity: 0,
+    spotsLeft: 0,
     music: {
-      artist: data.music?.artist ?? '',
-      track: data.music?.track ?? '',
-      url: data.music?.url ?? '',
+      artist: '',
+      track: '',
+      url: '',
     },
   };
 }

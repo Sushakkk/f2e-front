@@ -8,18 +8,33 @@ import { InfoPage } from 'components/common/InfoPage';
 import { Row } from 'components/common/Row';
 import { RoutePath } from 'config/router/paths';
 import { MockDb } from 'services/mockDb';
+import { CoursePageStore } from 'store/CoursePageStore';
+import { useRootStore } from 'store/globals/root';
 import { useUserStore } from 'store/hooks';
+import { useLocalStore } from 'store/hooks/useLocalStore';
 import { getScheduleLines } from 'utils/scheduleUtils';
 
 import s from './CoursePage.module.scss';
 
 const CoursePage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
+  const rootStore = useRootStore();
   const userStore = useUserStore();
   const navigate = useNavigate();
 
-  const [courseData, setCourseData] = React.useState(() => MockDb.getCourse(Number(id)));
+  const courseStore = useLocalStore(() => new CoursePageStore(rootStore));
   const [enrolling, setEnrolling] = React.useState(false);
+  const numericCourseId = Number(id);
+
+  React.useEffect(() => {
+    if (!Number.isFinite(numericCourseId) || numericCourseId <= 0) {
+      return;
+    }
+
+    void courseStore.loadCourse(numericCourseId);
+  }, [courseStore, numericCourseId]);
+
+  const courseData = courseStore.course;
 
   const isLoggedIn = Boolean(userStore.user);
 
@@ -59,7 +74,6 @@ const CoursePage: React.FC = () => {
     setEnrolling(true);
     await MockDb.enrollInCourse(courseData.id);
     userStore.refreshUser();
-    setCourseData(MockDb.getCourse(courseData.id));
     setEnrolling(false);
   }, [isLoggedIn, courseData, enrolling, navigate, userStore]);
 
@@ -71,7 +85,6 @@ const CoursePage: React.FC = () => {
     setEnrolling(true);
     await MockDb.cancelEnrollment(courseData.id);
     userStore.refreshUser();
-    setCourseData(MockDb.getCourse(courseData.id));
     setEnrolling(false);
   }, [courseData, enrolling, userStore]);
 
@@ -101,8 +114,16 @@ const CoursePage: React.FC = () => {
     void (isEnrolled ? handleCancel() : handleEnroll());
   }, [isEnrolled, handleCancel, handleEnroll]);
 
-  if (!id || !courseData) {
+  if (!id || !Number.isFinite(numericCourseId) || numericCourseId <= 0) {
     return <Navigate to={RoutePath.root} />;
+  }
+
+  if (courseStore.loadError) {
+    return <Navigate to={RoutePath.root} />;
+  }
+
+  if (!courseData) {
+    return <div>Загрузка курса...</div>;
   }
 
   const scheduleLength = scheduleLines.length;

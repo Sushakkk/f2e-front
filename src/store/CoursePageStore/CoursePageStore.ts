@@ -2,20 +2,20 @@ import { action, computed, makeObservable, observable, runInAction } from 'mobx'
 
 import { API_READY_STATE, ENDPOINTS } from 'config/api';
 import type { CourseConfigItem } from 'config/cards';
-import { normalizeCourseListItem } from 'entities/courses';
-import type { CourseListResponseServer } from 'entities/courses';
+import { normalizeCourseDetail } from 'entities/course';
+import type { CourseDetailResponseServer } from 'entities/course';
 import type { ErrorResponse } from 'store/globals/api/types';
 import type { IRootStore } from 'store/globals/root/declaration';
 import type { ILocalStore } from 'store/interfaces/ILocalStore';
 
-import { MOCK_COURSES_LIST_RESPONSE } from '../../mocks/courses';
+import { getMockCourseResponse } from '../../mocks/course';
 
-type PrivateFields = '_courses' | '_isLoading' | '_loadError';
+type PrivateFields = '_course' | '_isLoading' | '_loadError';
 
-export class HomePageStore implements ILocalStore {
+export class CoursePageStore implements ILocalStore {
   private readonly _rootStore: IRootStore;
 
-  private _courses: CourseConfigItem[] = [];
+  private _course: CourseConfigItem | null = null;
   private _isLoading = false;
   private _loadError = false;
 
@@ -23,19 +23,19 @@ export class HomePageStore implements ILocalStore {
     this._rootStore = rootStore;
 
     makeObservable<this, PrivateFields>(this, {
-      _courses: observable.ref,
+      _course: observable.ref,
       _isLoading: observable,
       _loadError: observable,
-      courses: computed,
+      course: computed,
       isLoading: computed,
       loadError: computed,
-      loadCourses: action.bound,
+      loadCourse: action.bound,
       destroy: action.bound,
     });
   }
 
-  get courses(): CourseConfigItem[] {
-    return this._courses;
+  get course(): CourseConfigItem | null {
+    return this._course;
   }
 
   get isLoading(): boolean {
@@ -46,7 +46,7 @@ export class HomePageStore implements ILocalStore {
     return this._loadError;
   }
 
-  loadCourses = async (): Promise<void> => {
+  loadCourse = async (courseId: number): Promise<void> => {
     if (this._isLoading) {
       return;
     }
@@ -55,18 +55,30 @@ export class HomePageStore implements ILocalStore {
     this._loadError = false;
 
     const request = this._rootStore.apiStore.createExtendedRequest<
-      CourseListResponseServer,
+      CourseDetailResponseServer,
       ErrorResponse
     >({
-      ...ENDPOINTS.courses.list,
+      ...ENDPOINTS.courses.detail(courseId),
     });
 
     const useMock = !API_READY_STATE.courses;
+    const mockData = useMock ? getMockCourseResponse(courseId) : null;
+
+    if (useMock && !mockData) {
+      runInAction(() => {
+        this._isLoading = false;
+        this._loadError = true;
+        this._course = null;
+      });
+
+      return;
+    }
+
     const callParams = useMock
       ? {
           mockResponse: {
             isError: false as const,
-            data: MOCK_COURSES_LIST_RESPONSE,
+            data: mockData!,
           },
         }
       : undefined;
@@ -78,19 +90,16 @@ export class HomePageStore implements ILocalStore {
 
       if (response.isError) {
         this._loadError = true;
-        this._courses = [];
+        this._course = null;
 
         return;
       }
 
-      const raw = response.data;
-      const items = Array.isArray(raw) ? raw : raw.results ?? [];
-
-      this._courses = items.map(normalizeCourseListItem);
+      this._course = normalizeCourseDetail(response.data);
     });
   };
 
   destroy(): void {
-    this._courses = [];
+    this._course = null;
   }
 }

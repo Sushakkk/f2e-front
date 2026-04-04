@@ -39,6 +39,10 @@ function useImageOrientations<T>(items: T[], getImage: (item: T) => string) {
       return;
     }
 
+    // При смене списка сначала сбрасываем состояние, чтобы не рендерить
+    // карточки со старыми/пустыми пропорциями до завершения измерений.
+    setVerticalSet(null);
+
     let cancelled = false;
     const verticals = new Set<number>();
     let pending = 0;
