@@ -1,4 +1,9 @@
-import { COURSES_CONFIG, type CourseConfigItem, type ScheduleEntry } from 'config/cards';
+import {
+  COURSES_CONFIG,
+  type CourseConfigItem,
+  type ScheduleEntry,
+  type Teacher,
+} from 'config/cards';
 import type {
   AttendanceRecord,
   AttendanceStats,
@@ -25,6 +30,7 @@ const STORAGE_KEYS = {
   session: 'mockDb_session',
   spots: 'mockDb_spots',
   teacherCourses: 'mockDb_teacherCourses',
+  teacherProfiles: 'mockDb_teacherProfiles',
   lessons: 'mockDb_lessons',
   attendance: 'mockDb_attendance',
   initialized: 'mockDb_initialized',
@@ -118,6 +124,16 @@ function stripPassword(user: UserConfig): Omit<UserConfig, 'password'> {
 }
 
 class MockDb {
+  private static _getTeacherProfiles(): Record<string, Omit<Teacher, 'reviews'>> {
+    const raw = localStorage.getItem(STORAGE_KEYS.teacherProfiles);
+
+    return raw ? (JSON.parse(raw) as Record<string, Omit<Teacher, 'reviews'>>) : {};
+  }
+
+  private static _setTeacherProfiles(profiles: Record<string, Omit<Teacher, 'reviews'>>): void {
+    localStorage.setItem(STORAGE_KEYS.teacherProfiles, JSON.stringify(profiles));
+  }
+
   static init(): void {
     if (localStorage.getItem(STORAGE_KEYS.initialized) === DB_VERSION) {
       return;
@@ -523,6 +539,72 @@ class MockDb {
 
   static isTeacherFavorite(teacherName: string): boolean {
     return MockDb.getFavoriteTeacherNames().includes(teacherName);
+  }
+
+  static getTeacherProfile(teacherName: string): Teacher | null {
+    const fallback = COURSES_CONFIG.find((course) => course.teacher.name === teacherName)?.teacher;
+    const overrides = MockDb._getTeacherProfiles()[teacherName];
+
+    if (!fallback && !overrides) {
+      return null;
+    }
+
+    return {
+      name: teacherName,
+      bio: overrides?.bio ?? fallback?.bio ?? '',
+      images: overrides?.images ?? fallback?.images ?? [],
+      achievements: overrides?.achievements ?? fallback?.achievements ?? [],
+      experience: overrides?.experience ?? fallback?.experience ?? 0,
+      specializations: overrides?.specializations ?? fallback?.specializations ?? [],
+      rating: overrides?.rating ?? fallback?.rating ?? 0,
+      reviews: fallback?.reviews ?? [],
+    };
+  }
+
+  static saveTeacherProfile(
+    teacherName: string,
+    profile: Pick<
+      Teacher,
+      'bio' | 'images' | 'achievements' | 'experience' | 'specializations' | 'rating'
+    >
+  ): void {
+    const profiles = MockDb._getTeacherProfiles();
+
+    profiles[teacherName] = {
+      name: teacherName,
+      bio: profile.bio,
+      images: profile.images,
+      achievements: profile.achievements,
+      experience: profile.experience,
+      specializations: profile.specializations,
+      rating: profile.rating,
+    };
+
+    MockDb._setTeacherProfiles(profiles);
+  }
+
+  static renameTeacherProfile(previousTeacherName: string, nextTeacherName: string): void {
+    if (previousTeacherName === nextTeacherName) {
+      return;
+    }
+
+    const profiles = MockDb._getTeacherProfiles();
+    const previousProfile = profiles[previousTeacherName];
+
+    if (!previousProfile) {
+      return;
+    }
+
+    profiles[nextTeacherName] = {
+      ...previousProfile,
+      name: nextTeacherName,
+    };
+    delete profiles[previousTeacherName];
+    MockDb._setTeacherProfiles(profiles);
+  }
+
+  static getTeacherCoursesByName(teacherName: string): TeacherCourse[] {
+    return MockDb._getTeacherCourses().filter((course) => course.teacher.name === teacherName);
   }
 
   // ── Courses ───────────────────────────────────────────────────────────

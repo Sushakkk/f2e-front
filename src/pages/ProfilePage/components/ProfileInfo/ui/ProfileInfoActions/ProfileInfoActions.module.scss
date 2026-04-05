@@ -1,0 +1,52 @@
+@import "styles/mixins";
+
+.actionCard {
+  position: fixed;
+  left: calc(30px + 220px + 32px);
+  right: 30px;
+  bottom: 0;
+  z-index: 30;
+  padding: 14px 0 calc(14px + env(safe-area-inset-bottom, 0px));
+  background: $color-black;
+  border-top: 1px solid $color-border;
+}
+
+.actions {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: stretch;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.logoutBtn {
+  min-width: 220px;
+  min-height: 46px;
+  font-size: 15px;
+  border-radius: 14px;
+}
+
+@include tablet {
+  .logoutBtn {
+    min-width: 0;
+    min-height: 42px;
+    font-size: 14px;
+    flex: 1 1 0;
+  }
+}
+
+@include mobile {
+  .actions {
+    flex-direction: row;
+    flex-wrap: nowrap;
+    gap: 10px;
+  }
+
+  .actionCard {
+    left: 0;
+    right: 0;
+    bottom: $footer-height;
+    padding: 14px 16px calc(14px + env(safe-area-inset-bottom, 0px));
+  }
+}

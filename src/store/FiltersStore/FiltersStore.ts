@@ -35,7 +35,6 @@ export class FiltersStore implements ILocalStore {
       applied: observable.ref,
       _courses: observable.ref,
       filteredCourses: computed,
-      typeOptions: computed,
       teacherOptions: computed,
       levelOptions: computed,
       studioOptions: computed,
@@ -145,13 +144,6 @@ export class FiltersStore implements ILocalStore {
 
       return true;
     });
-  }
-
-  get typeOptions(): { value: string; label: string }[] {
-    return uniqSorted(this._courses.map((c) => c.type).filter(Boolean)).map((t) => ({
-      value: t,
-      label: t,
-    }));
   }
 
   get teacherOptions(): { value: string; label: string }[] {

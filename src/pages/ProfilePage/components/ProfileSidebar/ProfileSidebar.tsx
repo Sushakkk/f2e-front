@@ -16,7 +16,7 @@ type SidebarItem = {
 };
 
 const SIDEBAR_ITEMS: SidebarItem[] = [
-  { id: 'profile', label: 'Профиль' },
+  { id: 'profile', label: 'Персональные данные' },
   { id: 'enrollments', label: 'Мои записи' },
   { id: 'favorites', label: 'Избранное' },
   { id: 'teacherCourses', label: 'Мои курсы', teacherOnly: true },
@@ -28,6 +28,7 @@ const SIDEBAR_ITEMS: SidebarItem[] = [
 type Props = {
   activeSection: ProfileSection;
   viewMode: ViewMode;
+  canSwitchMode: boolean;
   onSelect: (section: ProfileSection) => void;
   onViewModeChange: (mode: ViewMode) => void;
 };
@@ -35,6 +36,7 @@ type Props = {
 const ProfileSidebar: React.FC<Props> = ({
   activeSection,
   viewMode,
+  canSwitchMode,
   onSelect,
   onViewModeChange,
 }) => {
@@ -45,20 +47,22 @@ const ProfileSidebar: React.FC<Props> = ({
 
   return (
     <nav className={s.sidebar}>
-      <div className={s.toggle}>
-        <button
-          className={cx(s.toggleBtn, viewMode === 'student' && s.toggleBtn_active)}
-          onClick={() => onViewModeChange('student')}
-        >
-          Ученик
-        </button>
-        <button
-          className={cx(s.toggleBtn, viewMode === 'teacher' && s.toggleBtn_active)}
-          onClick={() => onViewModeChange('teacher')}
-        >
-          Преподаватель
-        </button>
-      </div>
+      {canSwitchMode && (
+        <div className={s.toggle}>
+          <button
+            className={cx(s.toggleBtn, viewMode === 'student' && s.toggleBtn_active)}
+            onClick={() => onViewModeChange('student')}
+          >
+            Ученик
+          </button>
+          <button
+            className={cx(s.toggleBtn, viewMode === 'teacher' && s.toggleBtn_active)}
+            onClick={() => onViewModeChange('teacher')}
+          >
+            Преподаватель
+          </button>
+        </div>
+      )}
       <div className={s.items}>
         {items.map((item, idx) => (
           <React.Fragment key={item.id}>

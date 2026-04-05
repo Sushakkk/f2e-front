@@ -7,16 +7,16 @@ import ArrowIcon from 'assets/images/arrow.svg?react';
 import Button from 'components/common/Button/Button';
 import { RoutePath } from 'config/router/paths';
 import { AuthPageStore } from 'store/AuthPageStore';
-import type { UserServer } from 'store/globals/user/types';
-import { useLocalStore, useUserStore } from 'store/hooks';
+import { useRootStore } from 'store/globals/root';
+import { useLocalStore } from 'store/hooks';
 
 import s from './AuthPage.module.scss';
 import EyeClosed from './img/eye-closed.svg?react';
 import EyeOpen from './img/eye-open.svg?react';
 
 const AuthPage: React.FC = () => {
-  const store = useLocalStore(() => new AuthPageStore());
-  const userStore = useUserStore();
+  const rootStore = useRootStore();
+  const store = useLocalStore(() => new AuthPageStore(rootStore));
   const navigate = useNavigate();
 
   const handleGoBack = React.useCallback(() => navigate(-1), [navigate]);
@@ -27,11 +27,10 @@ const AuthPage: React.FC = () => {
       const result = await store.submit();
 
       if (result?.success) {
-        userStore.login(result.user as UserServer);
         navigate(store.isLogin ? RoutePath.home : RoutePath.survey);
       }
     },
-    [store, userStore, navigate]
+    [store, navigate]
   );
 
   return (
@@ -62,6 +61,20 @@ const AuthPage: React.FC = () => {
                   onChange={(e) => store.setName(e.target.value)}
                 />
                 {store.errors.name && <span className={s.error}>{store.errors.name}</span>}
+              </div>
+            )}
+            {!store.isLogin && (
+              <div className={s.field}>
+                <label className={s.label}>Username</label>
+                <input
+                  className={cn(s.input, store.errors.username && s.inputError)}
+                  type="text"
+                  placeholder="ksenia_karpova"
+                  autoComplete="username"
+                  value={store.username}
+                  onChange={(e) => store.setUsername(e.target.value)}
+                />
+                {store.errors.username && <span className={s.error}>{store.errors.username}</span>}
               </div>
             )}
             <div className={s.field}>

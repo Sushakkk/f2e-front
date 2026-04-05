@@ -1,24 +1,54 @@
-import { action, computed, makeObservable, observable } from 'mobx';
+import { action, computed, makeObservable, observable, runInAction } from 'mobx';
 
+import { ENDPOINTS } from 'config/api';
 import type { CourseLevel } from 'config/levels';
+import { buildSurveySubmitPayload } from 'entities/survey';
 import type { CoursesFiltersValue } from 'pages/HomePage/components/Filters/types';
 import {
   BUDGET_OPTIONS,
   DEFAULT_SURVEY_ANSWERS,
   LEVELS_ORDER,
+  SURVEY_DANCE_TYPES,
   SURVEY_STEPS,
   SurveyAnswers,
 } from 'pages/SurveyPage/config';
+import { ErrorResponse } from 'store/globals/api/types';
+import { type IRootStore } from 'store/globals/root/declaration';
 import { ILocalStore } from 'store/interfaces';
+import { IApiRequest } from 'store/models/ApiRequest/declaration';
 
 export class SurveyPageStore implements ILocalStore {
+  private readonly _rootStore: IRootStore;
+  private readonly _requests: {
+    survey: IApiRequest<unknown, ErrorResponse>;
+    updateUser: IApiRequest<unknown, ErrorResponse>;
+  };
+
   answers: SurveyAnswers = { ...DEFAULT_SURVEY_ANSWERS };
   currentStepIndex = 0;
+  isSubmitting = false;
+  submitError = false;
 
-  constructor() {
+  constructor(rootStore: IRootStore) {
+    this._rootStore = rootStore;
+    this._requests = {
+      survey: this._rootStore.apiStore.createExtendedRequest({
+        ...ENDPOINTS.auth.userSurvey,
+        showExpectedError: false,
+        showUnexpectedError: false,
+      }),
+      updateUser: this._rootStore.apiStore.createExtendedRequest({
+        ...ENDPOINTS.auth.updateUser,
+        showExpectedError: false,
+        showUnexpectedError: false,
+      }),
+    };
+
     makeObservable(this, {
       answers: observable,
       currentStepIndex: observable,
+      isSubmitting: observable,
+      submitError: observable,
 
       currentStep: computed,
       isFirstStep: computed,
@@ -26,6 +56,7 @@ export class SurveyPageStore implements ILocalStore {
       progressPercent: computed,
       filtersFromAnswers: computed,
 
+      setRole: action,
       setTypes: action,
       toggleType: action,
       setLevel: action,
@@ -37,6 +68,9 @@ export class SurveyPageStore implements ILocalStore {
       nextStep: action,
       prevStep: action,
       goToStep: action,
+      skipCurrentStep: action,
+      markSurveyCompleted: action,
+      syncSurveyToBackend: action,
       reset: action,
     });
   }
@@ -88,7 +122,19 @@ export class SurveyPageStore implements ILocalStore {
     this.answers = { ...this.answers, types };
   }
 
+  setRole(role: SurveyAnswers['role']): void {
+    this.answers = { ...this.answers, role };
+  }
+
   toggleType(type: string): void {
+    const isAllTypesSelected = this.answers.types.length === SURVEY_DANCE_TYPES.length;
+
+    if (isAllTypesSelected) {
+      this.answers = { ...this.answers, types: [type] };
+
+      return;
+    }
+
     const next = new Set(this.answers.types);
 
     if (next.has(type)) {
@@ -113,6 +159,15 @@ export class SurveyPageStore implements ILocalStore {
   }
 
   toggleWeekday(day: string): void {
+    const isAnyDaySelected =
+      this.answers.weekdays.length === DEFAULT_SURVEY_ANSWERS.weekdays.length;
+
+    if (isAnyDaySelected) {
+      this.answers = { ...this.answers, weekdays: [day] };
+
+      return;
+    }
+
     const next = new Set(this.answers.weekdays);
 
     if (next.has(day)) {
@@ -160,10 +215,99 @@ export class SurveyPageStore implements ILocalStore {
     this.currentStepIndex = clamped;
   }
 
+  skipCurrentStep(): void {
+    switch (this.currentStep.id) {
+      case 'role':
+        this.answers = { ...this.answers, role: DEFAULT_SURVEY_ANSWERS.role };
+        break;
+      case 'types':
+        this.answers = { ...this.answers, types: [...DEFAULT_SURVEY_ANSWERS.types] };
+        break;
+      case 'level':
+        this.answers = { ...this.answers, level: 'Любой уровень' };
+        break;
+      case 'city':
+        this.answers = { ...this.answers, city: '' };
+        break;
+      case 'weekdays':
+        this.answers = {
+          ...this.answers,
+          weekdays: [...DEFAULT_SURVEY_ANSWERS.weekdays],
+        };
+        break;
+      case 'time':
+        this.answers = { ...this.answers, timeFrom: '' };
+        break;
+      case 'budget':
+        this.answers = {
+          ...this.answers,
+          priceFrom: undefined,
+          priceTo: undefined,
+        };
+        break;
+      default:
+        break;
+    }
+
+    if (!this.isLastStep) {
+      this.nextStep();
+    }
+  }
+
   reset(): void {
     this.answers = { ...DEFAULT_SURVEY_ANSWERS };
     this.currentStepIndex = 0;
+    this.isSubmitting = false;
+    this.submitError = false;
   }
 
   destroy(): void {}
+
+  markSurveyCompleted = async (): Promise<boolean> => {
+    runInAction(() => {
+      this.isSubmitting = true;
+      this.submitError = false;
+    });
+
+    const response = await this._requests.updateUser.call({
+      data: {
+        survey_completed: true,
+      },
+    });
+
+    runInAction(() => {
+      this.isSubmitting = false;
+      this.submitError = response.isError;
+    });
+
+    return !response.isError;
+  };
+
+  syncSurveyToBackend = async (): Promise<boolean> => {
+    runInAction(() => {
+      this.isSubmitting = true;
+      this.submitError = false;
+    });
+
+    const surveyPayload = buildSurveySubmitPayload({
+      role: this.answers.role,
+      city: this.answers.city,
+      level: this.answers.level,
+      types: this.answers.types,
+      weekdays: this.answers.weekdays,
+      timeFrom: this.answers.timeFrom,
+      priceFrom: this.answers.priceFrom,
+      priceTo: this.answers.priceTo,
+    });
+    const response = await this._requests.survey.call({
+      data: surveyPayload,
+    });
+
+    runInAction(() => {
+      this.isSubmitting = false;
+      this.submitError = response.isError;
+    });
+
+    return !response.isError;
+  };
 }

@@ -4,6 +4,8 @@ import { ApiStore } from 'store/globals/api';
 import { IApiStore } from 'store/globals/api/declaration';
 import { AppParamsStore } from 'store/globals/appParams';
 import { IAppParamsStore } from 'store/globals/appParams/declaration';
+import { DanceStylesStore } from 'store/globals/danceStyles';
+import { IDanceStylesStore } from 'store/globals/danceStyles/declaration';
 import { RouterStore } from 'store/globals/router';
 import { IRouterStore } from 'store/globals/router/declaration';
 import { SnackbarStore } from 'store/globals/snackbar';
@@ -27,11 +29,13 @@ class RootStore implements IRootStore {
 
   readonly appParamsStore: IAppParamsStore = new AppParamsStore();
 
+  readonly apiStore: IApiStore = new ApiStore(this);
+
+  readonly danceStylesStore: IDanceStylesStore = new DanceStylesStore(this);
+
   readonly routerStore: IRouterStore = new RouterStore(this);
 
   readonly snackbarStore: ISnackbarStore = new SnackbarStore();
-
-  readonly apiStore: IApiStore = new ApiStore(this);
 
   readonly userStore: IUserStore = new UserStore(this);
 

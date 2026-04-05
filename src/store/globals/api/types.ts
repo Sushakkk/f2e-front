@@ -22,4 +22,5 @@ export type ErrorResponse = {
 
 export enum LSKey {
   token = 'token',
+  refreshToken = 'refreshToken',
 }

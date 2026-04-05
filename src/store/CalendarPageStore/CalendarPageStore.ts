@@ -3,6 +3,7 @@ import type { View } from 'react-big-calendar';
 
 import { MOCK_ENROLLMENTS, MOCK_TEACHER_ID, type CalendarFilterMode } from 'config/calendar';
 import type { CourseConfigItem } from 'config/cards';
+import { UserRole } from 'entities/user';
 import {
   generateCalendarEvents,
   getCourseOptionsForMode,
@@ -68,7 +69,7 @@ export class CalendarPageStore implements ILocalStore {
 
   get myCourses(): CourseConfigItem[] {
     const user = this._userStore.user;
-    const teacherId = user?.role === 'teacher' ? user.id : MOCK_TEACHER_ID;
+    const teacherId = user?.role === UserRole.teacher ? user.id : MOCK_TEACHER_ID;
 
     return MockDb.getTeacherCourses(teacherId).filter((c) => c.courseStatus === 'active');
   }

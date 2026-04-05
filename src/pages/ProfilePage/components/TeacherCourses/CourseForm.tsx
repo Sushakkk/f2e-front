@@ -6,6 +6,7 @@ import Button from 'components/common/Button/Button';
 import { COURSES_CONFIG } from 'config/cards';
 import { COURSE_LEVELS } from 'config/levels';
 import type { ProfilePageStore } from 'store/ProfilePageStore';
+import { useDanceStylesStore } from 'store/hooks';
 import { ddmmToIso, fromIsoDate, toDDMM } from 'utils/dateUtils';
 
 import s from './CourseForm.module.scss';
@@ -20,7 +21,6 @@ const makeSelectOptions = (key: 'type' | 'studio' | 'city'): { value: string; la
     (a, b) => a.label.localeCompare(b.label)
   );
 
-const DANCE_TYPE_OPTIONS = makeSelectOptions('type');
 const STUDIO_OPTIONS = makeSelectOptions('studio');
 const CITY_OPTIONS = makeSelectOptions('city');
 
@@ -33,7 +33,12 @@ type Props = {
 const REFERENCE_YEAR = new Date().getFullYear();
 
 const CourseForm: React.FC<Props> = ({ store, teacherId, isEditing }) => {
+  const danceStylesStore = useDanceStylesStore();
   const form = store.courseFormData;
+
+  React.useEffect(() => {
+    void danceStylesStore.requestDanceStyles();
+  }, [danceStylesStore]);
 
   const dateFromIso = React.useMemo(
     () => ddmmToIso(form.dateFrom, REFERENCE_YEAR),
@@ -90,7 +95,7 @@ const CourseForm: React.FC<Props> = ({ store, teacherId, isEditing }) => {
             mode="single"
             value={form.type}
             placeholder="Выберите или введите стиль"
-            options={DANCE_TYPE_OPTIONS}
+            options={danceStylesStore.options}
             onChange={(v) => store.updateFormField('type', v)}
             searchable
             allowCustomValue

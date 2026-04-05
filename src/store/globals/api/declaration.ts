@@ -10,4 +10,10 @@ export interface IApiStore {
       showUnexpectedError?: boolean;
     }
   ) => IApiRequest<ResponseData, BaseErrorResponse>;
+
+  setAuthToken: (token: string | null) => void;
+  setRefreshToken: (token: string | null) => void;
+  setAuthTokens: (tokens: { accessToken: string | null; refreshToken?: string | null }) => void;
+  clearAuthData: () => void;
+  refreshAccessToken: () => Promise<string | null>;
 }

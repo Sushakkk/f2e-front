@@ -2,10 +2,10 @@ import * as React from 'react';
 
 import { Button } from 'components/common';
 import { SelectDropdown } from 'components/common/SelectDropdown';
+import { useDanceStylesStore } from 'store/hooks';
 
 import {
   CITY_OPTIONS,
-  DANCE_TYPE_OPTIONS,
   STUDIO_OPTIONS,
   getMetroOptionsForCities,
   MapFilters as MapFiltersType,
@@ -28,7 +28,12 @@ const MapFilters: React.FC<MapFiltersProps> = ({
   onReset,
   onClose,
 }) => {
+  const danceStylesStore = useDanceStylesStore();
   const metroOptions = React.useMemo(() => getMetroOptionsForCities(draft.cities), [draft.cities]);
+
+  React.useEffect(() => {
+    void danceStylesStore.requestDanceStyles();
+  }, [danceStylesStore]);
 
   const handleCitiesChange = React.useCallback(
     (nextCities: string[]) => {
@@ -96,7 +101,7 @@ const MapFilters: React.FC<MapFiltersProps> = ({
               mode="multi"
               value={draft.danceTypes}
               placeholder="Выберите стиль танцев"
-              options={DANCE_TYPE_OPTIONS}
+              options={danceStylesStore.options}
               onChange={(v: string[]) => onDraftChange({ danceTypes: v })}
               searchable
             />

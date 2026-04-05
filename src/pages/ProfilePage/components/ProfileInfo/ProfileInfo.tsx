@@ -1,35 +1,57 @@
 import { observer } from 'mobx-react';
 import * as React from 'react';
 
-import Button from 'components/common/Button/Button';
-import type { UserServer } from 'store/globals/user/types';
+import type { UserClient } from 'entities/user';
+import type { ProfilePageStore } from 'store/ProfilePageStore';
 
 import s from './ProfileInfo.module.scss';
+import { ProfileInfoActions, ProfileInfoEdit, ProfileInfoHero, ProfileInfoView } from './ui';
 
 type Props = {
-  user: UserServer;
+  user: UserClient;
+  store: ProfilePageStore;
   onLogout: () => void;
+  onRetrySurvey: () => void;
 };
 
-const ProfileInfo: React.FC<Props> = ({ user, onLogout }) => {
+const ProfileInfo: React.FC<Props> = ({ user, store, onLogout, onRetrySurvey }) => {
+  const fullName = [user.lastName, user.firstName, user.middleName].filter(Boolean).join(' ');
+  const teacherSpecializations = store.teacherProfileForm.specializations
+    .split('\n')
+    .map((item) => item.trim())
+    .filter(Boolean);
+  const teacherAchievements = store.teacherProfileForm.achievements
+    .split('\n')
+    .map((item) => item.trim())
+    .filter(Boolean);
+  const profileFacts = [
+    { label: 'Username', value: `@${user.username}` },
+    { label: 'E-mail', value: user.email },
+    { label: 'Город', value: user.city || 'Не указан' },
+    { label: 'Уровень', value: user.level || 'Не указан' },
+  ];
+
   return (
     <div className={s.root}>
-      <div className={s.userInfo}>
-        {user.avatar && <img className={s.avatar} src={user.avatar} alt="Аватар" />}
-        <div className={s.userDetails}>
-          <div className={s.userName}>
-            {user.firstName} {user.lastName}
-          </div>
-          <div className={s.userMeta}>{user.email}</div>
-          {user.phone && <div className={s.userMeta}>{user.phone}</div>}
-          {user.city && <div className={s.userMeta}>{user.city}</div>}
-          <div className={s.userMeta}>Уровень: {user.level}</div>
-          {user.role === 'teacher' && <div className={s.badge}>Преподаватель</div>}
-        </div>
-      </div>
-      <Button mode="dark" className={s.logoutBtn} onClick={onLogout}>
-        Выйти
-      </Button>
+      {!store.isEditingProfile && <ProfileInfoHero user={user} fullName={fullName} />}
+      {store.isEditingProfile ? (
+        <ProfileInfoEdit store={store} />
+      ) : (
+        <ProfileInfoView
+          store={store}
+          profileFacts={profileFacts}
+          teacherSpecializations={teacherSpecializations}
+          teacherAchievements={teacherAchievements}
+        />
+      )}
+      {!store.isEditingProfile && (
+        <ProfileInfoActions
+          user={user}
+          store={store}
+          onLogout={onLogout}
+          onRetrySurvey={onRetrySurvey}
+        />
+      )}
     </div>
   );
 };

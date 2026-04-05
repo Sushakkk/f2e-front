@@ -22,13 +22,14 @@ const TeacherPage: React.FC = () => {
   const isLoggedIn = Boolean(userStore.user);
 
   const teacher = React.useMemo(() => {
-    const course = COURSES_CONFIG.find((c) => c.teacher.name === decodedName);
-
-    return course?.teacher;
+    return MockDb.getTeacherProfile(decodedName);
   }, [decodedName]);
 
   const teacherCourses: CourseConfigItem[] = React.useMemo(
-    () => COURSES_CONFIG.filter((c) => c.teacher.name === decodedName),
+    () => [
+      ...COURSES_CONFIG.filter((c) => c.teacher.name === decodedName),
+      ...MockDb.getTeacherCoursesByName(decodedName),
+    ],
     [decodedName]
   );
 

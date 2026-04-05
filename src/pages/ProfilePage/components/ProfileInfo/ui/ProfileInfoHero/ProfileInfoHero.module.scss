@@ -1,0 +1,128 @@
+@use "sass:color";
+
+@import "styles/mixins";
+
+.hero {
+  position: relative;
+  overflow: hidden;
+  padding: 28px;
+  border-radius: 28px;
+  background: radial-gradient(circle at top right, rgba($color-accent, 0.28), transparent 32%),
+    radial-gradient(circle at left center, rgba($color-white, 0.08), transparent 28%),
+    linear-gradient(
+      135deg,
+      color.adjust($color-bg-secondary, $lightness: 3%) 0%,
+      color.adjust($color-bg-tertiary, $lightness: 4%) 56%,
+      color.adjust($color-bg, $lightness: -1%) 100%
+    );
+  border: 1px solid rgba($color-white, 0.08);
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.18);
+}
+
+.heroGlow {
+  position: absolute;
+  inset: auto -40px -60px auto;
+  width: 220px;
+  height: 220px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba($color-accent, 0.28), transparent 68%);
+  pointer-events: none;
+}
+
+.heroMain {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.avatarWrap {
+  flex-shrink: 0;
+}
+
+.avatar,
+.avatarFallback {
+  width: 104px;
+  height: 104px;
+  border-radius: 28px;
+  object-fit: cover;
+  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.24);
+}
+
+.avatar {
+  border: 2px solid rgba($color-white, 0.15);
+}
+
+.avatarFallback {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #ffb566 0%, #ff7a59 100%);
+  color: $color-white;
+  font-size: 38px;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.heroText {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-width: 0;
+}
+
+.eyebrow {
+  font-size: 12px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: rgba($color-white, 0.62);
+}
+
+.userName {
+  font-size: 34px;
+  line-height: 1.05;
+  font-weight: 700;
+  color: $color-white;
+}
+
+.userMetaRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.metaChip {
+  display: inline-flex;
+  align-items: center;
+  min-height: 34px;
+  padding: 8px 12px;
+  border-radius: 999px;
+  background: rgba($color-white, 0.08);
+  border: 1px solid rgba($color-white, 0.08);
+  color: rgba($color-white, 0.82);
+  font-size: 13px;
+}
+
+@include mobile {
+  .hero {
+    padding: 22px;
+    border-radius: 22px;
+  }
+
+  .heroMain {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .userName {
+    font-size: 28px;
+  }
+
+  .avatar,
+  .avatarFallback {
+    width: 84px;
+    height: 84px;
+    border-radius: 22px;
+  }
+}

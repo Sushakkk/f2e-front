@@ -2,6 +2,7 @@ import { IAppStateModel } from 'store/models/AppStateModel/declaration';
 
 import { IApiStore } from '../api/declaration';
 import { IAppParamsStore } from '../appParams/declaration';
+import { IDanceStylesStore } from '../danceStyles/declaration';
 import { IRouterStore } from '../router/declaration';
 import { ISnackbarStore } from '../snackbar/declaration';
 import { IStorageStore } from '../storage/declaration';
@@ -13,6 +14,8 @@ export interface IRootStore {
   appState: IAppStateModel;
 
   appParamsStore: IAppParamsStore;
+
+  danceStylesStore: IDanceStylesStore;
 
   routerStore: IRouterStore;
 

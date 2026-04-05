@@ -1,5 +1,6 @@
 import { action, computed, makeObservable, observable, runInAction } from 'mobx';
 
+import { ENDPOINTS } from 'config/api';
 import type {
   AttendanceRecord,
   AttendanceStats,
@@ -7,9 +8,13 @@ import type {
   Lesson,
   TeacherCourse,
 } from 'config/teacher';
+import { UserRole, type BackendTeacherProfile, type BackendUser } from 'entities/user';
 import { MockDb } from 'services/mockDb';
 import type { MockUserData } from 'services/mockDb/types';
+import { ErrorResponse } from 'store/globals/api/types';
+import { type IRootStore } from 'store/globals/root/declaration';
 import { ILocalStore } from 'store/interfaces';
+import { IApiRequest } from 'store/models/ApiRequest/declaration';
 
 export type ProfileSection =
   | 'profile'
@@ -37,7 +42,29 @@ const EMPTY_FORM: CourseFormData = {
   schedule: [{ weekday: 'Пн', timeFrom: '18:00', timeTo: '19:30' }],
 };
 
+const EMPTY_TEACHER_PROFILE_FORM = {
+  bio: '',
+  experience: '',
+  specializations: '',
+  achievements: '',
+};
+
+const readFileAsDataUrl = (file: File): Promise<string> =>
+  new Promise((resolve, reject) => {
+    const reader = new FileReader();
+
+    reader.onload = () => resolve(typeof reader.result === 'string' ? reader.result : '');
+    reader.onerror = () => reject(reader.error);
+    reader.readAsDataURL(file);
+  });
+
 export class ProfilePageStore implements ILocalStore {
+  private readonly _rootStore: IRootStore;
+  private readonly _requests: {
+    updateUser: IApiRequest<BackendUser, ErrorResponse>;
+    updateTeacherProfile: IApiRequest<BackendTeacherProfile, ErrorResponse>;
+  };
+
   activeSection: ProfileSection = 'profile';
   viewMode: ViewMode = 'student';
 
@@ -59,8 +86,39 @@ export class ProfilePageStore implements ILocalStore {
   compareStatsData: AttendanceStats | null = null;
 
   isLoading = false;
+  isEditingProfile = false;
+  isSavingProfile = false;
+  profileError: string | null = null;
+  profileForm = {
+    username: '',
+    firstName: '',
+    middleName: '',
+    lastName: '',
+  };
 
-  constructor() {
+  avatarFile: File | null = null;
+  avatarPreview = '';
+  teacherProfileForm = { ...EMPTY_TEACHER_PROFILE_FORM };
+  teacherImagePreviews: string[] = [];
+  teacherRating = 0;
+
+  constructor(rootStore: IRootStore) {
+    this._rootStore = rootStore;
+    this.viewMode =
+      this._rootStore.userStore.user?.role === UserRole.teacher ? 'teacher' : 'student';
+    this._requests = {
+      updateUser: this._rootStore.apiStore.createExtendedRequest({
+        ...ENDPOINTS.auth.updateUser,
+        showExpectedError: false,
+        showUnexpectedError: false,
+      }),
+      updateTeacherProfile: this._rootStore.apiStore.createExtendedRequest({
+        ...ENDPOINTS.teachers.update(0),
+        showExpectedError: false,
+        showUnexpectedError: false,
+      }),
+    };
+
     makeObservable(this, {
       activeSection: observable,
       viewMode: observable,
@@ -79,11 +137,21 @@ export class ProfilePageStore implements ILocalStore {
       comparePeriodTo: observable,
       compareStatsData: observable.ref,
       isLoading: observable,
+      isEditingProfile: observable,
+      isSavingProfile: observable,
+      profileError: observable,
+      profileForm: observable,
+      avatarFile: observable.ref,
+      avatarPreview: observable,
+      teacherProfileForm: observable,
+      teacherImagePreviews: observable.ref,
+      teacherRating: observable,
 
       isTeacherView: computed,
       mockTeacherId: computed,
       activeCourses: computed,
       selectedCourse: computed,
+      teacherDisplayName: computed,
 
       setViewMode: action,
       setSection: action,
@@ -99,7 +167,26 @@ export class ProfilePageStore implements ILocalStore {
       setStatsPeriodTo: action,
       setComparePeriodFrom: action,
       setComparePeriodTo: action,
+      startProfileEdit: action,
+      cancelProfileEdit: action,
+      updateProfileField: action,
+      setAvatarFile: action,
+      updateTeacherField: action,
+      removeTeacherImage: action,
+      saveProfile: action,
     });
+
+    if (this.viewMode === 'teacher') {
+      this.loadTeacherCourses(MOCK_TEACHER_ID);
+      this.syncTeacherProfileFromUser();
+
+      if (this.teacherCourses.length > 0) {
+        const firstId = this.teacherCourses[0].id;
+
+        this.setSelectedCourse(firstId);
+        this.loadStats(firstId);
+      }
+    }
   }
 
   get isTeacherView(): boolean {
@@ -118,12 +205,25 @@ export class ProfilePageStore implements ILocalStore {
     return this.teacherCourses.find((c) => c.id === this.selectedCourseId);
   }
 
+  get teacherDisplayName(): string {
+    const user = this._rootStore.userStore.user;
+
+    if (!user) {
+      return 'Преподаватель';
+    }
+
+    return (
+      [user.lastName, user.firstName].filter(Boolean).join(' ') || user.username || 'Преподаватель'
+    );
+  }
+
   setViewMode = (mode: ViewMode): void => {
     this.viewMode = mode;
 
     if (mode === 'teacher') {
-      this.activeSection = 'teacherCourses';
+      this.activeSection = 'profile';
       this.loadTeacherCourses(MOCK_TEACHER_ID);
+      this.syncTeacherProfileFromUser();
 
       if (this.teacherCourses.length > 0) {
         const firstId = this.teacherCourses[0].id;
@@ -225,6 +325,161 @@ export class ProfilePageStore implements ILocalStore {
     this.comparePeriodTo = v;
   };
 
+  startProfileEdit = (user: {
+    username: string;
+    firstName: string;
+    middleName?: string;
+    lastName: string;
+    avatar?: string;
+  }): void => {
+    this.isEditingProfile = true;
+    this.profileError = null;
+    this.profileForm = {
+      username: user.username,
+      firstName: user.firstName,
+      middleName: user.middleName ?? '',
+      lastName: user.lastName,
+    };
+    this.avatarFile = null;
+    this.avatarPreview = user.avatar ?? '';
+    this.syncTeacherProfileFromUser();
+  };
+
+  cancelProfileEdit = (): void => {
+    this.isEditingProfile = false;
+    this.isSavingProfile = false;
+    this.profileError = null;
+    this.avatarFile = null;
+    this.syncTeacherProfileFromUser();
+  };
+
+  updateProfileField = (field: keyof typeof this.profileForm, value: string): void => {
+    this.profileForm[field] = value;
+  };
+
+  setAvatarFile = (file: File | null): void => {
+    this.avatarFile = file;
+    this.avatarPreview = file ? URL.createObjectURL(file) : '';
+  };
+
+  updateTeacherField = (field: keyof typeof this.teacherProfileForm, value: string): void => {
+    this.teacherProfileForm[field] = value;
+  };
+
+  addTeacherImages = async (files: FileList | File[]): Promise<void> => {
+    const nextFiles = Array.from(files);
+
+    if (nextFiles.length === 0) {
+      return;
+    }
+
+    const previews = await Promise.all(nextFiles.map((file) => readFileAsDataUrl(file)));
+
+    runInAction(() => {
+      this.teacherImagePreviews = [...this.teacherImagePreviews, ...previews.filter(Boolean)];
+    });
+  };
+
+  removeTeacherImage = (index: number): void => {
+    this.teacherImagePreviews = [
+      ...this.teacherImagePreviews.slice(0, index),
+      ...this.teacherImagePreviews.slice(index + 1),
+    ];
+  };
+
+  saveProfile = async (): Promise<boolean> => {
+    runInAction(() => {
+      this.isSavingProfile = true;
+      this.profileError = null;
+    });
+
+    const formData = new FormData();
+
+    formData.append('username', this.profileForm.username.trim());
+    formData.append('first_name', this.profileForm.firstName.trim());
+    formData.append('middle_name', this.profileForm.middleName.trim());
+    formData.append('last_name', this.profileForm.lastName.trim());
+
+    if (this.avatarFile) {
+      formData.append('avatar_file', this.avatarFile);
+    }
+
+    const response = await this._requests.updateUser.call({
+      data: formData,
+    });
+
+    if (response.isError) {
+      runInAction(() => {
+        this.isSavingProfile = false;
+        this.profileError = 'Не удалось сохранить профиль.';
+      });
+
+      return false;
+    }
+
+    if (this.viewMode === 'teacher' || this._rootStore.userStore.user?.role === UserRole.teacher) {
+      const teacherResponse = await this._requests.updateTeacherProfile.call({
+        url: ENDPOINTS.teachers.update(0).url,
+        data: {
+          bio: this.teacherProfileForm.bio.trim(),
+          images: this.teacherImagePreviews,
+          achievements: this.teacherProfileForm.achievements
+            .split('\n')
+            .map((item) => item.trim())
+            .filter(Boolean),
+          experience: Number(this.teacherProfileForm.experience) || 0,
+          specializations: this.teacherProfileForm.specializations
+            .split('\n')
+            .map((item) => item.trim())
+            .filter(Boolean),
+        },
+      });
+
+      if (teacherResponse.isError) {
+        runInAction(() => {
+          this.isSavingProfile = false;
+          this.profileError = 'Не удалось сохранить данные преподавателя.';
+        });
+
+        return false;
+      }
+    }
+
+    const normalizedUser = await this._rootStore.userStore.requestUser();
+
+    runInAction(() => {
+      this.isSavingProfile = false;
+      this.isEditingProfile = false;
+      this.profileError = null;
+      this.avatarFile = null;
+      this.avatarPreview = normalizedUser?.avatar ?? '';
+    });
+
+    if (normalizedUser?.role === UserRole.teacher) {
+      this.syncTeacherProfileFromUser();
+    } else {
+      this.applyTeacherProfile(null);
+    }
+
+    return true;
+  };
+
+  applyTeacherProfile = (teacherProfile: BackendTeacherProfile | null | undefined): void => {
+    runInAction(() => {
+      this.teacherProfileForm = {
+        bio: teacherProfile?.bio ?? '',
+        experience: teacherProfile?.experience ? String(teacherProfile.experience) : '',
+        specializations: (teacherProfile?.specializations ?? []).join('\n'),
+        achievements: (teacherProfile?.achievements ?? []).join('\n'),
+      };
+      this.teacherImagePreviews = teacherProfile?.images ?? [];
+      this.teacherRating = teacherProfile?.rating ?? 0;
+    });
+  };
+
+  syncTeacherProfileFromUser = (): void => {
+    this.applyTeacherProfile(this._rootStore.userStore.user?.teacher);
+  };
   // ── Data loading ─────────────────────────────────────────────────────
 
   loadTeacherCourses = (teacherId: number): void => {

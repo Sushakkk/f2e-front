@@ -28,24 +28,30 @@ export const BUDGET_OPTIONS = [
 
 export const SURVEY_STEPS = [
   {
+    id: 'role',
+    title: 'Какова ваша роль?',
+    subtitle: '* У преподавателя сохраняется весь функционал ученика',
+  },
+  {
     id: 'types',
     title: 'Какие направления вас интересуют?',
-    subtitle: 'Выберите один или несколько',
+    subtitle: 'По умолчанию выбраны все направления',
   },
   {
     id: 'level',
     title: 'Ваш уровень подготовки',
-    subtitle: 'Поможет подобрать подходящие занятия',
+    subtitle: 'По умолчанию выбран любой уровень',
   },
-  { id: 'city', title: 'В каком городе хотите заниматься?', subtitle: '' },
-  { id: 'weekdays', title: 'Удобные дни недели', subtitle: 'Когда вам удобнее всего?' },
-  { id: 'time', title: 'Предпочтительное время', subtitle: 'Утро, день или вечер?' },
+  { id: 'city', title: 'Где вы живёте?', subtitle: 'Выберите город из списка' },
+  { id: 'weekdays', title: 'Удобные дни недели', subtitle: 'По умолчанию выбран любой день' },
+  { id: 'time', title: 'Предпочтительное время', subtitle: 'По умолчанию выбрано любое время' },
   { id: 'budget', title: 'Бюджет на курс', subtitle: 'Необязательно' },
 ] as const;
 
 export type SurveyStepId = (typeof SURVEY_STEPS)[number]['id'];
 
 export type SurveyAnswers = {
+  role: 'student' | 'teacher';
   types: string[];
   level: CourseLevel | '';
   city: string;
@@ -56,10 +62,11 @@ export type SurveyAnswers = {
 };
 
 export const DEFAULT_SURVEY_ANSWERS: SurveyAnswers = {
-  types: [],
-  level: '',
+  role: 'student',
+  types: [...SURVEY_DANCE_TYPES],
+  level: 'Любой уровень',
   city: '',
-  weekdays: [],
+  weekdays: WEEKDAYS.map((day) => day.value),
   timeFrom: '',
   priceFrom: undefined,
   priceTo: undefined,

@@ -8,6 +8,13 @@
   overflow: hidden auto;
 }
 
+.content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 0 16px 20px;
+}
+
 .bg {
   position: absolute;
   inset: 0;
@@ -67,7 +74,6 @@
   align-items: center;
   width: 100%;
   max-width: 520px;
-  padding: 40px 36px 36px;
   border-radius: 24px;
   background: rgba($color-bg-tertiary, 0.6);
   backdrop-filter: blur(24px);
@@ -78,7 +84,6 @@
   margin: 0 10px;
 
   @include mobile {
-    padding: 32px 24px 28px;
     max-width: 100%;
   }
 }
@@ -88,7 +93,16 @@
   align-items: center;
   justify-content: space-between;
   width: 100%;
-  margin-bottom: 8px;
+  padding: 16px 16px 0;
+}
+
+.headerSide {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  width: 40px;
+  min-width: 40px;
+  flex-shrink: 0;
 }
 
 .headerSpacer {
@@ -125,13 +139,49 @@
   }
 }
 
+.closeBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  background: rgba($color-white, 0.06);
+  border: 1px solid rgba($color-white, 0.08);
+  margin-bottom: 5px;
+  border-radius: 50%;
+  color: $color-white-secondary;
+  cursor: pointer;
+  transition:
+    color 200ms ease,
+    background 200ms ease,
+    border-color 200ms ease,
+    transform 200ms ease;
+
+  @include hover {
+    color: $color-white;
+    background: rgba($color-accent, 0.18);
+    border-color: rgba($color-accent, 0.5);
+    transform: scale(1.05);
+  }
+}
+
+.closeIcon {
+  display: block;
+  font-size: 24px;
+  line-height: 1;
+  transform: translateY(-1px);
+}
+
 .logo {
   @include font-primary(600);
   font-size: 28px;
   color: $color-accent;
+  margin-bottom: 10px;
 
   @include mobile {
     font-size: 24px;
+    margin-bottom: 8px;
   }
 }
 
@@ -156,22 +206,6 @@
     margin-bottom: 20px;
     font-size: 13px;
   }
-}
-
-.progress {
-  width: 100%;
-  height: 4px;
-  background: rgba($color-white, 0.08);
-  border-radius: 2px;
-  overflow: hidden;
-  margin-bottom: 16px;
-}
-
-.progressBar {
-  height: 100%;
-  background: $color-accent;
-  border-radius: 2px;
-  transition: width 300ms ease;
 }
 
 .stepIndicator {
@@ -207,6 +241,10 @@
 .stepContent {
   width: 100%;
   margin-bottom: 28px;
+}
+
+.selectWrap {
+  width: 100%;
 }
 
 .stepTitle {

@@ -21,3 +21,5 @@ export * from './InfoPage';
 export * from './Row';
 
 export * from './StarRating';
+
+export * from './Title';

@@ -3,6 +3,7 @@ import * as React from 'react';
 
 import { Button, DateRangePicker, SelectDropdown } from 'components/common';
 import { FiltersStore } from 'store/FiltersStore';
+import { useDanceStylesStore } from 'store/hooks';
 
 import s from './Filters.module.scss';
 import { TimeInput } from './components/TimeInput';
@@ -15,7 +16,12 @@ type Props = {
 };
 
 const Filters: React.FC<Props> = observer(({ store, onClose, onScrollToTop }) => {
+  const danceStylesStore = useDanceStylesStore();
   const { draft } = store;
+
+  React.useEffect(() => {
+    void danceStylesStore.requestDanceStyles();
+  }, [danceStylesStore]);
 
   const handleTypesChange = React.useCallback((v: string[]) => store.setTypes(v), [store]);
 
@@ -82,7 +88,7 @@ const Filters: React.FC<Props> = observer(({ store, onClose, onScrollToTop }) =>
           mode="multi"
           value={draft.types}
           placeholder="Выберите тип танца"
-          options={store.typeOptions}
+          options={danceStylesStore.options}
           onChange={handleTypesChange}
           searchable
         />

@@ -70,7 +70,7 @@ export default class ApiRequest<
   call = async <
     T extends ResponseData,
     E extends ErrorResponse,
-    R extends Record<string, unknown> | FormData = Record<string, unknown>,
+    R extends Record<string, unknown> | FormData | unknown[] = Record<string, unknown>,
   >(
     params?: Partial<ApiCallArgs<R>> & {
       mockResponse?: ApiResponse<T, E>;

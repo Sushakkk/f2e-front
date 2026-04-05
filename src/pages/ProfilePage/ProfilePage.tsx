@@ -2,9 +2,12 @@ import { observer } from 'mobx-react';
 import * as React from 'react';
 import { Navigate, generatePath, useNavigate } from 'react-router-dom';
 
+import { Title } from 'components/common';
 import { RoutePath } from 'config/router/paths';
 import type { Enrollment } from 'config/users';
+import { UserRole } from 'entities/user';
 import { ProfilePageStore } from 'store/ProfilePageStore';
+import { useRootStore } from 'store/globals/root';
 import { useLocalStore, useUserStore } from 'store/hooks';
 
 import s from './ProfilePage.module.scss';
@@ -17,7 +20,7 @@ import TeacherStats from './components/TeacherStats/TeacherStats';
 import TeacherStudents from './components/TeacherStudents/TeacherStudents';
 
 const SECTION_TITLES: Record<string, string> = {
-  profile: 'Профиль',
+  profile: 'Персональные данные',
   enrollments: 'Мои записи',
   favorites: 'Избранное',
   teacherCourses: 'Мои курсы',
@@ -37,9 +40,10 @@ const MOCK_FAVORITE_COURSES = [1, 3, 10];
 const MOCK_FAVORITE_TEACHERS = ['Карпова Ксения', 'Кузнецов Артём', 'Смирнова Анна'];
 
 const ProfilePage: React.FC = () => {
+  const rootStore = useRootStore();
   const userStore = useUserStore();
   const navigate = useNavigate();
-  const store = useLocalStore(() => new ProfilePageStore());
+  const store = useLocalStore(() => new ProfilePageStore(rootStore));
 
   const user = userStore.user;
 
@@ -55,22 +59,34 @@ const ProfilePage: React.FC = () => {
     navigate(RoutePath.home);
   }, [userStore, navigate]);
 
+  const handleRetrySurvey = React.useCallback(() => {
+    navigate(RoutePath.survey);
+  }, [navigate]);
+
   if (!user) {
     return <Navigate to={RoutePath.auth} replace />;
   }
 
-  const enrollments = (user.enrollments ?? []).length > 0 ? user.enrollments! : MOCK_ENROLLMENTS;
-  const favCourses =
-    (user.favoriteCourseIds ?? []).length > 0 ? user.favoriteCourseIds! : MOCK_FAVORITE_COURSES;
-  const favTeachers =
-    (user.favoriteTeacherNames ?? []).length > 0
-      ? user.favoriteTeacherNames!
-      : MOCK_FAVORITE_TEACHERS;
+  const isMockUser = Boolean(user.registeredAt);
+  const enrollments = isMockUser ? user.enrollments ?? MOCK_ENROLLMENTS : user.enrollments ?? [];
+  const favCourses = isMockUser
+    ? user.favoriteCourseIds ?? MOCK_FAVORITE_COURSES
+    : user.favoriteCourseIds ?? [];
+  const favTeachers = isMockUser
+    ? user.favoriteTeacherNames ?? MOCK_FAVORITE_TEACHERS
+    : user.favoriteTeacherNames ?? [];
 
   const renderContent = () => {
     switch (store.activeSection) {
       case 'profile':
-        return <ProfileInfo user={user} onLogout={handleLogout} />;
+        return (
+          <ProfileInfo
+            user={user}
+            store={store}
+            onLogout={handleLogout}
+            onRetrySurvey={handleRetrySurvey}
+          />
+        );
 
       case 'enrollments':
         return <StudentEnrollments enrollments={enrollments} />;
@@ -115,11 +131,12 @@ const ProfilePage: React.FC = () => {
       <ProfileSidebar
         activeSection={store.activeSection}
         viewMode={store.viewMode}
+        canSwitchMode={user.role === UserRole.teacher}
         onSelect={store.setSection}
         onViewModeChange={store.setViewMode}
       />
       <div className={s.content}>
-        <h1 className={s.title}>{SECTION_TITLES[store.activeSection]}</h1>
+        <Title>{SECTION_TITLES[store.activeSection]}</Title>
         {renderContent()}
       </div>
     </div>

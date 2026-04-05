@@ -1,8 +1,8 @@
 import { IGlobalStore } from 'store/interfaces';
 
-import { UserFlags, UserServer } from './types';
+import { UserClient, UserFlags } from './types';
 
-export interface IUserStore<UserT extends UserServer = UserServer> extends IGlobalStore {
+export interface IUserStore<UserT extends UserClient = UserClient> extends IGlobalStore {
   user: null | UserT;
   flags: UserFlags;
 

@@ -202,5 +202,3 @@ export function getMetroOptionsForCities(cities: string[]): { value: string; lab
 }
 
 export const STUDIO_OPTIONS = uniqSorted(STUDIOS_MAP.map((st) => st.name));
-
-export const DANCE_TYPE_OPTIONS = uniqSorted(STUDIOS_MAP.flatMap((st) => st.courses));
