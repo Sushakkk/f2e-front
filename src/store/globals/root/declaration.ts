@@ -1,3 +1,4 @@
+import { CoursesStore } from 'store/CoursesStore';
 import { IAppStateModel } from 'store/models/AppStateModel/declaration';
 
 import { IApiStore } from '../api/declaration';
@@ -14,6 +15,8 @@ export interface IRootStore {
   appState: IAppStateModel;
 
   appParamsStore: IAppParamsStore;
+
+  coursesStore: CoursesStore;
 
   danceStylesStore: IDanceStylesStore;
 

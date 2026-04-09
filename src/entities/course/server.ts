@@ -16,6 +16,7 @@ export type CourseDetailServer = {
   date_from: string;
   date_to: string;
   images: string[];
+  teacher_id?: number;
   teacher_name: string;
   dance_style: string;
   city: string;

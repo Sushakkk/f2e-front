@@ -36,6 +36,7 @@ export function normalizeCourseDetail(data: CourseDetailServer): CourseDetailCli
     name: data.name,
     type: data.dance_style,
     teacher: {
+      id: data.teacher_id,
       name: data.teacher_name,
       bio: '',
       images: [],

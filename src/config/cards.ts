@@ -18,6 +18,7 @@ export type Review = {
 };
 
 export type Teacher = {
+  id?: number;
   name: string;
   bio: string;
   images: string[];

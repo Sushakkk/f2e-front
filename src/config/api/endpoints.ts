@@ -31,8 +31,11 @@ export const ENDPOINTS = {
     detail: (id: number): EndpointType => createApiEndpoint(`courses/${id}/`, 'GET'),
   },
   teachers: {
+    list: createApiEndpoint('teachers/', 'GET'),
     create: createApiEndpoint('teachers/', 'POST'),
     detail: (id: number): EndpointType => createApiEndpoint(`teachers/${id}/`, 'GET'),
     update: (id: number): EndpointType => createApiEndpoint(`teachers/${id}/`, 'PUT'),
+    favorite: (id: number, method: EndpointType['method'] = 'POST'): EndpointType =>
+      createApiEndpoint(`favorite-teachers/${id}/`, method),
   },
 } as const;

@@ -38,6 +38,7 @@ export function normalizeCourseListItem(data: CourseListItemServer): CourseListI
     name: data.name,
     type: data.dance_style,
     teacher: {
+      id: data.teacher_id,
       name: data.teacher_name,
       bio: '',
       images: [],

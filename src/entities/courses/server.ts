@@ -12,6 +12,7 @@ export type CourseListItemServer = {
   date_from: string;
   date_to: string;
   image: string;
+  teacher_id?: number;
   teacher_name: string;
   dance_style: string;
   city: string;

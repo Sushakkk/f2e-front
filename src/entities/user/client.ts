@@ -33,6 +33,7 @@ export type UserClient = {
   flags?: UserFlags;
   enrollments?: Enrollment[];
   favoriteCourseIds?: number[];
+  favoriteTeacherIds?: number[];
   favoriteTeacherNames?: string[];
   preferredTimeFrom?: string;
   preferredTimeTo?: string;

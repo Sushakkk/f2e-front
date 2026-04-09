@@ -1,5 +1,5 @@
 import cn from 'classnames';
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Autoplay, EffectCoverflow, Navigation } from 'swiper/modules';
 import { Swiper, SwiperSlide } from 'swiper/react';
 
@@ -29,6 +29,8 @@ const MIN_LOADER_MS = 300;
 function useImageOrientations<T>(items: T[], getImage: (item: T) => string) {
   const [verticalSet, setVerticalSet] = useState<Set<number> | null>(null);
   const getImageRef = useRef(getImage);
+  const imageUrls = useMemo(() => items.map((item) => getImage(item)), [items, getImage]);
+  const imageSignature = useMemo(() => imageUrls.join('|'), [imageUrls]);
 
   getImageRef.current = getImage;
 
@@ -36,7 +38,7 @@ function useImageOrientations<T>(items: T[], getImage: (item: T) => string) {
     if (items.length === 0) {
       setVerticalSet(new Set());
 
-      return;
+      return undefined;
     }
 
     // При смене списка сначала сбрасываем состояние, чтобы не рендерить
@@ -65,10 +67,10 @@ function useImageOrientations<T>(items: T[], getImage: (item: T) => string) {
       tryFinish();
     };
 
-    items.forEach((item, index) => {
+    imageUrls.forEach((imageUrl, index) => {
       const img = new Image();
 
-      img.src = getImageRef.current(item);
+      img.src = imageUrl;
 
       if (img.complete && img.naturalWidth > 0) {
         if (img.naturalHeight > img.naturalWidth) {
@@ -108,7 +110,7 @@ function useImageOrientations<T>(items: T[], getImage: (item: T) => string) {
       cancelled = true;
       clearTimeout(timer);
     };
-  }, [items]);
+  }, [imageSignature, imageUrls, items.length]);
 
   return verticalSet;
 }
@@ -138,7 +140,6 @@ export function CoverflowSwiper<T>({
   return (
     <div className={cn(s.root, className)}>
       <Swiper
-        key={isTablet ? 'slide' : 'coverflow'}
         className={s.swiper}
         modules={[EffectCoverflow, Navigation, Autoplay]}
         effect={isTablet ? 'slide' : 'coverflow'}

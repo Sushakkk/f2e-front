@@ -10,12 +10,14 @@ import s from './Favorites.module.scss';
 
 type Props = {
   favoriteCourseIds: number[];
+  favoriteTeacherIds: number[];
   favoriteTeacherNames: string[];
-  onTeacherClick: (name: string) => void;
+  onTeacherClick: (id: number) => void;
 };
 
 const Favorites: React.FC<Props> = ({
   favoriteCourseIds,
+  favoriteTeacherIds,
   favoriteTeacherNames,
   onTeacherClick,
 }) => {
@@ -53,12 +55,16 @@ const Favorites: React.FC<Props> = ({
         <div className={s.section}>
           <SectionHeader title="Избранные преподаватели" />
           <div className={s.list}>
-            {favoriteTeacherNames.map((name) => (
+            {favoriteTeacherNames.map((name, index) => (
               <ProfileCard
-                key={name}
+                key={`${name}-${favoriteTeacherIds[index] ?? index}`}
                 title={name}
                 avatar={getTeacherAvatar(name)}
-                onClick={() => onTeacherClick(name)}
+                onClick={
+                  favoriteTeacherIds[index]
+                    ? () => onTeacherClick(favoriteTeacherIds[index])
+                    : undefined
+                }
               />
             ))}
           </div>

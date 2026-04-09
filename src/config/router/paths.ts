@@ -5,7 +5,7 @@ export enum RoutePath {
   survey = '/survey',
   home = '/home',
   course = '/course/:id',
-  teacher = '/teacher/:name',
+  teacher = '/teacher/:id',
   calendar = '/calendar',
   map = '/map',
   profile = '/profile',

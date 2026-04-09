@@ -1,11 +1,10 @@
-import { ENDPOINTS } from './endpoints';
-
-export const API_READY_STATE: Record<keyof typeof ENDPOINTS, boolean> = {
+export const API_READY_STATE = {
   auth: false,
   dictionaries: false,
   flag: false,
   restart: false,
   getUser: false,
-  courses: false,
-  teachers: false,
+  coursesList: true,
+  courseDetail: true,
+  teachers: true,
 };

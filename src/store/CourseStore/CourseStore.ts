@@ -1,6 +1,6 @@
 import { action, computed, makeObservable, observable, runInAction } from 'mobx';
 
-import { API_READY_STATE, ENDPOINTS } from 'config/api';
+import { ENDPOINTS } from 'config/api';
 import type { CourseConfigItem } from 'config/cards';
 import { normalizeCourseDetail } from 'entities/course';
 import type { CourseDetailResponseServer } from 'entities/course';
@@ -8,11 +8,9 @@ import type { ErrorResponse } from 'store/globals/api/types';
 import type { IRootStore } from 'store/globals/root/declaration';
 import type { ILocalStore } from 'store/interfaces/ILocalStore';
 
-import { getMockCourseResponse } from '../../mocks/course';
-
 type PrivateFields = '_course' | '_isLoading' | '_loadError';
 
-export class CoursePageStore implements ILocalStore {
+export class CourseStore implements ILocalStore {
   private readonly _rootStore: IRootStore;
 
   private _course: CourseConfigItem | null = null;
@@ -60,30 +58,7 @@ export class CoursePageStore implements ILocalStore {
     >({
       ...ENDPOINTS.courses.detail(courseId),
     });
-
-    const useMock = !API_READY_STATE.courses;
-    const mockData = useMock ? getMockCourseResponse(courseId) : null;
-
-    if (useMock && !mockData) {
-      runInAction(() => {
-        this._isLoading = false;
-        this._loadError = true;
-        this._course = null;
-      });
-
-      return;
-    }
-
-    const callParams = useMock
-      ? {
-          mockResponse: {
-            isError: false as const,
-            data: mockData!,
-          },
-        }
-      : undefined;
-
-    const response = await request.call(callParams as Parameters<typeof request.call>[0]);
+    const response = await request.call();
 
     runInAction(() => {
       this._isLoading = false;

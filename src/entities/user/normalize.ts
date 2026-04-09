@@ -32,6 +32,7 @@ export const normalizeUser = (user: BackendUser): UserClient => ({
     : undefined,
   registeredAt: '',
   favoriteCourseIds: user.favorite_course_ids ?? [],
+  favoriteTeacherIds: user.favorite_teacher_ids ?? [],
   favoriteTeacherNames: [],
   preferredTimeFrom: user.preferred_time_from ?? undefined,
   preferredTimeTo: user.preferred_time_to ?? undefined,

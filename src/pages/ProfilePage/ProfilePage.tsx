@@ -38,6 +38,7 @@ const MOCK_ENROLLMENTS: Enrollment[] = [
 
 const MOCK_FAVORITE_COURSES = [1, 3, 10];
 const MOCK_FAVORITE_TEACHERS = ['Карпова Ксения', 'Кузнецов Артём', 'Смирнова Анна'];
+const MOCK_FAVORITE_TEACHER_IDS = [1, 2, 3];
 
 const ProfilePage: React.FC = () => {
   const rootStore = useRootStore();
@@ -48,8 +49,8 @@ const ProfilePage: React.FC = () => {
   const user = userStore.user;
 
   const goToTeacher = React.useCallback(
-    (teacherName: string) => {
-      navigate(generatePath(RoutePath.teacher, { name: encodeURIComponent(teacherName) }));
+    (teacherId: number) => {
+      navigate(generatePath(RoutePath.teacher, { id: String(teacherId) }));
     },
     [navigate]
   );
@@ -75,6 +76,9 @@ const ProfilePage: React.FC = () => {
   const favTeachers = isMockUser
     ? user.favoriteTeacherNames ?? MOCK_FAVORITE_TEACHERS
     : user.favoriteTeacherNames ?? [];
+  const favTeacherIds = isMockUser
+    ? user.favoriteTeacherIds ?? MOCK_FAVORITE_TEACHER_IDS
+    : user.favoriteTeacherIds ?? [];
 
   const renderContent = () => {
     switch (store.activeSection) {
@@ -95,6 +99,7 @@ const ProfilePage: React.FC = () => {
         return (
           <Favorites
             favoriteCourseIds={favCourses}
+            favoriteTeacherIds={favTeacherIds}
             favoriteTeacherNames={favTeachers}
             onTeacherClick={goToTeacher}
           />

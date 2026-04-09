@@ -1,5 +1,6 @@
 import IMAGES from 'assets/images';
 import { RoutePath } from 'config/router/paths';
+import { CoursesStore } from 'store/CoursesStore';
 import { ApiStore } from 'store/globals/api';
 import { IApiStore } from 'store/globals/api/declaration';
 import { AppParamsStore } from 'store/globals/appParams';
@@ -30,6 +31,8 @@ class RootStore implements IRootStore {
   readonly appParamsStore: IAppParamsStore = new AppParamsStore();
 
   readonly apiStore: IApiStore = new ApiStore(this);
+
+  readonly coursesStore: CoursesStore = new CoursesStore(this);
 
   readonly danceStylesStore: IDanceStylesStore = new DanceStylesStore(this);
 
@@ -90,6 +93,7 @@ class RootStore implements IRootStore {
   };
 
   readonly destroy = (): void => {
+    this.coursesStore.destroy();
     this.routerStore.destroy();
   };
 }

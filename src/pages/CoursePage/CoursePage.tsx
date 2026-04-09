@@ -8,7 +8,7 @@ import { InfoPage } from 'components/common/InfoPage';
 import { Row } from 'components/common/Row';
 import { RoutePath } from 'config/router/paths';
 import { MockDb } from 'services/mockDb';
-import { CoursePageStore } from 'store/CoursePageStore';
+import { CourseStore } from 'store/CourseStore';
 import { useRootStore } from 'store/globals/root';
 import { useUserStore } from 'store/hooks';
 import { useLocalStore } from 'store/hooks/useLocalStore';
@@ -22,7 +22,7 @@ const CoursePage: React.FC = () => {
   const userStore = useUserStore();
   const navigate = useNavigate();
 
-  const courseStore = useLocalStore(() => new CoursePageStore(rootStore));
+  const courseStore = useLocalStore(() => new CourseStore(rootStore));
   const [enrolling, setEnrolling] = React.useState(false);
   const numericCourseId = Number(id);
 
@@ -89,8 +89,12 @@ const CoursePage: React.FC = () => {
   }, [courseData, enrolling, userStore]);
 
   const goToTeacher = React.useCallback(
-    (teacherName: string) => {
-      navigate(generatePath(RoutePath.teacher, { name: encodeURIComponent(teacherName) }));
+    (teacherId?: number) => {
+      if (!teacherId) {
+        return;
+      }
+
+      navigate(generatePath(RoutePath.teacher, { id: String(teacherId) }));
     },
     [navigate]
   );
@@ -149,7 +153,7 @@ const CoursePage: React.FC = () => {
       <Row label="Преподаватель:" accent>
         <div
           className={cn(s.text, s.text_accent)}
-          onClick={() => goToTeacher(courseData.teacher.name)}
+          onClick={() => goToTeacher(courseData.teacher.id)}
         >
           {courseData.teacher.name}
         </div>

@@ -5,39 +5,35 @@ import { Navigate, generatePath, useNavigate, useParams } from 'react-router-dom
 import { InfoPage } from 'components/common/InfoPage';
 import { Row } from 'components/common/Row';
 import { StarRating } from 'components/common/StarRating';
-import { COURSES_CONFIG, CourseConfigItem } from 'config';
 import { RoutePath } from 'config/router/paths';
-import { MockDb } from 'services/mockDb';
+import { TeacherStore } from 'store/TeacherStore';
+import { useRootStore } from 'store/globals/root';
 import { useUserStore } from 'store/hooks';
+import { useLocalStore } from 'store/hooks/useLocalStore';
 
 import s from './TeacherPage.module.scss';
 import { ReviewsSection } from './components';
 
 const TeacherPage: React.FC = () => {
-  const { name } = useParams<{ name: string }>();
+  const { id } = useParams<{ id: string }>();
+  const rootStore = useRootStore();
   const userStore = useUserStore();
   const navigate = useNavigate();
+  const teacherStore = useLocalStore(() => new TeacherStore(rootStore));
 
-  const decodedName = name ? decodeURIComponent(name) : '';
+  const teacherId = Number(id);
   const isLoggedIn = Boolean(userStore.user);
 
-  const teacher = React.useMemo(() => {
-    return MockDb.getTeacherProfile(decodedName);
-  }, [decodedName]);
+  React.useEffect(() => {
+    if (!Number.isFinite(teacherId) || teacherId <= 0) {
+      return;
+    }
 
-  const teacherCourses: CourseConfigItem[] = React.useMemo(
-    () => [
-      ...COURSES_CONFIG.filter((c) => c.teacher.name === decodedName),
-      ...MockDb.getTeacherCoursesByName(decodedName),
-    ],
-    [decodedName]
-  );
+    void teacherStore.loadTeacher(teacherId);
+  }, [teacherId, teacherStore]);
 
-  const isFavorite = React.useMemo(
-    () => (teacher ? MockDb.isTeacherFavorite(teacher.name) : false),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [teacher, userStore.user]
-  );
+  const teacher = teacherStore.teacher;
+  const isFavorite = Boolean(teacher && userStore.user?.favoriteTeacherIds?.includes(teacher.id));
 
   const goToCourse = React.useCallback(
     (courseId: number) => {
@@ -57,12 +53,19 @@ const TeacherPage: React.FC = () => {
       return;
     }
 
-    MockDb.toggleFavoriteTeacher(teacher.name);
-    userStore.refreshUser();
-  }, [isLoggedIn, teacher, navigate, userStore]);
+    void teacherStore.toggleFavorite(isFavorite);
+  }, [isFavorite, isLoggedIn, teacher, navigate, teacherStore]);
 
-  if (!name || !teacher) {
+  if (!id || !Number.isFinite(teacherId) || teacherId <= 0) {
     return <Navigate to={RoutePath.root} />;
+  }
+
+  if (teacherStore.loadError) {
+    return <Navigate to={RoutePath.root} />;
+  }
+
+  if (!teacher) {
+    return <div>Загрузка преподавателя...</div>;
   }
 
   return (
@@ -75,6 +78,7 @@ const TeacherPage: React.FC = () => {
     >
       <Row label="Опыт:">{teacher.experience} лет</Row>
       <Row label="Специализации:">{teacher.specializations.join(', ')}</Row>
+      {teacher.city && <Row label="Город:">{teacher.city}</Row>}
       {teacher.achievements.length > 0 && (
         <Row label="Достижения:">
           {teacher.achievements.map((a, i) => (
@@ -85,14 +89,14 @@ const TeacherPage: React.FC = () => {
           ))}
         </Row>
       )}
-      {teacherCourses.length > 0 && (
+      {teacher.courses.length > 0 && (
         <Row label="Курсы:">
-          {teacherCourses.map((course, i) => (
+          {teacher.courses.map((course, i) => (
             <React.Fragment key={course.id}>
               <span className={s.courseLink} onClick={() => goToCourse(course.id)}>
                 {course.name}
               </span>
-              {i < teacherCourses.length - 1 && <br />}
+              {i < teacher.courses.length - 1 && <br />}
             </React.Fragment>
           ))}
         </Row>

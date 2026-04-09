@@ -6,8 +6,12 @@ export const useLocalStore = <S extends ILocalStore = any>(
   creator: () => S,
   effect: any[] = []
 ): S => {
-  const store = React.useRef(creator());
+  const store = React.useRef<S | null>(null);
   const isFirstRender = React.useRef(true);
+
+  if (store.current === null) {
+    store.current = creator();
+  }
 
   React.useEffect(() => {
     return () => {
@@ -22,7 +26,7 @@ export const useLocalStore = <S extends ILocalStore = any>(
       return;
     }
 
-    store.current.destroy();
+    store.current?.destroy();
     store.current = creator();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, effect);

@@ -42,6 +42,17 @@ const Card: React.FC<Props> = ({
     }
   }, [navigate, id]);
 
+  const goToTeacher = React.useCallback(
+    (e: React.MouseEvent<HTMLDivElement>) => {
+      e.stopPropagation();
+
+      if (teacher?.id) {
+        navigate(generatePath(RoutePath.teacher, { id: String(teacher.id) }));
+      }
+    },
+    [navigate, teacher?.id]
+  );
+
   return (
     <div
       className={cn(
@@ -62,7 +73,11 @@ const Card: React.FC<Props> = ({
           {name}
           {statusLabel && <span className={s.statusLabel}> · {statusLabel}</span>}
         </div>
-        {teacher && <div className={s.subtitle}>{teacher.name}</div>}
+        {teacher && (
+          <div className={s.subtitle} onClick={teacher.id ? goToTeacher : undefined}>
+            {teacher.name}
+          </div>
+        )}
         {dateFrom && dateTo && (
           <div className={s.subtitle}>
             {dateFrom} - {dateTo}

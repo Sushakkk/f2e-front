@@ -1,6 +1,6 @@
 import { action, computed, makeObservable, observable, runInAction } from 'mobx';
 
-import { API_READY_STATE, ENDPOINTS } from 'config/api';
+import { ENDPOINTS } from 'config/api';
 import type { CourseConfigItem } from 'config/cards';
 import { normalizeCourseListItem } from 'entities/courses';
 import type { CourseListResponseServer } from 'entities/courses';
@@ -8,11 +8,9 @@ import type { ErrorResponse } from 'store/globals/api/types';
 import type { IRootStore } from 'store/globals/root/declaration';
 import type { ILocalStore } from 'store/interfaces/ILocalStore';
 
-import { MOCK_COURSES_LIST_RESPONSE } from '../../mocks/courses';
-
 type PrivateFields = '_courses' | '_isLoading' | '_loadError';
 
-export class HomePageStore implements ILocalStore {
+export class CoursesStore implements ILocalStore {
   private readonly _rootStore: IRootStore;
 
   private _courses: CourseConfigItem[] = [];
@@ -51,6 +49,10 @@ export class HomePageStore implements ILocalStore {
       return;
     }
 
+    if (this._courses.length > 0) {
+      return;
+    }
+
     this._isLoading = true;
     this._loadError = false;
 
@@ -60,18 +62,7 @@ export class HomePageStore implements ILocalStore {
     >({
       ...ENDPOINTS.courses.list,
     });
-
-    const useMock = !API_READY_STATE.courses;
-    const callParams = useMock
-      ? {
-          mockResponse: {
-            isError: false as const,
-            data: MOCK_COURSES_LIST_RESPONSE,
-          },
-        }
-      : undefined;
-
-    const response = await request.call(callParams as Parameters<typeof request.call>[0]);
+    const response = await request.call();
 
     runInAction(() => {
       this._isLoading = false;

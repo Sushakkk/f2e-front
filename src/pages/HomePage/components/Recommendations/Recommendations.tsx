@@ -14,6 +14,9 @@ type Props = {
 
 export const Recommendations: React.FC<Props> = ({ items }) => {
   const navigate = useNavigate();
+  const getImage = useCallback((it: CourseConfigItem) => it.images?.[0] ?? '', []);
+  const getKey = useCallback((it: CourseConfigItem) => it.id, []);
+  const getAlt = useCallback((it: CourseConfigItem) => it.name, []);
 
   const goToCourse = useCallback(
     (item: CourseConfigItem) => {
@@ -24,12 +27,23 @@ export const Recommendations: React.FC<Props> = ({ items }) => {
     [navigate]
   );
 
+  const goToTeacher = useCallback(
+    (e: React.MouseEvent<HTMLDivElement>, teacherId?: number) => {
+      e.stopPropagation();
+
+      if (teacherId) {
+        navigate(generatePath(RoutePath.teacher, { id: String(teacherId) }));
+      }
+    },
+    [navigate]
+  );
+
   return (
     <CoverflowSwiper
       items={items}
-      getImage={(it: CourseConfigItem) => it.images?.[0]}
-      getKey={(it: CourseConfigItem) => it.id}
-      getAlt={(it: CourseConfigItem) => it.name}
+      getImage={getImage}
+      getKey={getKey}
+      getAlt={getAlt}
       onItemClick={goToCourse}
     >
       {(it: CourseConfigItem) => {
@@ -41,7 +55,14 @@ export const Recommendations: React.FC<Props> = ({ items }) => {
             <div className={s.level}>{it.level}</div>
             <div className={s.overlay}>
               <div className={s.title}>{it.name}</div>
-              {it.teacher && <div className={s.subtitle}>{it.teacher.name}</div>}
+              {it.teacher && (
+                <div
+                  className={s.subtitle}
+                  onClick={it.teacher.id ? (e) => goToTeacher(e, it.teacher.id) : undefined}
+                >
+                  {it.teacher.name}
+                </div>
+              )}
               {it.dateFrom && it.dateTo && (
                 <div className={s.subtitle}>
                   {it.dateFrom} - {it.dateTo}

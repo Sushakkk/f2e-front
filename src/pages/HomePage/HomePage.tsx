@@ -5,7 +5,6 @@ import * as React from 'react';
 import { Card } from 'components/common';
 import { CourseConfigItem } from 'config';
 import { FiltersStore } from 'store/FiltersStore';
-import { HomePageStore } from 'store/HomePageStore';
 import { PaginationStore } from 'store/PaginationStore';
 import { QueryStore, parseQueryFromURL } from 'store/QueryStore';
 import { useRootStore } from 'store/globals/root';
@@ -20,10 +19,9 @@ const HomePage: React.FC = () => {
   const rootStore = useRootStore();
   const isMobile = useMediaQuery('(max-width: 992px)');
   const [isFiltersOpen, setIsFiltersOpen] = React.useState(false);
+  const homeStore = rootStore.coursesStore;
 
   const handleClose = React.useCallback(() => setIsFiltersOpen(false), []);
-
-  const homeStore = useLocalStore(() => new HomePageStore(rootStore));
 
   // Parse URL query params once on mount
   const queryParams = React.useRef(parseQueryFromURL()).current;
@@ -62,7 +60,7 @@ const HomePage: React.FC = () => {
       document.documentElement.style.overflow = prevHtmlOverflow;
       document.body.style.overflow = prevBodyOverflow;
     };
-  }, [isFiltersOpen]);
+  }, [isFiltersOpen, isMobile]);
 
   const { search, setSearch, filteredCourses, isEmpty } = useCoursesSearch(
     filtersStore.filteredCourses,
@@ -124,11 +122,12 @@ const HomePage: React.FC = () => {
     scrollToAnchor();
   }, [currentPage, scrollToAnchor]);
 
-  const recommendationsItems = filteredCourses.slice(0, 6);
+  const recommendationsItems = React.useMemo(() => filteredCourses.slice(0, 6), [filteredCourses]);
+  const showInitialLoader = homeStore.isLoading && homeStore.courses.length === 0;
 
   return (
     <div className={s.page}>
-      {homeStore.isLoading && <div className={s.loading}>Загрузка курсов…</div>}
+      {showInitialLoader && <div className={s.loading}>Загрузка курсов…</div>}
       <Recommendations items={recommendationsItems} />
       <div className={s.searchBarWrapper}>
         <div ref={anchorRef} className={s.scrollAnchor} />
@@ -146,7 +145,7 @@ const HomePage: React.FC = () => {
               <Card key={item.id} item={item} />
             ))}
           </div>
-          {isEmpty && !homeStore.isLoading && <div className={s.empty}>Ничего не найдено</div>}
+          {isEmpty && !showInitialLoader && <div className={s.empty}>Ничего не найдено</div>}
         </div>
         <aside
           ref={sidebarRef}

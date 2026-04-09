@@ -1,1 +1,0 @@
-export { CoursePageStore } from './CoursePageStore';
