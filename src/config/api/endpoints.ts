@@ -21,6 +21,7 @@ export const ENDPOINTS = {
   dictionaries: {
     cities: createApiEndpoint('cities/', 'GET'),
     danceStyles: createApiEndpoint('dance-styles/', 'GET'),
+    studios: createApiEndpoint('studios/', 'GET'),
   },
   flag: createApiEndpoint('user/flag', 'POST'),
   restart: createApiEndpoint('user/restart', 'POST'),
@@ -28,7 +29,9 @@ export const ENDPOINTS = {
 
   courses: {
     list: createApiEndpoint('courses/', 'GET'),
+    create: createApiEndpoint('courses/', 'POST'),
     detail: (id: number): EndpointType => createApiEndpoint(`courses/${id}/`, 'GET'),
+    update: (id: number): EndpointType => createApiEndpoint(`courses/${id}/`, 'PATCH'),
   },
   teachers: {
     list: createApiEndpoint('teachers/', 'GET'),
@@ -37,5 +40,6 @@ export const ENDPOINTS = {
     update: (id: number): EndpointType => createApiEndpoint(`teachers/${id}/`, 'PUT'),
     favorite: (id: number, method: EndpointType['method'] = 'POST'): EndpointType =>
       createApiEndpoint(`favorite-teachers/${id}/`, method),
+    myCourses: createApiEndpoint('my-teaching-courses/', 'GET'),
   },
 } as const;

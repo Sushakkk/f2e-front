@@ -1,5 +1,6 @@
 import * as React from 'react';
 
+import fallbackImage from 'assets/images/courses/five-to-eight-placeholder.png';
 import type { UserClient } from 'entities/user';
 
 import s from './ProfileInfoHero.module.scss';
@@ -14,11 +15,7 @@ export const ProfileInfoHero: React.FC<Props> = ({ user, fullName }) => (
     <div className={s.heroGlow} />
     <div className={s.heroMain}>
       <div className={s.avatarWrap}>
-        {user.avatar ? (
-          <img className={s.avatar} src={user.avatar} alt="Аватар" />
-        ) : (
-          <div className={s.avatarFallback}>{(user.firstName || user.username).slice(0, 1)}</div>
-        )}
+        <img className={s.avatar} src={user.avatar || fallbackImage} alt="Аватар" />
       </div>
       <div className={s.heroText}>
         <div className={s.eyebrow}>Личный кабинет</div>

@@ -80,8 +80,7 @@ class RootStore implements IRootStore {
 
     tasks.push(this.routerStore.init(initProps.navigate));
     tasks.push(this.userStore.init());
-
-    tasks.push(new Promise((resolve) => setTimeout(resolve, 1000, true)));
+    tasks.push(this.coursesStore.loadCourses().then(() => true));
 
     return tasks;
   };

@@ -1,10 +1,14 @@
 import { RoutePath } from 'config/router/paths';
+import { PROFILE_DEFAULT_PATH } from 'config/router/profilePaths';
 
 export type HeaderNavItem = {
   id: string;
   label: string;
   to: string;
   end?: boolean;
+
+  /** Подсветка пункта для всех путей с этим префиксом (например `/profile`) */
+  activePathPrefix?: string;
 };
 
 export const HEADER_NAV: HeaderNavItem[] = [
@@ -27,6 +31,7 @@ export const HEADER_NAV: HeaderNavItem[] = [
   {
     id: 'profile',
     label: 'Профиль',
-    to: RoutePath.profile,
+    to: PROFILE_DEFAULT_PATH,
+    activePathPrefix: RoutePath.profile,
   },
 ];

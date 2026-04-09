@@ -128,17 +128,33 @@ function buildSearchString(filters: CoursesFiltersValue, page: number, search: s
   return str ? `?${str}` : '';
 }
 
+/**
+ * Синхронизация строки поиска с адресной строкой.
+ * Значение — то же, что возвращает buildSearchString: `?a=1&b=2` или пустая строка.
+ * Нужно прокидывать из страницы через React Router `navigate`, иначе replaceState
+ * обходит внутреннее состояние Router и query-параметры могут сбрасываться.
+ */
+export type QuerySearchSync = (search: string) => void;
+
 export class QueryStore implements ILocalStore {
   private _search = '';
+
+  private readonly _syncSearch: QuerySearchSync;
 
   private _disposers: IReactionDisposer[] = [];
 
   constructor(
     private _filtersStore: FiltersStore,
     private _paginationStore: PaginationStore,
-    initialSearch = ''
+    initialSearch = '',
+    syncSearch?: QuerySearchSync
   ) {
     this._search = initialSearch;
+    this._syncSearch =
+      syncSearch ??
+      ((qs) => {
+        window.history.replaceState(null, '', window.location.pathname + qs);
+      });
 
     makeObservable<this, '_search'>(this, {
       _search: observable,
@@ -155,7 +171,7 @@ export class QueryStore implements ILocalStore {
         ({ filters, page, search }) => {
           const qs = buildSearchString(filters, page, search);
 
-          window.history.replaceState(null, '', window.location.pathname + qs);
+          this._syncSearch(qs);
         }
       )
     );

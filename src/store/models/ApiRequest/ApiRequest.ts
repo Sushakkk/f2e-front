@@ -92,8 +92,8 @@ export default class ApiRequest<
     this._abortController = new AbortController();
 
     const requestConfig: AxiosRequestConfig = {
-      url: this._requestParams.url,
-      method: this._requestParams.method,
+      url: params?.url ?? this._requestParams.url,
+      method: params?.method ?? this._requestParams.method,
       params: params?.params ?? this._requestParams.params,
       data: params?.data ?? this._requestParams.data,
       headers: {

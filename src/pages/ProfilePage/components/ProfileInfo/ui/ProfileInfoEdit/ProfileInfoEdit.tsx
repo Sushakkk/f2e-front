@@ -1,7 +1,8 @@
 import { observer } from 'mobx-react';
 import * as React from 'react';
 
-import { SelectDropdown } from 'components/common';
+import fallbackImage from 'assets/images/courses/five-to-eight-placeholder.png';
+import { ImageUploadButton, SelectDropdown } from 'components/common';
 import Button from 'components/common/Button/Button';
 import type { ProfilePageStore } from 'store/ProfilePageStore';
 import { useDanceStylesStore } from 'store/hooks';
@@ -17,7 +18,6 @@ type Props = {
 const ProfileInfoEditComponent: React.FC<Props> = ({ store }) => {
   const danceStylesStore = useDanceStylesStore();
   const avatarInputRef = React.useRef<HTMLInputElement | null>(null);
-  const teacherImagesInputRef = React.useRef<HTMLInputElement | null>(null);
 
   React.useEffect(() => {
     void danceStylesStore.requestDanceStyles();
@@ -31,9 +31,11 @@ const ProfileInfoEditComponent: React.FC<Props> = ({ store }) => {
           hint="Редактируйте информацию, которая видна в профиле."
           className={s.formSection}
         >
-          {store.avatarPreview && (
-            <img className={s.avatarPreview} src={store.avatarPreview} alt="Превью аватара" />
-          )}
+          <img
+            className={s.avatarPreview}
+            src={store.avatarPreview || fallbackImage}
+            alt="Превью аватара"
+          />
           <div className={s.fieldGrid}>
             <label className={s.field}>
               <span className={s.label}>Username</span>
@@ -141,27 +143,14 @@ const ProfileInfoEditComponent: React.FC<Props> = ({ store }) => {
                 rows={4}
               />
             </label>
-            <input
-              ref={teacherImagesInputRef}
-              className={s.fileInput}
-              type="file"
-              accept="image/*"
+            <ImageUploadButton
+              label="Добавить фотографии"
+              className={s.utilityBtn}
               multiple
-              onChange={(e) => {
-                if (e.target.files) {
-                  void store.addTeacherImages(e.target.files);
-                  e.target.value = '';
-                }
+              onSelect={(files) => {
+                void store.addTeacherImages(files);
               }}
             />
-            <Button
-              mode="purpleDashed"
-              type="button"
-              className={s.utilityBtn}
-              onClick={() => teacherImagesInputRef.current?.click()}
-            >
-              Добавить фотографии
-            </Button>
             {store.teacherImagePreviews.length > 0 && (
               <div className={s.gallery}>
                 {store.teacherImagePreviews.map((image, index) => (

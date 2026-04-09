@@ -1,9 +1,16 @@
+import cx from 'clsx';
 import { observer } from 'mobx-react';
 import * as React from 'react';
 
-import { DateRangePicker, SectionHeader, SelectDropdown } from 'components/common';
+import ArrowIcon from 'assets/images/arrow.svg?react';
+import {
+  CloseIconButton,
+  DateRangePicker,
+  ImageUploadButton,
+  SectionHeader,
+  SelectDropdown,
+} from 'components/common';
 import Button from 'components/common/Button/Button';
-import { COURSES_CONFIG } from 'config/cards';
 import { COURSE_LEVELS } from 'config/levels';
 import type { ProfilePageStore } from 'store/ProfilePageStore';
 import { useDanceStylesStore } from 'store/hooks';
@@ -15,14 +22,7 @@ const WEEKDAYS = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'];
 
 const LEVEL_OPTIONS = COURSE_LEVELS.map((lvl) => ({ value: lvl, label: lvl }));
 const WEEKDAY_OPTIONS = WEEKDAYS.map((w) => ({ value: w, label: w }));
-
-const makeSelectOptions = (key: 'type' | 'studio' | 'city'): { value: string; label: string }[] =>
-  [...new Map(COURSES_CONFIG.map((c) => [c[key], { value: c[key], label: c[key] }])).values()].sort(
-    (a, b) => a.label.localeCompare(b.label)
-  );
-
-const STUDIO_OPTIONS = makeSelectOptions('studio');
-const CITY_OPTIONS = makeSelectOptions('city');
+const REQUIRED_MARK = <span className={s.requiredMark}>*</span>;
 
 type Props = {
   store: ProfilePageStore;
@@ -35,10 +35,25 @@ const REFERENCE_YEAR = new Date().getFullYear();
 const CourseForm: React.FC<Props> = ({ store, teacherId, isEditing }) => {
   const danceStylesStore = useDanceStylesStore();
   const form = store.courseFormData;
+  const [selectedPhotoIndex, setSelectedPhotoIndex] = React.useState(0);
 
   React.useEffect(() => {
     void danceStylesStore.requestDanceStyles();
-  }, [danceStylesStore]);
+    void store.loadReferenceData();
+  }, [danceStylesStore, store]);
+
+  const studioOptions = React.useMemo(
+    () =>
+      store.studios
+        .filter((studio) => !form.city || studio.city === form.city)
+        .map((studio) => ({ value: studio.name, label: studio.name })),
+    [form.city, store.studios]
+  );
+
+  const cityOptions = React.useMemo(
+    () => store.cities.map((city) => ({ value: city.name, label: city.name })),
+    [store.cities]
+  );
 
   const dateFromIso = React.useMemo(
     () => ddmmToIso(form.dateFrom, REFERENCE_YEAR),
@@ -57,6 +72,18 @@ const CourseForm: React.FC<Props> = ({ store, teacherId, isEditing }) => {
     },
     [store]
   );
+
+  const previewCount = store.courseImagePreviews.length;
+
+  React.useEffect(() => {
+    setSelectedPhotoIndex((prev) => {
+      if (previewCount === 0) {
+        return 0;
+      }
+
+      return Math.min(prev, previewCount - 1);
+    });
+  }, [previewCount]);
 
   const handleSubmit = React.useCallback(
     (e: React.FormEvent) => {
@@ -79,18 +106,100 @@ const CourseForm: React.FC<Props> = ({ store, teacherId, isEditing }) => {
           &times;
         </button>
       </div>
+      <div className={s.imageSection}>
+        {previewCount > 0 && (
+          <p className={s.cardPhotoHint}>
+            Первое фото в ряду будет отображаться на карточке курса в каталоге.
+            <br />
+            Нажмите на фото и перетащите его в нужное место.
+          </p>
+        )}
+        {previewCount > 0 && (
+          <div className={s.gallery}>
+            {store.courseImagePreviews.map((image, index) => (
+              <div
+                key={`${image}-${index}`}
+                className={cx(
+                  s.galleryItem,
+                  previewCount > 1 && s.galleryItem_selectable,
+                  index === selectedPhotoIndex && s.galleryItem_selected
+                )}
+                onClick={() => {
+                  if (previewCount > 1) {
+                    setSelectedPhotoIndex(index);
+                  }
+                }}
+              >
+                <div className={s.galleryImageWrap}>
+                  <img className={s.galleryImage} src={image} alt={`Фото ${index + 1}`} />
+                  <span
+                    className={s.imageRemoveHitbox}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                    }}
+                  >
+                    <CloseIconButton
+                      className={s.imageRemoveBtn}
+                      iconClassName={s.imageRemoveIcon}
+                      onClick={() => store.removeCourseImage(index)}
+                      ariaLabel={`Удалить фото ${index + 1}`}
+                    />
+                  </span>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+        {previewCount > 1 && (
+          <div className={s.reorderBar}>
+            <div className={s.reorderRow}>
+              <button
+                type="button"
+                className={s.reorderBtn}
+                disabled={selectedPhotoIndex === 0}
+                onClick={() => {
+                  store.moveCourseImage(selectedPhotoIndex, -1);
+                  setSelectedPhotoIndex((i) => i - 1);
+                }}
+                aria-label="Сдвинуть выбранное фото влево"
+              >
+                <ArrowIcon className={s.reorderIconLeft} />
+              </button>
+              <button
+                type="button"
+                className={s.reorderBtn}
+                disabled={selectedPhotoIndex === previewCount - 1}
+                onClick={() => {
+                  store.moveCourseImage(selectedPhotoIndex, 1);
+                  setSelectedPhotoIndex((i) => i + 1);
+                }}
+                aria-label="Сдвинуть выбранное фото вправо"
+              >
+                <ArrowIcon className={s.reorderIconRight} />
+              </button>
+            </div>
+          </div>
+        )}
+        <ImageUploadButton
+          label="Добавить фотографии"
+          className={s.utilityBtn}
+          multiple
+          onSelect={(files) => store.setCourseImageFiles(files)}
+        />
+      </div>
       <div className={s.grid}>
         <label className={s.field}>
-          <span className={s.label}>Название</span>
+          <span className={s.label}>Название {REQUIRED_MARK}</span>
           <input
             className={s.input}
             value={form.name}
+            placeholder="Введите название курса"
             onChange={(e) => store.updateFormField('name', e.target.value)}
             required
           />
         </label>
         <label className={s.field}>
-          <span className={s.label}>Стиль танца</span>
+          <span className={s.label}>Стиль танца {REQUIRED_MARK}</span>
           <SelectDropdown
             mode="single"
             value={form.type}
@@ -102,7 +211,7 @@ const CourseForm: React.FC<Props> = ({ store, teacherId, isEditing }) => {
           />
         </label>
         <label className={s.field}>
-          <span className={s.label}>Уровень</span>
+          <span className={s.label}>Уровень {REQUIRED_MARK}</span>
           <SelectDropdown
             mode="single"
             value={form.level}
@@ -113,46 +222,45 @@ const CourseForm: React.FC<Props> = ({ store, teacherId, isEditing }) => {
         </label>
         <div className={s.datesPriceRow}>
           <label className={s.field}>
-            <span className={s.label}>Даты курса</span>
+            <span className={s.label}>Даты курса {REQUIRED_MARK}</span>
             <DateRangePicker from={dateFromIso} to={dateToIso} onChange={handleDateRangeChange} />
           </label>
           <label className={s.field}>
-            <span className={s.label}>Цена (₽)</span>
+            <span className={s.label}>Цена (₽) {REQUIRED_MARK}</span>
             <input
               className={s.input}
               type="number"
               value={form.price}
-              onChange={(e) => store.updateFormField('price', Number(e.target.value))}
+              placeholder="Введите цену"
+              onChange={(e) => store.updateFormField('price', e.target.value)}
               required
             />
           </label>
         </div>
         <label className={s.field}>
-          <span className={s.label}>Студия</span>
+          <span className={s.label}>Студия {REQUIRED_MARK}</span>
           <SelectDropdown
             mode="single"
             value={form.studio}
-            placeholder="Выберите или введите студию"
-            options={STUDIO_OPTIONS}
+            placeholder="Выберите студию"
+            options={studioOptions}
             onChange={(v) => store.updateFormField('studio', v)}
             searchable
-            allowCustomValue
           />
         </label>
         <label className={s.field}>
-          <span className={s.label}>Город</span>
+          <span className={s.label}>Город {REQUIRED_MARK}</span>
           <SelectDropdown
             mode="single"
             value={form.city}
-            placeholder="Выберите или введите город"
-            options={CITY_OPTIONS}
+            placeholder="Выберите город"
+            options={cityOptions}
             onChange={(v) => store.updateFormField('city', v)}
             searchable
-            allowCustomValue
           />
         </label>
         <label className={s.field}>
-          <span className={s.label}>Вместимость</span>
+          <span className={s.label}>Вместимость {REQUIRED_MARK}</span>
           <input
             className={s.input}
             type="number"
@@ -167,10 +275,22 @@ const CourseForm: React.FC<Props> = ({ store, teacherId, isEditing }) => {
         <textarea
           className={s.textarea}
           value={form.description}
+          placeholder="Введите описание курса"
           onChange={(e) => store.updateFormField('description', e.target.value)}
           rows={3}
         />
       </label>
+      <div className={s.grid}>
+        <label className={s.fieldWide}>
+          <span className={s.label}>Ссылка на музыку</span>
+          <input
+            className={s.input}
+            value={form.musicUrl}
+            placeholder="https://..."
+            onChange={(e) => store.updateFormField('musicUrl', e.target.value)}
+          />
+        </label>
+      </div>
       <div className={s.scheduleSection}>
         <SectionHeader title="Расписание" onAdd={store.addScheduleEntry} addLabel="Добавить" />
         {form.schedule.map((entry, idx) => (

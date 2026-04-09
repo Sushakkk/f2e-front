@@ -1,6 +1,7 @@
 import * as React from 'react';
 
 import { RoutePath } from 'config/router/paths';
+import { PROFILE_DEFAULT_PATH } from 'config/router/profilePaths';
 
 import CalendarIcon from './img/calendar.svg?react';
 import HomeIcon from './img/home.svg?react';
@@ -12,6 +13,7 @@ export type FooterNavItem = {
   label: string;
   to: string;
   end?: boolean;
+  activePathPrefix?: string;
   Icon: React.FC<React.SVGProps<SVGSVGElement>>;
 };
 
@@ -38,7 +40,8 @@ export const FOOTER_NAV: FooterNavItem[] = [
   {
     id: 'profile',
     label: 'Профиль',
-    to: RoutePath.profile,
+    to: PROFILE_DEFAULT_PATH,
+    activePathPrefix: RoutePath.profile,
     Icon: ProfileIcon,
   },
 ];

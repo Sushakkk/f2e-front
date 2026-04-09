@@ -33,10 +33,11 @@ export type CourseFormData = {
   level: string;
   dateFrom: string;
   dateTo: string;
-  price: number;
+  price: string;
   studio: string;
   city: string;
   description: string;
+  musicUrl: string;
   capacity: number;
   schedule: { weekday: string; timeFrom: string; timeTo: string; location?: string }[];
 };

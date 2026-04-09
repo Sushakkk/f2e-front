@@ -1,0 +1,34 @@
+@import "styles/mixins";
+
+.button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  background: rgba($color-white, 0.06);
+  border: 1px solid rgba($color-white, 0.08);
+  border-radius: 50%;
+  color: $color-white-secondary;
+  cursor: pointer;
+  transition:
+    color 200ms ease,
+    background 200ms ease,
+    border-color 200ms ease,
+    transform 200ms ease;
+
+  @include hover {
+    color: $color-white;
+    background: rgba($color-accent, 0.18);
+    border-color: rgba($color-accent, 0.5);
+    transform: scale(1.05);
+  }
+}
+
+.icon {
+  display: block;
+  font-size: 24px;
+  line-height: 1;
+  transform: translateY(-1px);
+}

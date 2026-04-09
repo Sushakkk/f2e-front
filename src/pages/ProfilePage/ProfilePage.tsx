@@ -1,12 +1,18 @@
 import { observer } from 'mobx-react';
 import * as React from 'react';
-import { Navigate, generatePath, useNavigate } from 'react-router-dom';
+import { Navigate, generatePath, useNavigate, useParams } from 'react-router-dom';
 
 import { Title } from 'components/common';
 import { RoutePath } from 'config/router/paths';
+import {
+  PROFILE_DEFAULT_PATH,
+  TEACHER_ONLY_PROFILE_SECTIONS,
+  profilePath,
+  profileSectionFromSlug,
+} from 'config/router/profilePaths';
 import type { Enrollment } from 'config/users';
 import { UserRole } from 'entities/user';
-import { ProfilePageStore } from 'store/ProfilePageStore';
+import { ProfilePageStore, type ViewMode } from 'store/ProfilePageStore';
 import { useRootStore } from 'store/globals/root';
 import { useLocalStore, useUserStore } from 'store/hooks';
 
@@ -44,9 +50,24 @@ const ProfilePage: React.FC = () => {
   const rootStore = useRootStore();
   const userStore = useUserStore();
   const navigate = useNavigate();
+  const { section: sectionSlug } = useParams<{ section: string }>();
   const store = useLocalStore(() => new ProfilePageStore(rootStore));
 
   const user = userStore.user;
+
+  const sectionFromUrl = profileSectionFromSlug(sectionSlug);
+
+  React.useLayoutEffect(() => {
+    if (sectionFromUrl && store.activeSection !== sectionFromUrl) {
+      store.setSection(sectionFromUrl);
+    }
+  }, [sectionFromUrl, store]);
+
+  React.useEffect(() => {
+    if (sectionFromUrl !== 'teacherCourses' && store.isFormOpen) {
+      store.closeForm();
+    }
+  }, [sectionFromUrl, store]);
 
   const goToTeacher = React.useCallback(
     (teacherId: number) => {
@@ -64,8 +85,24 @@ const ProfilePage: React.FC = () => {
     navigate(RoutePath.survey);
   }, [navigate]);
 
+  const handleViewModeChange = React.useCallback(
+    (mode: ViewMode) => {
+      store.setViewMode(mode);
+      navigate(profilePath('profile'));
+    },
+    [navigate, store]
+  );
+
   if (!user) {
     return <Navigate to={RoutePath.auth} replace />;
+  }
+
+  if (!sectionSlug || !sectionFromUrl) {
+    return <Navigate to={PROFILE_DEFAULT_PATH} replace />;
+  }
+
+  if (TEACHER_ONLY_PROFILE_SECTIONS.includes(sectionFromUrl) && !store.isTeacherView) {
+    return <Navigate to={PROFILE_DEFAULT_PATH} replace />;
   }
 
   const isMockUser = Boolean(user.registeredAt);
@@ -137,8 +174,7 @@ const ProfilePage: React.FC = () => {
         activeSection={store.activeSection}
         viewMode={store.viewMode}
         canSwitchMode={user.role === UserRole.teacher}
-        onSelect={store.setSection}
-        onViewModeChange={store.setViewMode}
+        onViewModeChange={handleViewModeChange}
       />
       <div className={s.content}>
         <Title>{SECTION_TITLES[store.activeSection]}</Title>

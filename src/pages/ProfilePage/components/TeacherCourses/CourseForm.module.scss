@@ -15,6 +15,155 @@
   justify-content: space-between;
 }
 
+.imageSection {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 100%;
+}
+
+.cardPhotoHint {
+  margin: 0 0 12px;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1.35;
+  color: $color-white-secondary;
+}
+
+.gallery {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(132px, 1fr));
+  gap: 12px;
+  align-items: start;
+  width: 100%;
+}
+
+.galleryItem {
+  width: 100%;
+  max-width: 200px;
+}
+
+.galleryItem_selectable {
+  cursor: pointer;
+}
+
+.galleryItem_selected {
+  .galleryImageWrap {
+    outline: 2px solid $color-accent;
+    outline-offset: 2px;
+    border-radius: 18px;
+  }
+}
+
+.galleryImageWrap {
+  position: relative;
+  width: 100%;
+}
+
+.galleryImage {
+  display: block;
+  width: 100%;
+  max-width: 200px;
+  aspect-ratio: 1 / 1;
+  border-radius: 18px;
+  object-fit: cover;
+  border: 1px solid rgba($color-white, 0.08);
+}
+
+.imageRemoveHitbox {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  line-height: 0;
+
+  .imageRemoveBtn {
+    position: static;
+    top: auto;
+    right: auto;
+  }
+}
+
+.reorderBar {
+  display: flex;
+  justify-content: flex-start;
+  width: 100%;
+}
+
+.reorderRow {
+  display: flex;
+  gap: 8px;
+}
+
+.reorderBtn {
+  all: unset;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  border: 1px solid $color-bg-tertiary;
+  color: $color-white-secondary;
+  cursor: pointer;
+  transition: border-color 200ms ease, color 200ms ease;
+
+  @include hover {
+    border-color: $color-accent;
+    color: $color-accent;
+  }
+
+  &:disabled {
+    opacity: 0.35;
+    pointer-events: none;
+  }
+
+  svg {
+    width: 18px;
+    height: 18px;
+    fill: currentColor;
+  }
+}
+
+.reorderIconLeft {
+  display: block;
+}
+
+.reorderIconRight {
+  display: block;
+  transform: rotate(180deg);
+}
+
+.utilityBtn {
+  max-width: 200px;
+}
+
+.imageRemoveBtn {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 24px;
+  height: 24px;
+  min-width: 24px;
+  min-height: 24px;
+  background: $color-bg-tertiary;
+  border-color: rgba($color-white, 0.08);
+  color: $color-accent;
+
+  @include hover {
+    color: $color-accent;
+    background: rgba($color-white, 0.16);
+    border-color: rgba($color-accent, 0.5);
+  }
+}
+
+.imageRemoveIcon {
+  display: block;
+  font-size: 18px;
+  line-height: 1;
+  transform: translateY(-1px);
+}
+
 .formTitle {
   margin: 0;
   font-size: 20px;
@@ -65,10 +214,21 @@
   gap: 6px;
 }
 
+.fieldWide {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
 .label {
   font-size: 13px;
   font-weight: 500;
   color: $color-white-secondary;
+}
+
+.requiredMark {
+  color: $color-accent;
 }
 
 .input {
@@ -170,10 +330,6 @@
 .scheduleEntry .input {
   height: 44px;
   box-sizing: border-box;
-}
-
-.scheduleEntry .removeBtn {
-  flex-shrink: 0;
 }
 
 .removeBtn {

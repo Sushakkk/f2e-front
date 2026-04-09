@@ -83,6 +83,7 @@
   height: 180px;
   flex-shrink: 0;
   overflow: hidden;
+  border: 1px solid $color-bg-tertiary;
 
   @include mobile {
     width: 110px;
@@ -100,6 +101,7 @@
   }
   @include gradient;
 }
+
 
 .content {
   display: flex;

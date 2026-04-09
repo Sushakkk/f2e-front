@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { createBrowserRouter } from 'react-router-dom';
+import { Navigate, createBrowserRouter } from 'react-router-dom';
 
 import { ErrorFallback } from 'components/special';
 import AppLayout from 'layouts/AppLayout/AppLayout';
@@ -13,6 +13,7 @@ import SurveyPage from 'pages/SurveyPage/SurveyPage';
 import { TeacherPage } from 'pages/TeacherPage';
 
 import { RoutePath } from './paths';
+import { PROFILE_DEFAULT_PATH } from './profilePaths';
 
 export const ROUTER = createBrowserRouter([
   {
@@ -54,6 +55,10 @@ export const ROUTER = createBrowserRouter([
       },
       {
         path: RoutePath.profile,
+        element: <Navigate to={PROFILE_DEFAULT_PATH} replace />,
+      },
+      {
+        path: RoutePath.profileSection,
         element: <ProfilePage />,
       },
     ],

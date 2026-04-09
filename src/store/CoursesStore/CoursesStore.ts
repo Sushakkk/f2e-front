@@ -49,10 +49,6 @@ export class CoursesStore implements ILocalStore {
       return;
     }
 
-    if (this._courses.length > 0) {
-      return;
-    }
-
     this._isLoading = true;
     this._loadError = false;
 

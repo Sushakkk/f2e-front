@@ -2,6 +2,7 @@ import cn from 'classnames';
 import * as React from 'react';
 import { generatePath, useNavigate } from 'react-router-dom';
 
+import fallbackImage from 'assets/images/courses/five-to-eight-placeholder.png';
 import { CourseConfigItem } from 'config';
 import { RoutePath } from 'config/router/paths';
 import { getScheduleDisplay } from 'utils/scheduleUtils';
@@ -65,7 +66,7 @@ const Card: React.FC<Props> = ({
       onClick={goToCourse}
     >
       <div className={s.imageWrapper}>
-        <img src={images[0]} alt={name} />
+        <img src={images[0] || fallbackImage} alt={name} />
       </div>
       <div className={cn(s.level, badgeClassName)}>{badgeLabel ?? level}</div>
       <div className={s.content}>

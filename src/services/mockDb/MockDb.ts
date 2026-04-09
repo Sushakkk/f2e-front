@@ -733,7 +733,7 @@ class MockDb {
       level: data.level as TeacherCourse['level'],
       dateFrom: data.dateFrom,
       dateTo: data.dateTo,
-      price: data.price,
+      price: Number(data.price),
       images: [],
       studio: data.studio,
       city: data.city,
@@ -794,7 +794,7 @@ class MockDb {
     }
 
     if (data.price !== undefined) {
-      course.price = data.price;
+      course.price = Number(data.price);
     }
 
     if (data.studio !== undefined) {

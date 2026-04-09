@@ -1,8 +1,13 @@
 import { observer } from 'mobx-react';
 import * as React from 'react';
+import { useSearchParams } from 'react-router-dom';
 
 import { SectionHeader, Card } from 'components/common';
 import Button from 'components/common/Button/Button';
+import {
+  PROFILE_COURSES_QUERY_CREATE,
+  PROFILE_COURSES_QUERY_EDIT,
+} from 'config/router/profilePaths';
 import type { ProfilePageStore } from 'store/ProfilePageStore';
 
 import CourseForm from './CourseForm';
@@ -20,6 +25,76 @@ const STATUS_LABELS: Record<string, string> = {
 };
 
 const TeacherCourses: React.FC<Props> = ({ store, teacherId }) => {
+  const [searchParams, setSearchParams] = useSearchParams();
+  const createParam = searchParams.get(PROFILE_COURSES_QUERY_CREATE);
+  const editParam = searchParams.get(PROFILE_COURSES_QUERY_EDIT);
+
+  React.useEffect(() => {
+    if (editParam) {
+      const courseId = Number(editParam);
+
+      if (!Number.isFinite(courseId) || courseId <= 0) {
+        setSearchParams(
+          (prev) => {
+            const next = new URLSearchParams(prev);
+
+            next.delete(PROFILE_COURSES_QUERY_EDIT);
+
+            return next;
+          },
+          { replace: true }
+        );
+
+        return;
+      }
+
+      if (store.isFormOpen && store.editingCourseId === courseId) {
+        return;
+      }
+
+      void store.openEditForm(courseId);
+
+      return;
+    }
+
+    if (createParam === '1' && !store.isFormOpen) {
+      store.openCreateForm();
+    }
+  }, [createParam, editParam, setSearchParams, store]);
+
+  React.useEffect(() => {
+    if (store.isFormOpen || store.isLoading) {
+      return;
+    }
+
+    if (!createParam && !editParam) {
+      return;
+    }
+
+    setSearchParams(
+      (prev) => {
+        const next = new URLSearchParams(prev);
+
+        next.delete(PROFILE_COURSES_QUERY_CREATE);
+        next.delete(PROFILE_COURSES_QUERY_EDIT);
+
+        return next;
+      },
+      { replace: true }
+    );
+  }, [createParam, editParam, setSearchParams, store.isFormOpen, store.isLoading]);
+
+  const openCreateInUrl = React.useCallback(() => {
+    setSearchParams({ [PROFILE_COURSES_QUERY_CREATE]: '1' }, { replace: false });
+  }, [setSearchParams]);
+
+  const openEditInUrl = React.useCallback(
+    (courseId: number) => {
+      setSearchParams({ [PROFILE_COURSES_QUERY_EDIT]: String(courseId) }, { replace: false });
+    },
+    [setSearchParams]
+  );
+
   const handleCancel = React.useCallback(
     (e: React.MouseEvent, courseId: number) => {
       e.stopPropagation();
@@ -29,11 +104,11 @@ const TeacherCourses: React.FC<Props> = ({ store, teacherId }) => {
   );
 
   const handleEdit = React.useCallback(
-    (e: React.MouseEvent, course: (typeof store.teacherCourses)[0]) => {
+    (e: React.MouseEvent, courseId: number) => {
       e.stopPropagation();
-      store.openEditForm(course);
+      openEditInUrl(courseId);
     },
-    [store]
+    [openEditInUrl]
   );
 
   if (store.isFormOpen) {
@@ -50,7 +125,7 @@ const TeacherCourses: React.FC<Props> = ({ store, teacherId }) => {
     <div className={s.root}>
       {store.teacherCourses.length === 0 && (
         <>
-          <SectionHeader title="Мои курсы" onAdd={store.openCreateForm} addLabel="Создать курс" />
+          <SectionHeader title="Мои курсы" onAdd={openCreateInUrl} addLabel="Создать курс" />
           <div className={s.empty}>У вас пока нет курсов</div>
         </>
       )}
@@ -59,7 +134,7 @@ const TeacherCourses: React.FC<Props> = ({ store, teacherId }) => {
           <div className={s.section}>
             <SectionHeader
               title={STATUS_LABELS.active}
-              onAdd={store.openCreateForm}
+              onAdd={openCreateInUrl}
               addLabel="Создать курс"
             />
             <div className={s.sectionList}>
@@ -76,7 +151,7 @@ const TeacherCourses: React.FC<Props> = ({ store, teacherId }) => {
                         <Button
                           mode="dark"
                           className={s.actionBtn}
-                          onClick={(e) => handleEdit(e, course)}
+                          onClick={(e) => handleEdit(e, course.id)}
                         >
                           Редактировать
                         </Button>

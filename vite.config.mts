@@ -65,6 +65,11 @@ export default defineConfig(({ mode }) => {
         changeOrigin: true,
         secure: false, // HTTP-бэкенд; true ломает прокси на некоторых системах
       },
+      '/media': {
+        target: proxyTarget,
+        changeOrigin: true,
+        secure: false,
+      },
     },
   } satisfies import('vite').UserConfig['server'];
 

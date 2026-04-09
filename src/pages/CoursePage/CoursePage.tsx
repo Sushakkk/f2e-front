@@ -131,6 +131,8 @@ const CoursePage: React.FC = () => {
   }
 
   const scheduleLength = scheduleLines.length;
+  const musicLabel = [courseData.music.artist, courseData.music.track].filter(Boolean).join(' — ');
+  const hasMusic = Boolean(musicLabel || courseData.music.url);
 
   return (
     <InfoPage
@@ -182,16 +184,22 @@ const CoursePage: React.FC = () => {
       <Row label="Количество мест:">
         {courseData.capacity} (осталось {courseData.spotsLeft})
       </Row>
-      <Row label="Музыка:">
-        <a
-          href={courseData.music.url}
-          target="_blank"
-          rel="noopener noreferrer"
-          className={cn(s.text, s.text_accent)}
-        >
-          {courseData.music.artist} — {courseData.music.track}
-        </a>
-      </Row>
+      {hasMusic && (
+        <Row label="Музыка:">
+          {courseData.music.url ? (
+            <a
+              href={courseData.music.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className={cn(s.text, s.text_accent)}
+            >
+              {musicLabel || courseData.music.url}
+            </a>
+          ) : (
+            musicLabel
+          )}
+        </Row>
+      )}
       <Row label="Цена:">{courseData.price.toLocaleString()} ₽</Row>
     </InfoPage>
   );

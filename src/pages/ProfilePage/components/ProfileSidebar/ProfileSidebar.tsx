@@ -4,6 +4,7 @@ import * as React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 
 import { RoutePath } from 'config/router/paths';
+import { profilePath } from 'config/router/profilePaths';
 import type { ProfileSection, ViewMode } from 'store/ProfilePageStore';
 
 import s from './ProfileSidebar.module.scss';
@@ -29,7 +30,6 @@ type Props = {
   activeSection: ProfileSection;
   viewMode: ViewMode;
   canSwitchMode: boolean;
-  onSelect: (section: ProfileSection) => void;
   onViewModeChange: (mode: ViewMode) => void;
 };
 
@@ -37,7 +37,6 @@ const ProfileSidebar: React.FC<Props> = ({
   activeSection,
   viewMode,
   canSwitchMode,
-  onSelect,
   onViewModeChange,
 }) => {
   const isTeacher = viewMode === 'teacher';
@@ -79,12 +78,12 @@ const ProfileSidebar: React.FC<Props> = ({
                 {item.label}
               </Link>
             ) : (
-              <button
-                className={cx(s.item, activeSection === item.id && s.item_active)}
-                onClick={() => onSelect(item.id as ProfileSection)}
+              <Link
+                to={profilePath(item.id as ProfileSection)}
+                className={cx(s.item, s.item_link, activeSection === item.id && s.item_active)}
               >
                 {item.label}
-              </button>
+              </Link>
             )}
           </React.Fragment>
         ))}

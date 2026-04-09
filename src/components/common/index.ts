@@ -4,6 +4,8 @@ export * from './Card';
 
 export * from './CoverflowSwiper';
 
+export * from './CloseIconButton';
+
 export * from './ScreenSpinner';
 
 export * from './Header';
@@ -17,6 +19,8 @@ export * from './SectionHeader';
 export * from './SelectDropdown';
 
 export * from './InfoPage';
+
+export * from './ImageUploadButton';
 
 export * from './Row';
 

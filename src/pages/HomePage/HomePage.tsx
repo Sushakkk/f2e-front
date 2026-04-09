@@ -1,6 +1,7 @@
 import cn from 'classnames';
 import { observer } from 'mobx-react';
 import * as React from 'react';
+import { useNavigate } from 'react-router-dom';
 
 import { Card } from 'components/common';
 import { CourseConfigItem } from 'config';
@@ -17,6 +18,7 @@ import { Filters, Pagination, Recommendations, SearchBar } from './components';
 
 const HomePage: React.FC = () => {
   const rootStore = useRootStore();
+  const navigate = useNavigate();
   const isMobile = useMediaQuery('(max-width: 992px)');
   const [isFiltersOpen, setIsFiltersOpen] = React.useState(false);
   const homeStore = rootStore.coursesStore;
@@ -30,10 +32,6 @@ const HomePage: React.FC = () => {
     () => new FiltersStore([], queryParams.filters, isMobile ? handleClose : undefined),
     [handleClose]
   );
-
-  React.useEffect(() => {
-    void homeStore.loadCourses();
-  }, [homeStore]);
 
   React.useEffect(() => {
     filtersStore.setCourses(homeStore.courses);
@@ -73,7 +71,17 @@ const HomePage: React.FC = () => {
   );
 
   const queryStore = useLocalStore(
-    () => new QueryStore(filtersStore, paginationStore, queryParams.search)
+    () =>
+      new QueryStore(filtersStore, paginationStore, queryParams.search, (qs) => {
+        navigate(
+          {
+            pathname: window.location.pathname,
+            search: qs,
+          },
+          { replace: true }
+        );
+      }),
+    [filtersStore, paginationStore, navigate]
   );
 
   const handleSearchChange = React.useCallback(

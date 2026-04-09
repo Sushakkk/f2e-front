@@ -2,6 +2,7 @@ import cn from 'classnames';
 import * as React from 'react';
 import { useNavigate } from 'react-router-dom';
 
+import fallbackImage from 'assets/images/courses/five-to-eight-placeholder.png';
 import ArrowIcon from 'assets/images/arrow.svg?react';
 import HeartFilledIcon from 'assets/images/heart-filled.svg?react';
 import HeartIcon from 'assets/images/heart.svg?react';
@@ -45,7 +46,7 @@ const InfoPage: React.FC<Props> = ({
 
   const normalizedImages = React.useMemo(() => {
     if (!images || images.length === 0) {
-      return [];
+      return [fallbackImage];
     }
 
     if (images.length >= 5 || images.length === 1) {
@@ -76,13 +77,11 @@ const InfoPage: React.FC<Props> = ({
             <HeartIcon className={s.button} onClick={handleToggleLike} aria-label="В избранное" />
           )}
         </div>
-        {images && images.length > 0 && (
-          <CoverflowSwiper
-            items={normalizedImages}
-            getImage={(src: string) => src}
-            getAlt={() => title}
-          />
-        )}
+        <CoverflowSwiper
+          items={normalizedImages}
+          getImage={(src: string) => src}
+          getAlt={() => title}
+        />
       </div>
       <div className={s.details}>
         <h1 className={s.title}>{title}</h1>

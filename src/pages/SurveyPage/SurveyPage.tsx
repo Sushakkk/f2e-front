@@ -4,7 +4,7 @@ import * as React from 'react';
 import { useNavigate } from 'react-router-dom';
 
 import ArrowIcon from 'assets/images/arrow.svg?react';
-import { SelectDropdown } from 'components/common';
+import { CloseIconButton, SelectDropdown } from 'components/common';
 import Button from 'components/common/Button/Button';
 import { RoutePath } from 'config/router/paths';
 import { SurveyPageStore } from 'store/SurveyPageStore';
@@ -244,16 +244,12 @@ const SurveyPage: React.FC = () => {
             )}
           </div>
           <div className={s.headerSide}>
-            <button
-              type="button"
+            <CloseIconButton
               className={s.closeBtn}
+              iconClassName={s.closeIcon}
               onClick={handleClose}
-              aria-label="Закрыть опрос"
-            >
-              <span className={s.closeIcon} aria-hidden>
-                ×
-              </span>
-            </button>
+              ariaLabel="Закрыть опрос"
+            />
           </div>
         </div>
         <div className={s.content}>
