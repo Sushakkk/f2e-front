@@ -76,8 +76,18 @@ const ProfilePage: React.FC = () => {
   }, [sectionFromUrl, store]);
 
   React.useEffect(() => {
-    if (sectionFromUrl === 'teacherCourses' && store.isTeacherView) {
-      void store.loadTeacherCourses(store.mockTeacherId);
+    if (
+      !store.isTeacherView ||
+      (sectionFromUrl !== 'teacherCourses' &&
+        sectionFromUrl !== 'students' &&
+        sectionFromUrl !== 'stats')
+    ) {
+      return;
+    }
+
+    void store.loadTeacherCourses(store.mockTeacherId);
+
+    if (sectionFromUrl === 'teacherCourses') {
       void store.loadReferenceData();
     }
   }, [sectionFromUrl, store]);

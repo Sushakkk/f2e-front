@@ -1,6 +1,7 @@
 import { courseImages } from 'assets/images/courses';
 import { teacherImages } from 'assets/images/teachers';
 
+import type { CourseActivityStatus } from './courseActivity';
 import type { CourseLevel } from './levels';
 
 export type ScheduleEntry = {
@@ -50,6 +51,8 @@ export type CourseConfigItem = {
     track: string;
     url: string;
   };
+  /** Витрина: active — пока не прошла дата окончания; completed — иначе. По умолчанию active. */
+  activityStatus?: CourseActivityStatus;
 };
 
 export const COURSES_CONFIG: CourseConfigItem[] = [

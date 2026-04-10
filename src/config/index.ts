@@ -1,5 +1,7 @@
 export * from './cards';
 
+export * from './courseActivity';
+
 export * from './constants';
 
 export * from './levels';

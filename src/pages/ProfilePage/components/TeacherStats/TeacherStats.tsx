@@ -14,28 +14,34 @@ type Props = {
 const TeacherStats: React.FC<Props> = ({ store }) => {
   const [showCompare, setShowCompare] = React.useState(false);
 
+  const activeCourseIdsKey = store.activeCourses.map((c) => c.id).join();
+
   const courseOptions = React.useMemo(
     () =>
-      store.teacherCourses.map((c) => ({
+      store.activeCourses.map((c) => ({
         value: String(c.id),
         label: c.name,
       })),
-    [store.teacherCourses]
+    [activeCourseIdsKey, store]
   );
 
   React.useEffect(() => {
-    if (store.teacherCourses.length > 0) {
-      const courseId = store.selectedCourseId ?? store.teacherCourses[0].id;
-
-      if (!store.selectedCourseId) {
-        store.setSelectedCourse(courseId);
-      }
-
-      if (!store.statsData) {
-        store.loadStats(courseId);
-      }
+    if (store.activeCourses.length === 0) {
+      return;
     }
-  }, [store, store.teacherCourses.length, store.selectedCourseId, store.statsData]);
+
+    const ids = new Set(store.activeCourses.map((c) => c.id));
+    const needFix = store.selectedCourseId == null || !ids.has(store.selectedCourseId);
+    const courseId = needFix ? store.activeCourses[0].id : store.selectedCourseId!;
+
+    if (needFix) {
+      store.setSelectedCourse(courseId);
+    }
+
+    if (needFix || !store.statsData) {
+      store.loadStats(courseId);
+    }
+  }, [store, activeCourseIdsKey, store.selectedCourseId, store.statsData]);
 
   const handleCourseChange = React.useCallback(
     (value: string) => {

@@ -1,4 +1,5 @@
 import type { ScheduleEntry } from 'config/cards';
+import { parseCourseActivityStatus } from 'config/courseActivity';
 import type { CourseLevel } from 'config/levels';
 
 import type { CourseListItemClient } from './client';
@@ -64,5 +65,6 @@ export function normalizeCourseListItem(data: CourseListItemServer): CourseListI
       track: '',
       url: '',
     },
+    activityStatus: parseCourseActivityStatus(data.status),
   };
 }

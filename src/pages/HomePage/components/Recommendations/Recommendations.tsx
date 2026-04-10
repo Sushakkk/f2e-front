@@ -2,7 +2,7 @@ import React, { useCallback } from 'react';
 import { generatePath, useNavigate } from 'react-router-dom';
 
 import { CoverflowSwiper } from 'components';
-import { CourseConfigItem } from 'config';
+import { CourseActivityStatus, CourseConfigItem, courseActivityStatusLabelRu } from 'config';
 import { RoutePath } from 'config/router/paths';
 import { getScheduleDisplay } from 'utils/scheduleUtils';
 
@@ -52,7 +52,10 @@ export const Recommendations: React.FC<Props> = ({ items }) => {
         return (
           <>
             {' '}
-            <div className={s.level}>{it.level}</div>
+            <div className={s.level}>
+              {it.level}
+              <span> · {courseActivityStatusLabelRu(it.activityStatus ?? CourseActivityStatus.Active)}</span>
+            </div>
             <div className={s.overlay}>
               <div className={s.title}>{it.name}</div>
               {it.teacher && (

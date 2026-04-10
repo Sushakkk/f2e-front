@@ -15,13 +15,15 @@ type Props = {
 const TeacherStudents: React.FC<Props> = ({ store }) => {
   const [selectedLessonId, setSelectedLessonId] = React.useState<number | null>(null);
 
+  const activeCourseIdsKey = store.activeCourses.map((c) => c.id).join();
+
   const courseOptions = React.useMemo(
     () =>
       store.activeCourses.map((c) => ({
         value: String(c.id),
         label: c.name,
       })),
-    [store.activeCourses]
+    [activeCourseIdsKey, store]
   );
 
   const lessonOptions = React.useMemo(
@@ -36,10 +38,18 @@ const TeacherStudents: React.FC<Props> = ({ store }) => {
   );
 
   React.useEffect(() => {
-    if (!store.selectedCourseId && store.activeCourses.length > 0) {
-      store.setSelectedCourse(store.activeCourses[0].id);
+    if (store.activeCourses.length === 0) {
+      return;
     }
-  }, [store, store.activeCourses.length, store.selectedCourseId]);
+
+    const ids = new Set(store.activeCourses.map((c) => c.id));
+    const needFix = store.selectedCourseId == null || !ids.has(store.selectedCourseId);
+    const nextId = needFix ? store.activeCourses[0].id : store.selectedCourseId;
+
+    if (needFix && nextId != null) {
+      store.setSelectedCourse(nextId);
+    }
+  }, [store, activeCourseIdsKey, store.selectedCourseId]);
 
   const handleCourseChange = React.useCallback(
     (value: string) => {

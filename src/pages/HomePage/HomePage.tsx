@@ -4,7 +4,7 @@ import * as React from 'react';
 import { useNavigate } from 'react-router-dom';
 
 import { Card } from 'components/common';
-import { CourseConfigItem } from 'config';
+import { CourseActivityStatus, CourseConfigItem, courseActivityStatusLabelRu } from 'config';
 import { FiltersStore } from 'store/FiltersStore';
 import { PaginationStore } from 'store/PaginationStore';
 import { QueryStore, parseQueryFromURL } from 'store/QueryStore';
@@ -150,7 +150,11 @@ const HomePage: React.FC = () => {
         <div className={s.main}>
           <div className={cn(s.cards, isSingleCard && s.cardsSingle)}>
             {paginatedItems.map((item) => (
-              <Card key={item.id} item={item} />
+              <Card
+                key={item.id}
+                item={item}
+                statusLabel={courseActivityStatusLabelRu(item.activityStatus ?? CourseActivityStatus.Active)}
+              />
             ))}
           </div>
           {isEmpty && !showInitialLoader && <div className={s.empty}>Ничего не найдено</div>}

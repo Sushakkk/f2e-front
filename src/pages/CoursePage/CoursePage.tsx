@@ -9,6 +9,7 @@ import { Row } from 'components/common/Row';
 import { ENDPOINTS } from 'config/api';
 import { RoutePath } from 'config/router/paths';
 import type { EnrollmentStatus } from 'config/users';
+import { CourseActivityStatus } from 'config';
 import type { CourseDetailServer } from 'entities/course/server';
 import { MockDb } from 'services/mockDb';
 import type { ErrorResponse } from 'store/globals/api/types';
@@ -193,6 +194,8 @@ const CoursePage: React.FC = () => {
   const scheduleLength = scheduleLines.length;
   const musicLabel = [courseData.music.artist, courseData.music.track].filter(Boolean).join(' — ');
   const hasMusic = Boolean(musicLabel || courseData.music.url);
+  const isCourseCompleted =
+    (courseData.activityStatus ?? CourseActivityStatus.Active) === CourseActivityStatus.Completed;
 
   return (
     <InfoPage
@@ -202,14 +205,16 @@ const CoursePage: React.FC = () => {
       liked={isFavorite}
       onToggleLike={handleToggleFavorite}
       button={
-        <Button
-          mode={isEnrolled ? 'dark' : 'purple'}
-          className={s.enrollBtn}
-          onClick={handleEnrollClick}
-          disabled={enrolling}
-        >
-          {enrolling ? 'Загрузка...' : isEnrolled ? 'Отменить запись' : 'Записаться'}
-        </Button>
+        !isCourseCompleted ? (
+          <Button
+            mode={isEnrolled ? 'dark' : 'purple'}
+            className={s.enrollBtn}
+            onClick={handleEnrollClick}
+            disabled={enrolling}
+          >
+            {enrolling ? 'Загрузка...' : isEnrolled ? 'Отменить запись' : 'Записаться'}
+          </Button>
+        ) : undefined
       }
     >
       <Row label="Преподаватель:" accent>

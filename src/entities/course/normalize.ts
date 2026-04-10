@@ -1,4 +1,5 @@
 import type { ScheduleEntry } from 'config/cards';
+import { parseCourseActivityStatus } from 'config/courseActivity';
 import type { CourseLevel } from 'config/levels';
 
 import type { CourseDetailClient } from './client';
@@ -62,5 +63,6 @@ export function normalizeCourseDetail(data: CourseDetailServer): CourseDetailCli
       track: data.music?.track ?? '',
       url: data.music?.url ?? '',
     },
+    activityStatus: parseCourseActivityStatus(data.status),
   };
 }
