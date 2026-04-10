@@ -9,6 +9,8 @@ export type Enrollment = {
   enrolledAt: string;
   status: EnrollmentStatus;
   paid: boolean;
+  courseStatus?: EnrollmentStatus;
+  courseDateTo?: string;
 };
 
 export type UserConfig = {

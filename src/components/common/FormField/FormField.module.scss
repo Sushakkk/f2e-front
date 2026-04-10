@@ -1,0 +1,67 @@
+@import "styles/mixins";
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  --form-control-height: 40px;
+}
+
+.field input:not([type='checkbox']),
+.field textarea {
+  appearance: none;
+  box-sizing: border-box;
+  display: block;
+  width: 100%;
+  border-radius: 8px;
+  border: 1px solid $color-bg-tertiary;
+  background: $color-bg-secondary;
+  color: $color-white;
+  font-family: inherit;
+  font-size: 14px;
+  line-height: 1.4;
+  transition: border-color 200ms ease;
+
+  &::placeholder {
+    color: rgba($color-white, 0.35);
+  }
+
+  @include hover {
+    border-color: $color-accent;
+  }
+
+  &:focus {
+    outline: none;
+    border-color: $color-accent;
+  }
+}
+
+.field input:not([type='checkbox']) {
+  height: var(--form-control-height);
+  min-height: var(--form-control-height);
+  padding: 0 12px;
+}
+
+.field textarea {
+  min-height: 120px;
+  padding: 10px 14px;
+  resize: vertical;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+}
+
+.label {
+  font-size: 14px;
+  font-weight: 500;
+  color: $color-white-secondary;
+}
+
+.requiredMark {
+  color: $color-accent;
+}
+
+.error {
+  font-size: 12px;
+  line-height: 1.3;
+  color: $color-error;
+}

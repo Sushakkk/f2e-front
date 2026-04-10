@@ -55,8 +55,9 @@ export default defineConfig(({ mode }) => {
   const proxyPort = process.env.API_PROXY_PORT;
   const proxyTargetEnv = process.env.VITE_API_PROXY_TARGET;
 
+  /** По умолчанию бэкенд Dancehub (docker compose) — порт 8000; см. .env.example */
   const proxyTarget =
-    proxyTargetEnv ?? (proxyPort ? `http://localhost:${proxyPort}` : 'http://localhost:3000');
+    proxyTargetEnv ?? (proxyPort ? `http://localhost:${proxyPort}` : 'http://localhost:8000');
 
   const serverConfig = {
     proxy: {

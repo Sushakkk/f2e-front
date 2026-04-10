@@ -69,6 +69,19 @@ const ProfilePage: React.FC = () => {
     }
   }, [sectionFromUrl, store]);
 
+  React.useEffect(() => {
+    if (sectionFromUrl === 'enrollments') {
+      void store.loadEnrollments();
+    }
+  }, [sectionFromUrl, store]);
+
+  React.useEffect(() => {
+    if (sectionFromUrl === 'teacherCourses' && store.isTeacherView) {
+      void store.loadTeacherCourses(store.mockTeacherId);
+      void store.loadReferenceData();
+    }
+  }, [sectionFromUrl, store]);
+
   const goToTeacher = React.useCallback(
     (teacherId: number) => {
       navigate(generatePath(RoutePath.teacher, { id: String(teacherId) }));
@@ -106,7 +119,12 @@ const ProfilePage: React.FC = () => {
   }
 
   const isMockUser = Boolean(user.registeredAt);
-  const enrollments = isMockUser ? user.enrollments ?? MOCK_ENROLLMENTS : user.enrollments ?? [];
+  const enrollments =
+    store.enrollments.length > 0
+      ? store.enrollments
+      : isMockUser
+        ? user.enrollments ?? MOCK_ENROLLMENTS
+        : user.enrollments ?? [];
   const favCourses = isMockUser
     ? user.favoriteCourseIds ?? MOCK_FAVORITE_COURSES
     : user.favoriteCourseIds ?? [];

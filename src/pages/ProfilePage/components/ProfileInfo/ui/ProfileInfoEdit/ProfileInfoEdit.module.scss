@@ -32,6 +32,10 @@
   color: $color-white-secondary;
 }
 
+.requiredMark {
+  color: $color-accent;
+}
+
 .fieldGrid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -44,7 +48,6 @@
   box-sizing: border-box;
   display: block;
   width: 100%;
-  min-height: 50px;
   padding: 10px 14px;
   border-radius: 8px;
   background: $color-bg-secondary;
@@ -68,11 +71,31 @@
   }
 }
 
+.input {
+  height: var(--form-control-height);
+  min-height: var(--form-control-height);
+}
+
 .textarea {
   min-height: 120px;
   resize: vertical;
   white-space: pre-wrap;
   word-wrap: break-word;
+}
+
+.inputError {
+  border-color: $color-error;
+
+  &:focus {
+    border-color: $color-error;
+    box-shadow: 0 0 0 3px rgba($color-error, 0.15);
+  }
+}
+
+.error {
+  font-size: 12px;
+  line-height: 1.3;
+  color: $color-error;
 }
 
 .avatarPreview {

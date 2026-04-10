@@ -32,7 +32,15 @@ export const ENDPOINTS = {
     create: createApiEndpoint('courses/', 'POST'),
     detail: (id: number): EndpointType => createApiEndpoint(`courses/${id}/`, 'GET'),
     update: (id: number): EndpointType => createApiEndpoint(`courses/${id}/`, 'PATCH'),
+    enroll: (id: number, method: EndpointType['method'] = 'POST'): EndpointType =>
+      createApiEndpoint(`courses/${id}/enroll/`, method),
   },
+  /** Записи студента: полные карточки курсов — только для раздела «Мои записи». */
+  enrollments: {
+    list: createApiEndpoint('enrollments/', 'GET'),
+  },
+  /** Записи с полями enrollment (статус записи) — для страницы курса и т.п. без GET /enrollments/ */
+  myCourses: createApiEndpoint('my-courses/', 'GET'),
   teachers: {
     list: createApiEndpoint('teachers/', 'GET'),
     create: createApiEndpoint('teachers/', 'POST'),

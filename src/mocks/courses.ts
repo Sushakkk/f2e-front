@@ -15,6 +15,7 @@ export const MOCK_COURSES_LIST_RESPONSE: CourseListResponseServer = {
       dance_style: 'High Heels',
       city: 'Москва',
       studio: 'ТанцХаб',
+      spots_left: 1,
       schedule: [
         { weekday: 'Пн, Ср', time_from: '20:00', time_to: '21:30' },
         { weekday: 'Пт', time_from: '19:00', time_to: '20:30' },
@@ -33,6 +34,7 @@ export const MOCK_COURSES_LIST_RESPONSE: CourseListResponseServer = {
       dance_style: 'High Heels',
       city: 'Москва',
       studio: 'DanceLab',
+      spots_left: 12,
       schedule: [{ weekday: 'Вт, Чт', time_from: '18:00', time_to: '19:30' }],
     },
     {
@@ -48,6 +50,7 @@ export const MOCK_COURSES_LIST_RESPONSE: CourseListResponseServer = {
       dance_style: 'Contemporary',
       city: 'Москва',
       studio: 'Студия движения',
+      spots_left: 8,
       schedule: [{ weekday: 'Пн, Ср', time_from: '17:00', time_to: '18:30' }],
     },
     {
@@ -63,6 +66,7 @@ export const MOCK_COURSES_LIST_RESPONSE: CourseListResponseServer = {
       dance_style: 'Jazz Funk',
       city: 'Санкт-Петербург',
       studio: 'Арт-пространство',
+      spots_left: 18,
       schedule: [{ weekday: 'Вт, Чт, Сб', time_from: '12:00', time_to: '13:30' }],
     },
     {
@@ -78,6 +82,7 @@ export const MOCK_COURSES_LIST_RESPONSE: CourseListResponseServer = {
       dance_style: 'Vogue',
       city: 'Москва',
       studio: 'FunkHouse',
+      spots_left: 5,
       schedule: [{ weekday: 'Ср, Пт', time_from: '20:00', time_to: '21:30' }],
     },
     {
@@ -93,6 +98,7 @@ export const MOCK_COURSES_LIST_RESPONSE: CourseListResponseServer = {
       dance_style: 'Stretching',
       city: 'Казань',
       studio: 'Balance Studio',
+      spots_left: 16,
       schedule: [{ weekday: 'Пн, Чт', time_from: '18:30', time_to: '19:30' }],
     },
   ],

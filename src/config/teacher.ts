@@ -39,6 +39,8 @@ export type CourseFormData = {
   description: string;
   musicUrl: string;
   capacity: number;
+  useSameLocation: boolean;
+  sharedLocation: string;
   schedule: { weekday: string; timeFrom: string; timeTo: string; location?: string }[];
 };
 

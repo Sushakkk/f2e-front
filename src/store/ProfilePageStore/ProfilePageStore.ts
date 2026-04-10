@@ -2,14 +2,29 @@ import { action, computed, makeObservable, observable, runInAction } from 'mobx'
 
 import fallbackImage from 'assets/images/courses/five-to-eight-placeholder.png';
 import { ENDPOINTS } from 'config/api';
+import type { ScheduleEntry } from 'config/cards';
+import type { CourseLevel } from 'config/levels';
 import type {
   AttendanceRecord,
   AttendanceStats,
   CourseFormData,
   Lesson,
   TeacherCourse,
+  TeacherCourseStatus,
 } from 'config/teacher';
-import { UserRole, type BackendTeacherProfile, type BackendUser } from 'entities/user';
+import type { Enrollment, EnrollmentStatus } from 'config/users';
+import type { CityServer } from 'entities/city';
+import { normalizeCourseDetail } from 'entities/course';
+import {
+  LEVEL_FROM_API,
+  LEVEL_TO_API,
+  PROFILE_PAGE_MOCK_TEACHER_ID,
+  PROFILE_PAGE_REFERENCE_YEAR,
+  WEEKDAY_TO_API,
+} from 'entities/course/config';
+import type { CourseDetailServer, ScheduleEntryServer } from 'entities/course/server';
+import type { StudioServer } from 'entities/studio';
+import { UserRole, type BackendTeacherProfile, type BackendUser, type UserClient } from 'entities/user';
 import { MockDb } from 'services/mockDb';
 import type { MockUserData } from 'services/mockDb/types';
 import { ErrorResponse } from 'store/globals/api/types';
@@ -17,7 +32,7 @@ import { type IRootStore } from 'store/globals/root/declaration';
 import { ILocalStore } from 'store/interfaces';
 import { IApiRequest } from 'store/models/ApiRequest/declaration';
 import { resolveCourseImageFetchUrl } from 'utils/courseImageFetchUrl';
-import { ddmmToIso, fromIsoDate, toDDMM } from 'utils/dateUtils';
+import { ddmmToIso, fromIsoDate } from 'utils/dateUtils';
 
 export type ProfileSection =
   | 'profile'
@@ -29,101 +44,39 @@ export type ProfileSection =
 
 export type ViewMode = 'student' | 'teacher';
 
-const MOCK_TEACHER_ID = 11;
-const REFERENCE_YEAR = new Date().getFullYear();
+type CourseFormErrors = Record<string, string>;
+type CourseApiErrorResponse = ErrorResponse & Record<string, unknown>;
+type ProfileFormErrors = Partial<Record<'username' | 'firstName' | 'lastName', string>>;
 
-const LEVEL_TO_API: Record<string, 'beginner' | 'intermediate' | 'advanced' | 'any'> = {
-  Начинающие: 'beginner',
-  'Средний уровень': 'intermediate',
-  Продвинутые: 'advanced',
-  'Любой уровень': 'any',
+const TIME_HHMM_REGEX = /^([01]\d|2[0-3]):([0-5]\d)$/;
+
+const isValidDDMM = (value: string): boolean => {
+  const match = /^(\d{2})\.(\d{2})$/.exec(value.trim());
+
+  if (!match) {
+    return false;
+  }
+
+  const day = Number(match[1]);
+  const month = Number(match[2]);
+
+  if (day <= 0 || month <= 0 || month > 12) {
+    return false;
+  }
+
+  const date = new Date(PROFILE_PAGE_REFERENCE_YEAR, month - 1, day);
+
+  return (
+    date.getFullYear() === PROFILE_PAGE_REFERENCE_YEAR &&
+    date.getMonth() === month - 1 &&
+    date.getDate() === day
+  );
 };
 
-const LEVEL_FROM_API = {
-  beginner: 'Начинающие',
-  intermediate: 'Средний уровень',
-  advanced: 'Продвинутые',
-  any: 'Любой уровень',
-} as const;
+const toComparableTime = (value: string): number => {
+  const [hours, minutes] = value.split(':').map((part) => Number(part));
 
-const WEEKDAY_TO_API: Record<string, 'mon' | 'tue' | 'wed' | 'thu' | 'fri' | 'sat' | 'sun'> = {
-  Пн: 'mon',
-  Вт: 'tue',
-  Ср: 'wed',
-  Чт: 'thu',
-  Пт: 'fri',
-  Сб: 'sat',
-  Вс: 'sun',
-};
-
-type BackendCity = {
-  id: number;
-  name: string;
-};
-
-type BackendStudio = {
-  id: number;
-  name: string;
-  city: string;
-  address: string;
-  metro: string;
-};
-
-type BackendCourseSummary = {
-  id: number;
-  name: string;
-  status: string;
-  level: string;
-  price: number | string;
-  date_from: string;
-  date_to: string;
-  image: string;
-  teacher_id: number;
-  teacher_name: string;
-  dance_style: string;
-  city: string;
-  studio: string;
-  schedule: Array<{
-    weekday: string;
-    time_from: string;
-    time_to: string;
-    location?: string | null;
-  }>;
-};
-
-type BackendTeachingCourse = {
-  id: number;
-  status: string;
-};
-
-type BackendCourseDetail = {
-  id: number;
-  name: string;
-  description: string;
-  status: string;
-  level: string;
-  price: number | string;
-  capacity: number;
-  spots_left: number;
-  date_from: string;
-  date_to: string;
-  images: string[];
-  teacher_id: number;
-  teacher_name: string;
-  dance_style: string;
-  city: string;
-  studio: string;
-  schedule: Array<{
-    weekday: string;
-    time_from: string;
-    time_to: string;
-    location?: string | null;
-  }>;
-  music: {
-    artist: string;
-    track: string;
-    url: string;
-  };
+  return hours * 60 + minutes;
 };
 
 const EMPTY_FORM: CourseFormData = {
@@ -138,6 +91,8 @@ const EMPTY_FORM: CourseFormData = {
   description: '',
   musicUrl: '',
   capacity: 20,
+  useSameLocation: true,
+  sharedLocation: '',
   schedule: [{ weekday: 'Пн', timeFrom: '18:00', timeTo: '19:30' }],
 };
 
@@ -157,117 +112,140 @@ const readFileAsDataUrl = (file: File): Promise<string> =>
     reader.readAsDataURL(file);
   });
 
-const formatDateForUi = (iso: string): string => {
-  const date = fromIsoDate(iso);
-
-  return date ? toDDMM(date) : '';
-};
-
-const getLevelFromApi = (value: string): CourseFormData['level'] => {
-  if (value in LEVEL_FROM_API) {
-    return LEVEL_FROM_API[value as keyof typeof LEVEL_FROM_API];
+const formatIsoDateForUi = (iso: string): string => {
+  if (!iso) {
+    return '';
   }
 
-  return 'Начинающие';
+  const d = new Date(iso);
+
+  return `${String(d.getDate()).padStart(2, '0')}.${String(d.getMonth() + 1).padStart(2, '0')}`;
 };
 
-const normalizeCourseStatus = (status: string): TeacherCourse['courseStatus'] => {
-  switch (status) {
-    case 'cancelled':
-      return 'cancelled';
-    case 'completed':
-      return 'completed';
-    default:
-      return 'active';
+const getLevelLabelFromApi = (level: string): CourseLevel =>
+  LEVEL_FROM_API[level as keyof typeof LEVEL_FROM_API] ?? 'Любой уровень';
+
+const mapApiCourseStatusToTeacherCourseStatus = (status: string): TeacherCourseStatus => {
+  if (status === 'completed') {
+    return 'completed';
   }
+
+  if (status === 'cancelled') {
+    return 'cancelled';
+  }
+
+  return 'active';
 };
 
-const buildTeacherCourse = (
-  course: BackendCourseSummary | BackendCourseDetail,
-  status: string,
-  currentUser:
-    | {
-        teacher?: {
-          bio: string;
-          images: string[];
-          achievements: string[];
-          experience: number;
-          specializations: string[];
-          rating: number;
-        } | null;
-      }
-    | null
-    | undefined
-): TeacherCourse => ({
-  id: course.id,
-  name: course.name,
-  type: course.dance_style,
-  teacher: {
-    id: course.teacher_id,
-    name: course.teacher_name,
-    bio: currentUser?.teacher?.bio ?? '',
-    images: currentUser?.teacher?.images ?? [],
-    achievements: currentUser?.teacher?.achievements ?? [],
-    experience: currentUser?.teacher?.experience ?? 0,
-    specializations: currentUser?.teacher?.specializations ?? [],
-    rating: currentUser?.teacher?.rating ?? 0,
-    reviews: [],
-  },
-  level: getLevelFromApi(course.level) as TeacherCourse['level'],
-  dateFrom: formatDateForUi(course.date_from),
-  dateTo: formatDateForUi(course.date_to),
-  price: Number(course.price),
-  images:
-    'images' in course
-      ? course.images.length > 0
-        ? course.images
-        : [fallbackImage]
-      : course.image
-        ? [course.image]
-        : [fallbackImage],
-  studio: course.studio ?? '',
-  schedule: course.schedule?.map((entry) => ({
-    weekday: entry.weekday,
-    timeFrom: entry.time_from,
-    timeTo: entry.time_to,
-    location: entry.location ?? undefined,
-  })),
-  city: course.city ?? '',
-  description: 'description' in course ? course.description : '',
-  capacity: 'capacity' in course ? course.capacity : 0,
-  spotsLeft: 'spots_left' in course ? course.spots_left : 0,
-  music:
-    'music' in course
-      ? course.music
-      : {
-          artist: '',
-          track: '',
-          url: '',
-        },
-  createdByTeacherId: course.teacher_id,
-  courseStatus: normalizeCourseStatus(status),
+const mapCourseStatusToEnrollmentFields = (
+  status: string
+): { status: EnrollmentStatus; courseStatus?: EnrollmentStatus } => {
+  if (status === 'cancelled') {
+    return { status: 'cancelled', courseStatus: 'cancelled' };
+  }
+
+  if (status === 'completed') {
+    return { status: 'completed', courseStatus: 'completed' };
+  }
+
+  return { status: 'active', courseStatus: undefined };
+};
+
+const normalizeScheduleEntryForTeacherCourse = (entry: ScheduleEntryServer): ScheduleEntry => ({
+  weekday: entry.weekday,
+  timeFrom: entry.time_from,
+  timeTo: entry.time_to,
+  location: entry.location ?? undefined,
 });
+
+const normalizeCourseDetailToEnrollment = (data: CourseDetailServer): Enrollment => {
+  const { status, courseStatus } = mapCourseStatusToEnrollmentFields(data.status);
+
+  return {
+    courseId: data.id,
+    enrolledAt: '',
+    status,
+    paid: false,
+    courseStatus,
+    courseDateTo: data.date_to,
+  };
+};
+
+const normalizeMyTeachingCourseToTeacherCourse = (
+  row: CourseDetailServer,
+  user: UserClient
+): TeacherCourse => {
+  const teacherDisplayName =
+    [user.lastName, user.firstName].filter(Boolean).join(' ') || user.username || 'Преподаватель';
+  const rawPrice = row.price as number | string | undefined;
+  const priceNum = typeof rawPrice === 'number' ? rawPrice : Number(rawPrice);
+
+  return {
+    id: row.id,
+    name: row.name,
+    type: row.dance_style,
+    teacher: {
+      name: teacherDisplayName,
+      bio: '',
+      images: [],
+      achievements: [],
+      experience: 0,
+      specializations: [],
+      rating: 0,
+      reviews: [],
+    },
+    level: getLevelLabelFromApi(row.level),
+    dateFrom: formatIsoDateForUi(row.date_from),
+    dateTo: formatIsoDateForUi(row.date_to),
+    price: Number.isFinite(priceNum) ? priceNum : 0,
+    images: row.images ?? [],
+    studio: row.studio,
+    city: row.city ?? '',
+    description: row.description ?? '',
+    capacity: row.capacity ?? 0,
+    spotsLeft: row.spots_left ?? 0,
+    schedule: (row.schedule ?? []).map(normalizeScheduleEntryForTeacherCourse),
+    music: row.music ?? { artist: '', track: '', url: '' },
+    createdByTeacherId: user.id,
+    courseStatus: mapApiCourseStatusToTeacherCourseStatus(row.status),
+  };
+};
+
+const normalizeApiCourseToTeacherCourse = (
+  data: CourseDetailServer,
+  apiStatus: string,
+  user: BackendUser | null | undefined
+): TeacherCourse => {
+  const client = normalizeCourseDetail(data);
+
+  return {
+    ...client,
+    createdByTeacherId: data.teacher_id ?? user?.id ?? 0,
+    courseStatus: mapApiCourseStatusToTeacherCourseStatus(apiStatus),
+  };
+};
 
 export class ProfilePageStore implements ILocalStore {
   private readonly _rootStore: IRootStore;
   private readonly _requests: {
     updateUser: IApiRequest<BackendUser, ErrorResponse>;
     updateTeacherProfile: IApiRequest<BackendTeacherProfile, ErrorResponse>;
-    cities: IApiRequest<BackendCity[], ErrorResponse>;
-    studios: IApiRequest<BackendStudio[], ErrorResponse>;
-    teacherCourses: IApiRequest<BackendTeachingCourse[], ErrorResponse>;
-    courseSummaries: IApiRequest<BackendCourseSummary[], ErrorResponse>;
-    courseDetail: IApiRequest<BackendCourseDetail, ErrorResponse>;
-    createCourse: IApiRequest<BackendCourseDetail, ErrorResponse>;
-    updateCourse: IApiRequest<BackendCourseDetail, ErrorResponse>;
+    cities: IApiRequest<CityServer[], ErrorResponse>;
+    studios: IApiRequest<StudioServer[], ErrorResponse>;
+    teacherCourses: IApiRequest<CourseDetailServer[], ErrorResponse>;
+    enrollments: IApiRequest<CourseDetailServer[], ErrorResponse>;
+    courseDetail: IApiRequest<CourseDetailServer, ErrorResponse>;
+    createCourse: IApiRequest<CourseDetailServer, ErrorResponse>;
+    updateCourse: IApiRequest<CourseDetailServer, ErrorResponse>;
   };
 
   activeSection: ProfileSection = 'profile';
   viewMode: ViewMode = 'student';
 
   teacherCourses: TeacherCourse[] = [];
-  cities: BackendCity[] = [];
-  studios: BackendStudio[] = [];
+  enrollments: Enrollment[] = [];
+  cities: CityServer[] = [];
+  studios: StudioServer[] = [];
   selectedCourseId: number | null = null;
   lessons: Lesson[] = [];
   students: MockUserData[] = [];
@@ -277,6 +255,7 @@ export class ProfilePageStore implements ILocalStore {
   isFormOpen = false;
   editingCourseId: number | null = null;
   courseFormData: CourseFormData = { ...EMPTY_FORM };
+  courseFormErrors: CourseFormErrors = {};
 
   statsPeriodFrom = '';
   statsPeriodTo = '';
@@ -288,6 +267,7 @@ export class ProfilePageStore implements ILocalStore {
   isEditingProfile = false;
   isSavingProfile = false;
   profileError: string | null = null;
+  profileFormErrors: ProfileFormErrors = {};
   profileForm = {
     username: '',
     firstName: '',
@@ -335,8 +315,8 @@ export class ProfilePageStore implements ILocalStore {
         showExpectedError: false,
         showUnexpectedError: false,
       }),
-      courseSummaries: this._rootStore.apiStore.createExtendedRequest({
-        ...ENDPOINTS.courses.list,
+      enrollments: this._rootStore.apiStore.createExtendedRequest({
+        ...ENDPOINTS.enrollments.list,
         showExpectedError: false,
         showUnexpectedError: false,
       }),
@@ -361,6 +341,7 @@ export class ProfilePageStore implements ILocalStore {
       activeSection: observable,
       viewMode: observable,
       teacherCourses: observable.ref,
+      enrollments: observable.ref,
       cities: observable.ref,
       studios: observable.ref,
       selectedCourseId: observable,
@@ -371,6 +352,7 @@ export class ProfilePageStore implements ILocalStore {
       isFormOpen: observable,
       editingCourseId: observable,
       courseFormData: observable,
+      courseFormErrors: observable,
       statsPeriodFrom: observable,
       statsPeriodTo: observable,
       comparePeriodFrom: observable,
@@ -380,6 +362,7 @@ export class ProfilePageStore implements ILocalStore {
       isEditingProfile: observable,
       isSavingProfile: observable,
       profileError: observable,
+      profileFormErrors: observable,
       profileForm: observable,
       avatarFile: observable.ref,
       avatarPreview: observable,
@@ -402,6 +385,9 @@ export class ProfilePageStore implements ILocalStore {
       openEditForm: action,
       closeForm: action,
       updateFormField: action,
+      updateSharedLocation: action,
+      setUseSameLocation: action,
+      clearCourseFormError: action,
       addScheduleEntry: action,
       removeScheduleEntry: action,
       updateScheduleEntry: action,
@@ -412,6 +398,7 @@ export class ProfilePageStore implements ILocalStore {
       startProfileEdit: action,
       cancelProfileEdit: action,
       updateProfileField: action,
+      clearProfileFormError: action,
       setAvatarFile: action,
       setCourseImageFiles: action,
       removeCourseImage: action,
@@ -422,16 +409,7 @@ export class ProfilePageStore implements ILocalStore {
     });
 
     if (this.viewMode === 'teacher') {
-      void this.loadTeacherCourses(MOCK_TEACHER_ID);
-      void this.loadReferenceData();
       this.syncTeacherProfileFromUser();
-
-      if (this.teacherCourses.length > 0) {
-        const firstId = this.teacherCourses[0].id;
-
-        this.setSelectedCourse(firstId);
-        this.loadStats(firstId);
-      }
     }
   }
 
@@ -440,7 +418,7 @@ export class ProfilePageStore implements ILocalStore {
   }
 
   get mockTeacherId(): number {
-    return MOCK_TEACHER_ID;
+    return PROFILE_PAGE_MOCK_TEACHER_ID;
   }
 
   get activeCourses(): TeacherCourse[] {
@@ -468,16 +446,7 @@ export class ProfilePageStore implements ILocalStore {
 
     if (mode === 'teacher') {
       this.activeSection = 'profile';
-      void this.loadTeacherCourses(MOCK_TEACHER_ID);
-      void this.loadReferenceData();
       this.syncTeacherProfileFromUser();
-
-      if (this.teacherCourses.length > 0) {
-        const firstId = this.teacherCourses[0].id;
-
-        this.setSelectedCourse(firstId);
-        this.loadStats(firstId);
-      }
     } else {
       this.activeSection = 'profile';
     }
@@ -501,10 +470,13 @@ export class ProfilePageStore implements ILocalStore {
 
   openCreateForm = (): void => {
     this.editingCourseId = null;
+    this.courseFormErrors = {};
     this.courseImageFileSlots = [];
     this.courseImagePreviews = [];
     this.courseFormData = {
       ...EMPTY_FORM,
+      useSameLocation: true,
+      sharedLocation: '',
       schedule: [{ weekday: 'Пн', timeFrom: '18:00', timeTo: '19:30' }],
     };
     this.isFormOpen = true;
@@ -534,30 +506,43 @@ export class ProfilePageStore implements ILocalStore {
     }
 
     runInAction(() => {
+      const normalizedSchedule =
+        response.data.schedule.length > 0
+          ? response.data.schedule.map((entry) => ({
+              weekday: entry.weekday,
+              timeFrom: entry.time_from,
+              timeTo: entry.time_to,
+              location: entry.location ?? undefined,
+            }))
+          : [{ weekday: 'Пн', timeFrom: '18:00', timeTo: '19:30', location: undefined }];
+      const filledLocations = normalizedSchedule
+        .map((entry) => (entry.location ?? '').trim())
+        .filter(Boolean);
+      const uniqueLocations = Array.from(new Set(filledLocations));
+      const useSameLocation =
+        normalizedSchedule.length > 0 &&
+        uniqueLocations.length === 1 &&
+        normalizedSchedule.every((entry) => (entry.location ?? '').trim().length > 0);
+
       this.editingCourseId = courseId;
+      this.courseFormErrors = {};
       this.courseImageFileSlots = response.data.images.map(() => null);
       this.courseImagePreviews = response.data.images;
       this.courseFormData = {
         name: response.data.name,
         type: response.data.dance_style,
-        level: getLevelFromApi(response.data.level),
-        dateFrom: formatDateForUi(response.data.date_from),
-        dateTo: formatDateForUi(response.data.date_to),
+        level: getLevelLabelFromApi(response.data.level),
+        dateFrom: formatIsoDateForUi(response.data.date_from),
+        dateTo: formatIsoDateForUi(response.data.date_to),
         price: String(response.data.price),
         studio: response.data.studio,
         city: response.data.city,
         description: response.data.description,
         musicUrl: response.data.music.url,
         capacity: response.data.capacity,
-        schedule:
-          response.data.schedule.length > 0
-            ? response.data.schedule.map((entry) => ({
-                weekday: entry.weekday,
-                timeFrom: entry.time_from,
-                timeTo: entry.time_to,
-                location: entry.location ?? undefined,
-              }))
-            : [{ weekday: 'Пн', timeFrom: '18:00', timeTo: '19:30' }],
+        useSameLocation,
+        sharedLocation: useSameLocation ? uniqueLocations[0] ?? '' : '',
+        schedule: normalizedSchedule,
       };
       this.isFormOpen = true;
       this.isLoading = false;
@@ -567,28 +552,62 @@ export class ProfilePageStore implements ILocalStore {
   closeForm = (): void => {
     this.isFormOpen = false;
     this.editingCourseId = null;
+    this.courseFormErrors = {};
     this.courseImageFileSlots = [];
     this.courseImagePreviews = [];
   };
 
   updateFormField = <K extends keyof CourseFormData>(field: K, value: CourseFormData[K]): void => {
     this.courseFormData[field] = value;
+    this.clearCourseFormError(field);
 
     if (field === 'studio') {
       const studio = this.studios.find((item) => item.name === value);
 
       if (studio) {
         this.courseFormData.city = studio.city;
+        this.clearCourseFormError('city');
       }
     }
   };
 
+  updateSharedLocation = (value: string): void => {
+    this.courseFormData.sharedLocation = value;
+    this.clearCourseFormError('sharedLocation');
+  };
+
+  setUseSameLocation = (value: boolean): void => {
+    this.courseFormData.useSameLocation = value;
+    this.clearCourseFormError('sharedLocation');
+
+    if (value) {
+      Object.keys(this.courseFormErrors)
+        .filter((key) => key.startsWith('schedule.') && key.endsWith('.location'))
+        .forEach((key) => this.clearCourseFormError(key));
+    }
+  };
+
+  clearCourseFormError = (field: string): void => {
+    if (!this.courseFormErrors[field]) {
+      return;
+    }
+
+    const next = { ...this.courseFormErrors };
+
+    delete next[field];
+    this.courseFormErrors = next;
+  };
+
   addScheduleEntry = (): void => {
     this.courseFormData.schedule.push({ weekday: 'Пн', timeFrom: '18:00', timeTo: '19:30' });
+    this.clearCourseFormError('schedule');
   };
 
   removeScheduleEntry = (index: number): void => {
     this.courseFormData.schedule.splice(index, 1);
+    Object.keys(this.courseFormErrors)
+      .filter((key) => key.startsWith(`schedule.${index}.`) || key === 'schedule')
+      .forEach((key) => this.clearCourseFormError(key));
   };
 
   updateScheduleEntry = (index: number, field: string, value: string): void => {
@@ -596,6 +615,8 @@ export class ProfilePageStore implements ILocalStore {
 
     if (entry) {
       (entry as Record<string, string>)[field] = value;
+      this.clearCourseFormError(`schedule.${index}.${field}`);
+      this.clearCourseFormError('schedule');
     }
   };
 
@@ -624,6 +645,7 @@ export class ProfilePageStore implements ILocalStore {
   }): void => {
     this.isEditingProfile = true;
     this.profileError = null;
+    this.profileFormErrors = {};
     this.profileForm = {
       username: user.username,
       firstName: user.firstName,
@@ -639,6 +661,7 @@ export class ProfilePageStore implements ILocalStore {
     this.isEditingProfile = false;
     this.isSavingProfile = false;
     this.profileError = null;
+    this.profileFormErrors = {};
     this.avatarFile = null;
     this.avatarPreview = this._rootStore.userStore.user?.avatar ?? fallbackImage;
     this.syncTeacherProfileFromUser();
@@ -646,6 +669,18 @@ export class ProfilePageStore implements ILocalStore {
 
   updateProfileField = (field: keyof typeof this.profileForm, value: string): void => {
     this.profileForm[field] = value;
+    this.clearProfileFormError(field);
+  };
+
+  clearProfileFormError = (field: keyof typeof this.profileForm | string): void => {
+    if (!this.profileFormErrors[field as keyof ProfileFormErrors]) {
+      return;
+    }
+
+    const next = { ...this.profileFormErrors };
+
+    delete next[field as keyof ProfileFormErrors];
+    this.profileFormErrors = next;
   };
 
   setAvatarFile = (file: File | null): void => {
@@ -725,6 +760,10 @@ export class ProfilePageStore implements ILocalStore {
   };
 
   saveProfile = async (): Promise<boolean> => {
+    if (!this._validateProfileForm()) {
+      return false;
+    }
+
     runInAction(() => {
       this.isSavingProfile = true;
       this.profileError = null;
@@ -801,6 +840,27 @@ export class ProfilePageStore implements ILocalStore {
     return true;
   };
 
+  private _validateProfileForm(): boolean {
+    const errors: ProfileFormErrors = {};
+
+    if (!this.profileForm.username.trim()) {
+      errors.username = 'Введите username';
+    }
+
+    if (!this.profileForm.lastName.trim()) {
+      errors.lastName = 'Введите фамилию';
+    }
+
+    if (!this.profileForm.firstName.trim()) {
+      errors.firstName = 'Введите имя';
+    }
+
+    this.profileFormErrors = errors;
+    this.profileError = null;
+
+    return Object.keys(errors).length === 0;
+  }
+
   applyTeacherProfile = (teacherProfile: BackendTeacherProfile | null | undefined): void => {
     runInAction(() => {
       this.teacherProfileForm = {
@@ -836,33 +896,35 @@ export class ProfilePageStore implements ILocalStore {
     });
   };
 
-  loadTeacherCourses = async (_teacherId: number): Promise<void> => {
-    const user = this._rootStore.userStore.user;
+  loadEnrollments = async (): Promise<void> => {
+    const response = await this._requests.enrollments.call();
 
-    if (!user?.email) {
+    if (response.isError) {
       return;
     }
 
-    const [statusResponse, summaryResponse] = await Promise.all([
-      this._requests.teacherCourses.call(),
-      this._requests.courseSummaries.call({
-        params: {
-          teacher: user.email,
-        },
-      }),
-    ]);
+    runInAction(() => {
+      this.enrollments = response.data.map(normalizeCourseDetailToEnrollment);
+    });
+  };
 
-    if (statusResponse.isError || summaryResponse.isError) {
+  loadTeacherCourses = async (_teacherId: number): Promise<void> => {
+    const user = this._rootStore.userStore.user;
+
+    if (!user) {
+      return;
+    }
+
+    const response = await this._requests.teacherCourses.call();
+
+    if (response.isError) {
       runInAction(() => {
-        this.teacherCourses = MockDb.getTeacherCourses(MOCK_TEACHER_ID);
+        this.teacherCourses = MockDb.getTeacherCourses(PROFILE_PAGE_MOCK_TEACHER_ID);
       });
       return;
     }
 
-    const statusMap = new Map(statusResponse.data.map((course) => [course.id, course.status]));
-    const courses = summaryResponse.data.map((course) =>
-      buildTeacherCourse(course, statusMap.get(course.id) ?? course.status ?? 'published', user)
-    );
+    const courses = response.data.map((row) => normalizeMyTeachingCourseToTeacherCourse(row, user));
 
     runInAction(() => {
       this.teacherCourses = courses;
@@ -924,6 +986,10 @@ export class ProfilePageStore implements ILocalStore {
   // ── Teacher actions ──────────────────────────────────────────────────
 
   createCourse = async (_teacherId: number): Promise<void> => {
+    if (!this._validateCourseForm()) {
+      return;
+    }
+
     runInAction(() => {
       this.isLoading = true;
     });
@@ -946,16 +1012,16 @@ export class ProfilePageStore implements ILocalStore {
     });
 
     if (response.isError) {
+      this._applyCourseApiErrors(response.data as CourseApiErrorResponse | undefined);
       runInAction(() => {
         this.isLoading = false;
       });
-      this._rootStore.snackbarStore.triggerDefaultErrorMessage();
 
       return;
     }
 
     runInAction(() => {
-      const createdCourse = buildTeacherCourse(
+      const createdCourse = normalizeApiCourseToTeacherCourse(
         response.data,
         response.data.status,
         this._rootStore.userStore.user as BackendUser | null | undefined
@@ -970,6 +1036,10 @@ export class ProfilePageStore implements ILocalStore {
 
   updateCourse = async (_teacherId: number): Promise<void> => {
     if (!this.editingCourseId) {
+      return;
+    }
+
+    if (!this._validateCourseForm()) {
       return;
     }
 
@@ -996,16 +1066,16 @@ export class ProfilePageStore implements ILocalStore {
     });
 
     if (response.isError) {
+      this._applyCourseApiErrors(response.data as CourseApiErrorResponse | undefined);
       runInAction(() => {
         this.isLoading = false;
       });
-      this._rootStore.snackbarStore.triggerDefaultErrorMessage();
 
       return;
     }
 
     runInAction(() => {
-      const updatedCourse = buildTeacherCourse(
+      const updatedCourse = normalizeApiCourseToTeacherCourse(
         response.data,
         response.data.status,
         this._rootStore.userStore.user as BackendUser | null | undefined
@@ -1144,7 +1214,9 @@ export class ProfilePageStore implements ILocalStore {
           weekday: WEEKDAY_TO_API[weekday] ?? 'mon',
           time_from: entry.timeFrom,
           time_to: entry.timeTo,
-          location_text: entry.location?.trim() ?? '',
+          location_text: this.courseFormData.useSameLocation
+            ? this.courseFormData.sharedLocation.trim()
+            : entry.location?.trim() ?? '',
         }))
     );
 
@@ -1165,8 +1237,8 @@ export class ProfilePageStore implements ILocalStore {
       payload.append('level', LEVEL_TO_API[this.courseFormData.level] ?? 'beginner');
       payload.append('price', String(Number(this.courseFormData.price)));
       payload.append('capacity', String(this.courseFormData.capacity));
-      payload.append('date_from', ddmmToIso(this.courseFormData.dateFrom, REFERENCE_YEAR));
-      payload.append('date_to', ddmmToIso(this.courseFormData.dateTo, REFERENCE_YEAR));
+      payload.append('date_from', ddmmToIso(this.courseFormData.dateFrom, PROFILE_PAGE_REFERENCE_YEAR));
+      payload.append('date_to', ddmmToIso(this.courseFormData.dateTo, PROFILE_PAGE_REFERENCE_YEAR));
       payload.append('status', 'published');
       payload.append('schedule', JSON.stringify(schedule));
 
@@ -1188,8 +1260,8 @@ export class ProfilePageStore implements ILocalStore {
       level: LEVEL_TO_API[this.courseFormData.level] ?? 'beginner',
       price: Number(this.courseFormData.price),
       capacity: this.courseFormData.capacity,
-      date_from: ddmmToIso(this.courseFormData.dateFrom, REFERENCE_YEAR),
-      date_to: ddmmToIso(this.courseFormData.dateTo, REFERENCE_YEAR),
+      date_from: ddmmToIso(this.courseFormData.dateFrom, PROFILE_PAGE_REFERENCE_YEAR),
+      date_to: ddmmToIso(this.courseFormData.dateTo, PROFILE_PAGE_REFERENCE_YEAR),
       status: 'published',
       schedule,
     };
@@ -1202,6 +1274,174 @@ export class ProfilePageStore implements ILocalStore {
     }
 
     return jsonPayload;
+  }
+
+  private _validateCourseForm(): boolean {
+    const errors: CourseFormErrors = {};
+    const form = this.courseFormData;
+    const trimmedName = form.name.trim();
+    const trimmedType = form.type.trim();
+    const trimmedStudio = form.studio.trim();
+    const trimmedCity = form.city.trim();
+    const priceNumber = Number(form.price);
+
+    if (!trimmedName) {
+      errors.name = 'Введите название курса';
+    }
+
+    if (!trimmedType) {
+      errors.type = 'Выберите стиль танца';
+    }
+
+    if (!form.level.trim()) {
+      errors.level = 'Выберите уровень';
+    }
+
+    if (!isValidDDMM(form.dateFrom)) {
+      errors.dateFrom = 'Укажите дату начала в формате ДД.ММ';
+    }
+
+    if (!isValidDDMM(form.dateTo)) {
+      errors.dateTo = 'Укажите дату окончания в формате ДД.ММ';
+    }
+
+    if (!errors.dateFrom && !errors.dateTo) {
+      const dateFrom = fromIsoDate(ddmmToIso(form.dateFrom, PROFILE_PAGE_REFERENCE_YEAR));
+      const dateTo = fromIsoDate(ddmmToIso(form.dateTo, PROFILE_PAGE_REFERENCE_YEAR));
+
+      if (dateFrom && dateTo && dateTo < dateFrom) {
+        errors.dateTo = 'Дата окончания не может быть раньше даты начала';
+      }
+    }
+
+    if (!Number.isFinite(priceNumber) || priceNumber <= 0) {
+      errors.price = 'Цена должна быть больше 0';
+    }
+
+    if (!trimmedStudio) {
+      errors.studio = 'Выберите студию';
+    }
+
+    if (!trimmedCity) {
+      errors.city = 'Выберите город';
+    }
+
+    if (!Number.isFinite(form.capacity) || form.capacity <= 0) {
+      errors.capacity = 'Вместимость должна быть больше 0';
+    }
+
+    if (form.schedule.length === 0) {
+      errors.schedule = 'Добавьте хотя бы одно занятие в расписание';
+    }
+
+    if (form.useSameLocation) {
+      if (!form.sharedLocation.trim()) {
+        errors.sharedLocation = 'Введите адрес занятий';
+      }
+    }
+
+    form.schedule.forEach((entry, index) => {
+      if (!entry.weekday.trim()) {
+        errors[`schedule.${index}.weekday`] = 'Выберите день недели';
+      }
+
+      if (!TIME_HHMM_REGEX.test(entry.timeFrom.trim())) {
+        errors[`schedule.${index}.timeFrom`] = 'Введите время в формате ЧЧ:ММ';
+      }
+
+      if (!TIME_HHMM_REGEX.test(entry.timeTo.trim())) {
+        errors[`schedule.${index}.timeTo`] = 'Введите время в формате ЧЧ:ММ';
+      }
+
+      if (
+        TIME_HHMM_REGEX.test(entry.timeFrom.trim()) &&
+        TIME_HHMM_REGEX.test(entry.timeTo.trim()) &&
+        toComparableTime(entry.timeTo.trim()) <= toComparableTime(entry.timeFrom.trim())
+      ) {
+        errors[`schedule.${index}.timeTo`] = 'Время окончания должно быть позже времени начала';
+      }
+
+      if (!form.useSameLocation && !(entry.location ?? '').trim()) {
+        errors[`schedule.${index}.location`] = 'Введите адрес занятия';
+      }
+    });
+
+    this.courseFormErrors = errors;
+
+    return Object.keys(errors).length === 0;
+  }
+
+  private _extractFirstErrorMessage(value: unknown): string | null {
+    if (typeof value === 'string') {
+      const trimmed = value.trim().replace(/[.]+$/, '');
+
+      return trimmed || null;
+    }
+
+    if (Array.isArray(value)) {
+      for (const item of value) {
+        const message = this._extractFirstErrorMessage(item);
+
+        if (message) {
+          return message;
+        }
+      }
+    }
+
+    if (value && typeof value === 'object') {
+      for (const nested of Object.values(value as Record<string, unknown>)) {
+        const message = this._extractFirstErrorMessage(nested);
+
+        if (message) {
+          return message;
+        }
+      }
+    }
+
+    return null;
+  }
+
+  private _applyCourseApiErrors(errorData?: CourseApiErrorResponse): void {
+    if (!errorData || typeof errorData !== 'object') {
+      this._rootStore.snackbarStore.triggerDefaultErrorMessage();
+      return;
+    }
+
+    const fieldMap: Record<string, string> = {
+      music_url: 'musicUrl',
+      name: 'name',
+      dance_style_id: 'type',
+      level: 'level',
+      date_from: 'dateFrom',
+      date_to: 'dateTo',
+      price: 'price',
+      studio_id: 'studio',
+      city: 'city',
+      capacity: 'capacity',
+      schedule: 'schedule',
+    };
+    const mappedErrors: CourseFormErrors = {};
+
+    for (const [serverField, formField] of Object.entries(fieldMap)) {
+      const message = this._extractFirstErrorMessage(errorData[serverField]);
+
+      if (message) {
+        mappedErrors[formField] = message;
+      }
+    }
+
+    if (Object.keys(mappedErrors).length > 0) {
+      runInAction(() => {
+        this.courseFormErrors = {
+          ...this.courseFormErrors,
+          ...mappedErrors,
+        };
+      });
+
+      return;
+    }
+
+    this._rootStore.snackbarStore.triggerDefaultErrorMessage();
   }
 
   destroy = (): void => {};

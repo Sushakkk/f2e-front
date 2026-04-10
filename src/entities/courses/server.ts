@@ -18,6 +18,7 @@ export type CourseListItemServer = {
   city: string;
   studio: string;
   schedule: ScheduleEntryServer[];
+  spots_left: number;
 };
 
 export type CourseListResponseServer = CourseListItemServer[] | { results: CourseListItemServer[] };

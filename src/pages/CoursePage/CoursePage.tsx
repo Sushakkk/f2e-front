@@ -6,8 +6,12 @@ import { Navigate, generatePath, useNavigate, useParams } from 'react-router-dom
 import Button from 'components/common/Button/Button';
 import { InfoPage } from 'components/common/InfoPage';
 import { Row } from 'components/common/Row';
+import { ENDPOINTS } from 'config/api';
 import { RoutePath } from 'config/router/paths';
+import type { EnrollmentStatus } from 'config/users';
+import type { CourseDetailServer } from 'entities/course/server';
 import { MockDb } from 'services/mockDb';
+import type { ErrorResponse } from 'store/globals/api/types';
 import { CourseStore } from 'store/CourseStore';
 import { useRootStore } from 'store/globals/root';
 import { useUserStore } from 'store/hooks';
@@ -24,6 +28,7 @@ const CoursePage: React.FC = () => {
 
   const courseStore = useLocalStore(() => new CourseStore(rootStore));
   const [enrolling, setEnrolling] = React.useState(false);
+  const [enrollmentStatus, setEnrollmentStatus] = React.useState<EnrollmentStatus | null>(null);
   const numericCourseId = Number(id);
 
   React.useEffect(() => {
@@ -39,9 +44,8 @@ const CoursePage: React.FC = () => {
   const isLoggedIn = Boolean(userStore.user);
 
   const isEnrolled = React.useMemo(
-    () => (courseData ? MockDb.isEnrolled(courseData.id) : false),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [courseData, userStore.user]
+    () => enrollmentStatus === 'active' || enrollmentStatus === 'pending',
+    [enrollmentStatus]
   );
 
   const isFavorite = React.useMemo(
@@ -72,10 +76,20 @@ const CoursePage: React.FC = () => {
     }
 
     setEnrolling(true);
-    await MockDb.enrollInCourse(courseData.id);
-    userStore.refreshUser();
+    const response = await rootStore.apiStore
+      .createExtendedRequest<CourseDetailServer, ErrorResponse>({
+        ...ENDPOINTS.courses.enroll(courseData.id, 'POST'),
+        showExpectedError: false,
+        showUnexpectedError: true,
+      })
+      .call();
+    if (!response.isError) {
+      setEnrollmentStatus(response.data.status === 'completed' ? 'completed' : 'active');
+      void courseStore.loadCourse(courseData.id);
+      void rootStore.coursesStore.loadCourses();
+    }
     setEnrolling(false);
-  }, [isLoggedIn, courseData, enrolling, navigate, userStore]);
+  }, [courseStore, isLoggedIn, courseData, enrolling, navigate, rootStore.apiStore]);
 
   const handleCancel = React.useCallback(async () => {
     if (!courseData || enrolling) {
@@ -83,10 +97,20 @@ const CoursePage: React.FC = () => {
     }
 
     setEnrolling(true);
-    await MockDb.cancelEnrollment(courseData.id);
-    userStore.refreshUser();
+    const response = await rootStore.apiStore
+      .createExtendedRequest<void, ErrorResponse>({
+        ...ENDPOINTS.courses.enroll(courseData.id, 'DELETE'),
+        showExpectedError: false,
+        showUnexpectedError: true,
+      })
+      .call();
+    if (!response.isError) {
+      setEnrollmentStatus('cancelled');
+      void courseStore.loadCourse(courseData.id);
+      void rootStore.coursesStore.loadCourses();
+    }
     setEnrolling(false);
-  }, [courseData, enrolling, userStore]);
+  }, [courseStore, courseData, enrolling, rootStore.apiStore]);
 
   const goToTeacher = React.useCallback(
     (teacherId?: number) => {
@@ -113,6 +137,42 @@ const CoursePage: React.FC = () => {
     MockDb.toggleFavoriteCourse(courseData.id);
     userStore.refreshUser();
   }, [isLoggedIn, courseData, navigate, userStore]);
+
+  React.useEffect(() => {
+    if (!isLoggedIn || !courseData) {
+      setEnrollmentStatus(null);
+      return;
+    }
+
+    let cancelled = false;
+
+    const loadEnrollmentStatus = async (): Promise<void> => {
+      const response = await rootStore.apiStore
+        .createExtendedRequest<
+          Array<{ course: { id: number }; status: EnrollmentStatus }>,
+          ErrorResponse
+        >({
+          ...ENDPOINTS.myCourses,
+          showExpectedError: false,
+          showUnexpectedError: false,
+        })
+        .call();
+
+      if (cancelled || response.isError) {
+        return;
+      }
+
+      const row = response.data.find((e) => e.course.id === courseData.id);
+
+      setEnrollmentStatus(row?.status ?? null);
+    };
+
+    void loadEnrollmentStatus();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [courseData, isLoggedIn, rootStore.apiStore]);
 
   const handleEnrollClick = React.useCallback(() => {
     void (isEnrolled ? handleCancel() : handleEnroll());

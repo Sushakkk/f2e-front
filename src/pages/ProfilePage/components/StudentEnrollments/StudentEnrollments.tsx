@@ -4,6 +4,7 @@ import * as React from 'react';
 import { SectionHeader, Card } from 'components/common';
 import { COURSES_CONFIG } from 'config/cards';
 import type { Enrollment } from 'config/users';
+import { fromIsoDate } from 'utils/dateUtils';
 
 import s from './StudentEnrollments.module.scss';
 
@@ -12,14 +13,32 @@ type Props = {
 };
 
 const StudentEnrollments: React.FC<Props> = ({ enrollments }) => {
+  const isCompletedEnrollment = React.useCallback((enrollment: Enrollment): boolean => {
+    if (enrollment.status === 'completed' || enrollment.courseStatus === 'completed') {
+      return true;
+    }
+
+    const courseDateTo = enrollment.courseDateTo
+      ? fromIsoDate(enrollment.courseDateTo)
+      : null;
+
+    if (courseDateTo) {
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      return courseDateTo < today;
+    }
+
+    return false;
+  }, []);
+
   const active = React.useMemo(
-    () => enrollments.filter((e) => e.status === 'active'),
-    [enrollments]
+    () => enrollments.filter((e) => e.status === 'active' && !isCompletedEnrollment(e)),
+    [enrollments, isCompletedEnrollment]
   );
 
   const completed = React.useMemo(
-    () => enrollments.filter((e) => e.status === 'completed'),
-    [enrollments]
+    () => enrollments.filter((e) => isCompletedEnrollment(e)),
+    [enrollments, isCompletedEnrollment]
   );
 
   if (active.length === 0 && completed.length === 0) {

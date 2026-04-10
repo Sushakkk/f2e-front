@@ -88,7 +88,7 @@ const InfoPage: React.FC<Props> = ({
         <p className={s.text}>{description}</p>
         <div className={s.content}>{children}</div>
       </div>
-      {button}
+      {button && <>{button}</>}
     </div>
   );
 };

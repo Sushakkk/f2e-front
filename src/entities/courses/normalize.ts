@@ -58,7 +58,7 @@ export function normalizeCourseListItem(data: CourseListItemServer): CourseListI
     city: data.city,
     description: '',
     capacity: 0,
-    spotsLeft: 0,
+    spotsLeft: Number(data.spots_left ?? 0),
     music: {
       artist: '',
       track: '',

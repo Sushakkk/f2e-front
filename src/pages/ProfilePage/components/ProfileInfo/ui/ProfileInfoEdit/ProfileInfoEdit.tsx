@@ -2,7 +2,7 @@ import { observer } from 'mobx-react';
 import * as React from 'react';
 
 import fallbackImage from 'assets/images/courses/five-to-eight-placeholder.png';
-import { ImageUploadButton, SelectDropdown } from 'components/common';
+import { FormField, ImageUploadButton, SelectDropdown } from 'components/common';
 import Button from 'components/common/Button/Button';
 import type { ProfilePageStore } from 'store/ProfilePageStore';
 import { useDanceStylesStore } from 'store/hooks';
@@ -18,6 +18,7 @@ type Props = {
 const ProfileInfoEditComponent: React.FC<Props> = ({ store }) => {
   const danceStylesStore = useDanceStylesStore();
   const avatarInputRef = React.useRef<HTMLInputElement | null>(null);
+  const profileErrors = store.profileFormErrors;
 
   React.useEffect(() => {
     void danceStylesStore.requestDanceStyles();
@@ -37,42 +38,61 @@ const ProfileInfoEditComponent: React.FC<Props> = ({ store }) => {
             alt="Превью аватара"
           />
           <div className={s.fieldGrid}>
-            <label className={s.field}>
-              <span className={s.label}>Username</span>
+            <FormField
+              className={s.field}
+              label="Username"
+              labelClassName={s.label}
+              error={profileErrors.username}
+              errorClassName={s.error}
+              required
+              requiredMarkClassName={s.requiredMark}
+            >
               <input
-                className={s.input}
+                className={store.profileFormErrors.username ? s.inputError : undefined}
                 value={store.profileForm.username}
                 onChange={(e) => store.updateProfileField('username', e.target.value)}
                 placeholder="Username"
               />
-            </label>
-            <label className={s.field}>
-              <span className={s.label}>Фамилия</span>
+            </FormField>
+            <FormField
+              className={s.field}
+              label="Фамилия"
+              labelClassName={s.label}
+              error={profileErrors.lastName}
+              errorClassName={s.error}
+              required
+              requiredMarkClassName={s.requiredMark}
+            >
               <input
-                className={s.input}
+                className={store.profileFormErrors.lastName ? s.inputError : undefined}
                 value={store.profileForm.lastName}
                 onChange={(e) => store.updateProfileField('lastName', e.target.value)}
                 placeholder="Фамилия"
               />
-            </label>
-            <label className={s.field}>
-              <span className={s.label}>Имя</span>
+            </FormField>
+            <FormField
+              className={s.field}
+              label="Имя"
+              labelClassName={s.label}
+              error={profileErrors.firstName}
+              errorClassName={s.error}
+              required
+              requiredMarkClassName={s.requiredMark}
+            >
               <input
-                className={s.input}
+                className={store.profileFormErrors.firstName ? s.inputError : undefined}
                 value={store.profileForm.firstName}
                 onChange={(e) => store.updateProfileField('firstName', e.target.value)}
                 placeholder="Имя"
               />
-            </label>
-            <label className={s.field}>
-              <span className={s.label}>Отчество</span>
+            </FormField>
+            <FormField className={s.field} label="Отчество" labelClassName={s.label}>
               <input
-                className={s.input}
                 value={store.profileForm.middleName}
                 onChange={(e) => store.updateProfileField('middleName', e.target.value)}
                 placeholder="Отчество"
               />
-            </label>
+            </FormField>
           </div>
           <input
             ref={avatarInputRef}
@@ -96,31 +116,26 @@ const ProfileInfoEditComponent: React.FC<Props> = ({ store }) => {
             hint="Эти данные будут оформлять вашу преподавательскую страницу."
             className={s.formSection}
           >
-            <label className={s.field}>
-              <span className={s.label}>Обо мне</span>
+            <FormField className={s.field} label="Обо мне" labelClassName={s.label}>
               <textarea
-                className={s.textarea}
                 value={store.teacherProfileForm.bio}
                 onChange={(e) => store.updateTeacherField('bio', e.target.value)}
                 placeholder="Расскажите о себе, стиле преподавания и подходе к ученикам"
                 rows={5}
               />
-            </label>
+            </FormField>
             <div className={s.fieldGrid}>
-              <label className={s.field}>
-                <span className={s.label}>Опыт</span>
+              <FormField className={s.field} label="Опыт" labelClassName={s.label}>
                 <input
-                  className={s.input}
                   type="number"
                   min="0"
                   value={store.teacherProfileForm.experience}
                   onChange={(e) => store.updateTeacherField('experience', e.target.value)}
                   placeholder="Опыт в годах"
                 />
-              </label>
+              </FormField>
             </div>
-            <label className={s.field}>
-              <span className={s.label}>Специализации</span>
+            <FormField className={s.field} label="Специализации" labelClassName={s.label}>
               <SelectDropdown
                 mode="multi"
                 options={danceStylesStore.options}
@@ -132,17 +147,15 @@ const ProfileInfoEditComponent: React.FC<Props> = ({ store }) => {
                 placeholder="Выберите специализации"
                 onChange={(value) => store.updateTeacherField('specializations', value.join('\n'))}
               />
-            </label>
-            <label className={s.field}>
-              <span className={s.label}>Достижения</span>
+            </FormField>
+            <FormField className={s.field} label="Достижения" labelClassName={s.label}>
               <textarea
-                className={s.textarea}
                 value={store.teacherProfileForm.achievements}
                 onChange={(e) => store.updateTeacherField('achievements', e.target.value)}
                 placeholder="Достижения, каждое с новой строки"
                 rows={4}
               />
-            </label>
+            </FormField>
             <ImageUploadButton
               label="Добавить фотографии"
               className={s.utilityBtn}
