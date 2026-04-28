@@ -79,6 +79,7 @@ export class AuthPageStore implements ILocalStore {
       setEmail: action,
       setPassword: action,
       setConfirmPassword: action,
+      setIsLogin: action,
       toggleMode: action,
       toggleShowPassword: action,
       toggleShowConfirmPassword: action,
@@ -125,11 +126,19 @@ export class AuthPageStore implements ILocalStore {
     this._clearError('confirmPassword');
   };
 
-  toggleMode = (): void => {
-    this.isLogin = !this.isLogin;
+  setIsLogin = (isLogin: boolean): void => {
+    if (this.isLogin === isLogin) {
+      return;
+    }
+
+    this.isLogin = isLogin;
     this.username = '';
     this.errors = {};
     this.submitError = null;
+  };
+
+  toggleMode = (): void => {
+    this.setIsLogin(!this.isLogin);
   };
 
   toggleShowPassword = (): void => {

@@ -2,6 +2,7 @@ export enum RoutePath {
   root = '/',
   error = '/error',
   auth = '/auth',
+  authRegister = '/auth/register',
   survey = '/survey',
   home = '/home',
   course = '/course/:id',

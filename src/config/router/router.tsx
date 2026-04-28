@@ -34,6 +34,10 @@ export const ROUTER = createBrowserRouter([
         element: <AuthPage />,
       },
       {
+        path: RoutePath.authRegister,
+        element: <AuthPage />,
+      },
+      {
         path: RoutePath.survey,
         element: <SurveyPage />,
       },

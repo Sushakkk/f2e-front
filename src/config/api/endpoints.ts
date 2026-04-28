@@ -32,6 +32,7 @@ export const ENDPOINTS = {
     create: createApiEndpoint('courses/', 'POST'),
     detail: (id: number): EndpointType => createApiEndpoint(`courses/${id}/`, 'GET'),
     update: (id: number): EndpointType => createApiEndpoint(`courses/${id}/`, 'PATCH'),
+    students: (id: number): EndpointType => createApiEndpoint(`courses/${id}/students/`, 'GET'),
     enroll: (id: number, method: EndpointType['method'] = 'POST'): EndpointType =>
       createApiEndpoint(`courses/${id}/enroll/`, method),
   },

@@ -29,7 +29,6 @@ const Card: React.FC<Props> = ({
   compact,
   profile,
   largeImage,
-  statusLabel,
   actions,
 }) => {
   const { name, teacher, level, dateFrom, dateTo, price, images, id } = item;
@@ -72,7 +71,6 @@ const Card: React.FC<Props> = ({
       <div className={s.content}>
         <div className={s.title}>
           {name}
-          {statusLabel && <span className={s.statusLabel}> · {statusLabel}</span>}
         </div>
         {teacher && (
           <div className={s.subtitle} onClick={teacher.id ? goToTeacher : undefined}>

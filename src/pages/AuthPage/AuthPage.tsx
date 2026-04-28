@@ -1,7 +1,7 @@
 import cn from 'classnames';
 import { observer } from 'mobx-react';
 import * as React from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 
 import ArrowIcon from 'assets/images/arrow.svg?react';
 import Button from 'components/common/Button/Button';
@@ -18,8 +18,18 @@ const AuthPage: React.FC = () => {
   const rootStore = useRootStore();
   const store = useLocalStore(() => new AuthPageStore(rootStore));
   const navigate = useNavigate();
+  const location = useLocation();
+  const isRegisterPath = location.pathname === RoutePath.authRegister;
+
+  React.useEffect(() => {
+    store.setIsLogin(!isRegisterPath);
+  }, [store, isRegisterPath]);
 
   const handleGoBack = React.useCallback(() => navigate(-1), [navigate]);
+
+  const handleToggleMode = React.useCallback(() => {
+    navigate(store.isLogin ? RoutePath.authRegister : RoutePath.auth);
+  }, [store.isLogin, navigate]);
 
   const handleSubmit = React.useCallback(
     async (e: React.FormEvent) => {
@@ -149,7 +159,7 @@ const AuthPage: React.FC = () => {
           </form>
           <div className={s.footer}>
             {store.isLogin ? 'Нет аккаунта? ' : 'Уже есть аккаунт? '}
-            <span className={s.footerLink} onClick={store.toggleMode}>
+            <span className={s.footerLink} onClick={handleToggleMode}>
               {store.isLogin ? 'Зарегистрироваться' : 'Войти'}
             </span>
           </div>
