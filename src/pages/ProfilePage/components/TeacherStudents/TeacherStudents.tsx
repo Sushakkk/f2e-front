@@ -17,14 +17,10 @@ const TeacherStudents: React.FC<Props> = ({ store }) => {
 
   const activeCourseIdsKey = store.activeCourses.map((c) => c.id).join();
 
-  const courseOptions = React.useMemo(
-    () =>
-      store.activeCourses.map((c) => ({
-        value: String(c.id),
-        label: c.name,
-      })),
-    [activeCourseIdsKey, store]
-  );
+  const courseOptions = store.activeCourses.map((c) => ({
+    value: String(c.id),
+    label: c.name,
+  }));
 
   const lessonOptions = React.useMemo(
     () =>
@@ -43,10 +39,10 @@ const TeacherStudents: React.FC<Props> = ({ store }) => {
     }
 
     const ids = new Set(store.activeCourses.map((c) => c.id));
-    const needFix = store.selectedCourseId == null || !ids.has(store.selectedCourseId);
+    const needFix = store.selectedCourseId === null || !ids.has(store.selectedCourseId);
     const nextId = needFix ? store.activeCourses[0].id : store.selectedCourseId;
 
-    if (needFix && nextId != null) {
+    if (needFix && nextId !== null) {
       store.setSelectedCourse(nextId);
     }
   }, [store, activeCourseIdsKey, store.selectedCourseId]);
@@ -63,6 +59,14 @@ const TeacherStudents: React.FC<Props> = ({ store }) => {
     () => store.lessons.filter((l) => l.status === 'scheduled'),
     [store.lessons]
   );
+  const lessonDropdownSpace = Math.min(260, lessonOptions.length * 44 + 12);
+  const lessonSelectorStyle = React.useMemo(() => {
+    const style = {} as React.CSSProperties & Record<string, string>;
+
+    style['--lesson-dropdown-space'] = `${lessonDropdownSpace}px`;
+
+    return style;
+  }, [lessonDropdownSpace]);
 
   const attendanceMap = React.useMemo(() => {
     const map = new Map<string, boolean>();
@@ -103,7 +107,7 @@ const TeacherStudents: React.FC<Props> = ({ store }) => {
             {store.students.map((student) => (
               <ProfileCard
                 key={student.id}
-                title={`${student.firstName} ${student.lastName}`}
+                title={student.fullName}
                 meta={student.email}
                 avatar={student.avatar}
               />
@@ -114,7 +118,7 @@ const TeacherStudents: React.FC<Props> = ({ store }) => {
       {store.students.length > 0 && scheduledLessons.length > 0 && (
         <div className={s.attendanceSection}>
           <h3 className={s.subTitle}>Отметка посещаемости</h3>
-          <div className={s.selector}>
+          <div className={`${s.selector} ${s.lessonSelector}`} style={lessonSelectorStyle}>
             <label className={s.label}>Занятие</label>
             <SelectDropdown
               mode="single"
@@ -139,9 +143,7 @@ const TeacherStudents: React.FC<Props> = ({ store }) => {
                         checked={present}
                         onChange={() => handleToggle(selectedLessonId, student.id, present)}
                       />
-                      <span className={s.studentName}>
-                        {student.firstName} {student.lastName}
-                      </span>
+                      <span className={s.studentName}>{student.fullName}</span>
                     </label>
                     <span className={present ? s.statusPresent : s.statusAbsent}>
                       {present ? 'Присутствует' : 'Отсутствует'}

@@ -23,10 +23,26 @@ import {
   WEEKDAY_TO_API,
 } from 'entities/course/config';
 import type { CourseDetailServer, ScheduleEntryServer } from 'entities/course/server';
+import {
+  normalizeCourseAttendance,
+  type CourseAttendanceResponseServer,
+  type CourseAttendanceServer,
+  type MarkAttendancePayloadServer,
+} from 'entities/courseAttendance';
+import { normalizeCourseLesson, type CourseLessonsResponseServer } from 'entities/courseLessons';
+import {
+  normalizeCourseStudent,
+  type CourseStudentClient,
+  type CourseStudentsResponseServer,
+} from 'entities/courseStudents';
 import type { StudioServer } from 'entities/studio';
-import { UserRole, type BackendTeacherProfile, type BackendUser, type UserClient } from 'entities/user';
+import {
+  UserRole,
+  type BackendTeacherProfile,
+  type BackendUser,
+  type UserClient,
+} from 'entities/user';
 import { MockDb } from 'services/mockDb';
-import type { MockUserData } from 'services/mockDb/types';
 import { ErrorResponse } from 'store/globals/api/types';
 import { type IRootStore } from 'store/globals/root/declaration';
 import { ILocalStore } from 'store/interfaces';
@@ -235,6 +251,10 @@ export class ProfilePageStore implements ILocalStore {
     teacherCourses: IApiRequest<CourseDetailServer[], ErrorResponse>;
     enrollments: IApiRequest<CourseDetailServer[], ErrorResponse>;
     courseDetail: IApiRequest<CourseDetailServer, ErrorResponse>;
+    courseStudents: IApiRequest<CourseStudentsResponseServer, ErrorResponse>;
+    courseLessons: IApiRequest<CourseLessonsResponseServer, ErrorResponse>;
+    courseAttendance: IApiRequest<CourseAttendanceResponseServer, ErrorResponse>;
+    markAttendance: IApiRequest<CourseAttendanceServer, ErrorResponse>;
     createCourse: IApiRequest<CourseDetailServer, ErrorResponse>;
     updateCourse: IApiRequest<CourseDetailServer, ErrorResponse>;
   };
@@ -248,7 +268,7 @@ export class ProfilePageStore implements ILocalStore {
   studios: StudioServer[] = [];
   selectedCourseId: number | null = null;
   lessons: Lesson[] = [];
-  students: MockUserData[] = [];
+  students: CourseStudentClient[] = [];
   attendanceData: AttendanceRecord[] = [];
   statsData: AttendanceStats | null = null;
 
@@ -322,6 +342,26 @@ export class ProfilePageStore implements ILocalStore {
       }),
       courseDetail: this._rootStore.apiStore.createExtendedRequest({
         ...ENDPOINTS.courses.detail(0),
+        showExpectedError: false,
+        showUnexpectedError: false,
+      }),
+      courseStudents: this._rootStore.apiStore.createExtendedRequest({
+        ...ENDPOINTS.courses.students(0),
+        showExpectedError: false,
+        showUnexpectedError: false,
+      }),
+      courseLessons: this._rootStore.apiStore.createExtendedRequest({
+        ...ENDPOINTS.courses.lessons(0),
+        showExpectedError: false,
+        showUnexpectedError: false,
+      }),
+      courseAttendance: this._rootStore.apiStore.createExtendedRequest({
+        ...ENDPOINTS.courses.attendance(0),
+        showExpectedError: false,
+        showUnexpectedError: false,
+      }),
+      markAttendance: this._rootStore.apiStore.createExtendedRequest({
+        ...ENDPOINTS.lessons.markAttendance(0),
         showExpectedError: false,
         showUnexpectedError: false,
       }),
@@ -460,9 +500,16 @@ export class ProfilePageStore implements ILocalStore {
     this.selectedCourseId = courseId;
 
     if (courseId) {
-      this.loadLessons(courseId);
-      this.loadStudents(courseId);
-      this.loadAttendance(courseId);
+      this.students = [];
+      this.lessons = [];
+      this.attendanceData = [];
+      void this.loadLessons(courseId);
+      void this.loadStudents(courseId);
+      void this.loadAttendance(courseId);
+    } else {
+      this.students = [];
+      this.lessons = [];
+      this.attendanceData = [];
     }
   };
 
@@ -672,7 +719,7 @@ export class ProfilePageStore implements ILocalStore {
     this.clearProfileFormError(field);
   };
 
-  clearProfileFormError = (field: keyof typeof this.profileForm | string): void => {
+  clearProfileFormError = (field: keyof typeof this.profileForm): void => {
     if (!this.profileFormErrors[field as keyof ProfileFormErrors]) {
       return;
     }
@@ -908,7 +955,9 @@ export class ProfilePageStore implements ILocalStore {
     });
   };
 
-  loadTeacherCourses = async (_teacherId: number): Promise<void> => {
+  loadTeacherCourses = async (teacherId: number): Promise<void> => {
+    void teacherId;
+
     const user = this._rootStore.userStore.user;
 
     if (!user) {
@@ -919,43 +968,90 @@ export class ProfilePageStore implements ILocalStore {
 
     if (response.isError) {
       runInAction(() => {
-        this.teacherCourses = MockDb.getTeacherCourses(PROFILE_PAGE_MOCK_TEACHER_ID);
+        this.teacherCourses = [];
       });
+
       return;
     }
 
     const courses = response.data.map((row) => normalizeMyTeachingCourseToTeacherCourse(row, user));
+    let nextSelectedCourseId: number | null = null;
 
     runInAction(() => {
       this.teacherCourses = courses;
 
-      if (courses.length > 0 && !this.selectedCourseId) {
-        this.selectedCourseId = courses[0].id;
+      if (courses.length === 0) {
+        this.selectedCourseId = null;
+        this.students = [];
+
+        return;
+      }
+
+      const hasSelectedCourse =
+        this.selectedCourseId !== null &&
+        courses.some((course) => course.id === this.selectedCourseId);
+      const defaultCourse =
+        courses.find((course) => course.courseStatus === 'active') ?? courses[0];
+
+      nextSelectedCourseId = hasSelectedCourse ? this.selectedCourseId : defaultCourse.id;
+    });
+
+    if (nextSelectedCourseId !== null) {
+      this.setSelectedCourse(nextSelectedCourseId);
+    }
+  };
+
+  loadLessons = async (courseId: number): Promise<void> => {
+    const response = await this._requests.courseLessons.call({
+      ...ENDPOINTS.courses.lessons(courseId),
+    });
+
+    if (response.isError) {
+      return;
+    }
+
+    const lessons = response.data.map(normalizeCourseLesson);
+
+    runInAction(() => {
+      if (this.selectedCourseId === courseId) {
+        this.lessons = lessons;
       }
     });
   };
 
-  loadLessons = (courseId: number): void => {
-    const lessons = MockDb.getCourseLessons(courseId);
+  loadStudents = async (courseId: number): Promise<void> => {
+    const response = await this._requests.courseStudents.call({
+      ...ENDPOINTS.courses.students(courseId),
+    });
+
+    if (response.isError) {
+      return;
+    }
+
+    const students = response.data.map(normalizeCourseStudent);
 
     runInAction(() => {
-      this.lessons = lessons;
+      if (this.selectedCourseId === courseId) {
+        this.students = students;
+      }
     });
   };
 
-  loadStudents = (courseId: number): void => {
-    const students = MockDb.getCourseStudents(courseId);
-
-    runInAction(() => {
-      this.students = students;
+  loadAttendance = async (courseId: number): Promise<void> => {
+    const response = await this._requests.courseAttendance.call({
+      ...ENDPOINTS.courses.attendance(courseId),
     });
-  };
 
-  loadAttendance = (courseId: number): void => {
-    const records = MockDb.getAttendanceByCourse(courseId);
+    if (response.isError) {
+      return;
+    }
+
+    const records = response.data.map(normalizeCourseAttendance);
 
     runInAction(() => {
-      this.attendanceData = records;
+      if (this.selectedCourseId === courseId) {
+        this.attendanceData = records;
+      }
     });
   };
 
@@ -985,7 +1081,9 @@ export class ProfilePageStore implements ILocalStore {
 
   // ── Teacher actions ──────────────────────────────────────────────────
 
-  createCourse = async (_teacherId: number): Promise<void> => {
+  createCourse = async (teacherId: number): Promise<void> => {
+    void teacherId;
+
     if (!this._validateCourseForm()) {
       return;
     }
@@ -1034,7 +1132,9 @@ export class ProfilePageStore implements ILocalStore {
     });
   };
 
-  updateCourse = async (_teacherId: number): Promise<void> => {
+  updateCourse = async (teacherId: number): Promise<void> => {
+    void teacherId;
+
     if (!this.editingCourseId) {
       return;
     }
@@ -1093,10 +1193,10 @@ export class ProfilePageStore implements ILocalStore {
 
   cancelCourse = async (courseId: number, teacherId: number): Promise<void> => {
     await MockDb.cancelTeacherCourse(courseId);
-    this.loadTeacherCourses(teacherId);
+    void this.loadTeacherCourses(teacherId);
 
     if (this.selectedCourseId === courseId) {
-      this.loadLessons(courseId);
+      void this.loadLessons(courseId);
     }
   };
 
@@ -1104,15 +1204,27 @@ export class ProfilePageStore implements ILocalStore {
     await MockDb.cancelLesson(lessonId);
 
     if (this.selectedCourseId) {
-      this.loadLessons(this.selectedCourseId);
+      void this.loadLessons(this.selectedCourseId);
     }
   };
 
   markAttendance = async (lessonId: number, studentId: number, present: boolean): Promise<void> => {
-    await MockDb.markAttendance(lessonId, studentId, present);
+    const payload: MarkAttendancePayloadServer = {
+      student_id: studentId,
+      status: present ? 'present' : 'absent',
+    };
+
+    const response = await this._requests.markAttendance.call({
+      ...ENDPOINTS.lessons.markAttendance(lessonId),
+      data: payload,
+    });
+
+    if (response.isError) {
+      return;
+    }
 
     if (this.selectedCourseId) {
-      this.loadAttendance(this.selectedCourseId);
+      void this.loadAttendance(this.selectedCourseId);
     }
   };
 
@@ -1237,7 +1349,10 @@ export class ProfilePageStore implements ILocalStore {
       payload.append('level', LEVEL_TO_API[this.courseFormData.level] ?? 'beginner');
       payload.append('price', String(Number(this.courseFormData.price)));
       payload.append('capacity', String(this.courseFormData.capacity));
-      payload.append('date_from', ddmmToIso(this.courseFormData.dateFrom, PROFILE_PAGE_REFERENCE_YEAR));
+      payload.append(
+        'date_from',
+        ddmmToIso(this.courseFormData.dateFrom, PROFILE_PAGE_REFERENCE_YEAR)
+      );
       payload.append('date_to', ddmmToIso(this.courseFormData.dateTo, PROFILE_PAGE_REFERENCE_YEAR));
       payload.append('status', 'published');
       payload.append('schedule', JSON.stringify(schedule));
@@ -1404,6 +1519,7 @@ export class ProfilePageStore implements ILocalStore {
   private _applyCourseApiErrors(errorData?: CourseApiErrorResponse): void {
     if (!errorData || typeof errorData !== 'object') {
       this._rootStore.snackbarStore.triggerDefaultErrorMessage();
+
       return;
     }
 

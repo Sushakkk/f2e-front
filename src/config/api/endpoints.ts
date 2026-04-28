@@ -33,8 +33,14 @@ export const ENDPOINTS = {
     detail: (id: number): EndpointType => createApiEndpoint(`courses/${id}/`, 'GET'),
     update: (id: number): EndpointType => createApiEndpoint(`courses/${id}/`, 'PATCH'),
     students: (id: number): EndpointType => createApiEndpoint(`courses/${id}/students/`, 'GET'),
+    lessons: (id: number): EndpointType => createApiEndpoint(`courses/${id}/lessons/`, 'GET'),
+    attendance: (id: number): EndpointType => createApiEndpoint(`courses/${id}/attendance/`, 'GET'),
     enroll: (id: number, method: EndpointType['method'] = 'POST'): EndpointType =>
       createApiEndpoint(`courses/${id}/enroll/`, method),
+  },
+  lessons: {
+    markAttendance: (id: number): EndpointType =>
+      createApiEndpoint(`lessons/${id}/attendance/mark/`, 'POST'),
   },
   /** Записи студента: полные карточки курсов — только для раздела «Мои записи». */
   enrollments: {
