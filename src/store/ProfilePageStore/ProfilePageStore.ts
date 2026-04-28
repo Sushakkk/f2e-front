@@ -29,6 +29,10 @@ import {
   type CourseAttendanceServer,
   type MarkAttendancePayloadServer,
 } from 'entities/courseAttendance';
+import {
+  normalizeCourseAttendanceStats,
+  type CourseAttendanceStatsServer,
+} from 'entities/courseAttendanceStats';
 import { normalizeCourseLesson, type CourseLessonsResponseServer } from 'entities/courseLessons';
 import {
   normalizeCourseStudent,
@@ -49,6 +53,10 @@ import { ILocalStore } from 'store/interfaces';
 import { IApiRequest } from 'store/models/ApiRequest/declaration';
 import { resolveCourseImageFetchUrl } from 'utils/courseImageFetchUrl';
 import { ddmmToIso, fromIsoDate } from 'utils/dateUtils';
+import {
+  buildAttendanceStatsCsvContent,
+  buildAttendanceStatsExportFileName,
+} from 'utils/exportAttendanceStatsCsv';
 
 export type ProfileSection =
   | 'profile'
@@ -65,6 +73,20 @@ type CourseApiErrorResponse = ErrorResponse & Record<string, unknown>;
 type ProfileFormErrors = Partial<Record<'username' | 'firstName' | 'lastName', string>>;
 
 const TIME_HHMM_REGEX = /^([01]\d|2[0-3]):([0-5]\d)$/;
+
+function buildAttendanceStatsQueryParams(dateFrom: string, dateTo: string): Record<string, string> {
+  const params: Record<string, string> = {};
+
+  if (dateFrom.trim()) {
+    params.date_from = dateFrom.trim();
+  }
+
+  if (dateTo.trim()) {
+    params.date_to = dateTo.trim();
+  }
+
+  return params;
+}
 
 const isValidDDMM = (value: string): boolean => {
   const match = /^(\d{2})\.(\d{2})$/.exec(value.trim());
@@ -224,6 +246,8 @@ const normalizeMyTeachingCourseToTeacherCourse = (
     music: row.music ?? { artist: '', track: '', url: '' },
     createdByTeacherId: user.id,
     courseStatus: mapApiCourseStatusToTeacherCourseStatus(row.status),
+    dateRangeFromIso: row.date_from ? row.date_from.slice(0, 10) : undefined,
+    dateRangeToIso: row.date_to ? row.date_to.slice(0, 10) : undefined,
   };
 };
 
@@ -238,6 +262,8 @@ const normalizeApiCourseToTeacherCourse = (
     ...client,
     createdByTeacherId: data.teacher_id ?? user?.id ?? 0,
     courseStatus: mapApiCourseStatusToTeacherCourseStatus(apiStatus),
+    dateRangeFromIso: data.date_from ? data.date_from.slice(0, 10) : undefined,
+    dateRangeToIso: data.date_to ? data.date_to.slice(0, 10) : undefined,
   };
 };
 
@@ -254,6 +280,7 @@ export class ProfilePageStore implements ILocalStore {
     courseStudents: IApiRequest<CourseStudentsResponseServer, ErrorResponse>;
     courseLessons: IApiRequest<CourseLessonsResponseServer, ErrorResponse>;
     courseAttendance: IApiRequest<CourseAttendanceResponseServer, ErrorResponse>;
+    attendanceStats: IApiRequest<CourseAttendanceStatsServer, ErrorResponse>;
     markAttendance: IApiRequest<CourseAttendanceServer, ErrorResponse>;
     createCourse: IApiRequest<CourseDetailServer, ErrorResponse>;
     updateCourse: IApiRequest<CourseDetailServer, ErrorResponse>;
@@ -360,6 +387,11 @@ export class ProfilePageStore implements ILocalStore {
         showExpectedError: false,
         showUnexpectedError: false,
       }),
+      attendanceStats: this._rootStore.apiStore.createExtendedRequest({
+        ...ENDPOINTS.courses.attendanceStats(0),
+        showExpectedError: false,
+        showUnexpectedError: false,
+      }),
       markAttendance: this._rootStore.apiStore.createExtendedRequest({
         ...ENDPOINTS.lessons.markAttendance(0),
         showExpectedError: false,
@@ -435,6 +467,7 @@ export class ProfilePageStore implements ILocalStore {
       setStatsPeriodTo: action,
       setComparePeriodFrom: action,
       setComparePeriodTo: action,
+      applyStatsPeriodFromCourse: action,
       startProfileEdit: action,
       cancelProfileEdit: action,
       updateProfileField: action,
@@ -681,6 +714,25 @@ export class ProfilePageStore implements ILocalStore {
 
   setComparePeriodTo = (v: string): void => {
     this.comparePeriodTo = v;
+  };
+
+  /**
+   * Заполняет период статистики датами выбранного курса (границы из API).
+   * Пользователь может изменить значения в DateRangePicker после подстановки.
+   */
+  applyStatsPeriodFromCourse = (courseId: number): void => {
+    const course = this.teacherCourses.find((c) => c.id === courseId);
+    const from = course?.dateRangeFromIso?.trim();
+    const to = course?.dateRangeToIso?.trim();
+
+    if (!from || !to) {
+      return;
+    }
+
+    runInAction(() => {
+      this.statsPeriodFrom = from;
+      this.statsPeriodTo = to;
+    });
   };
 
   startProfileEdit = (user: {
@@ -1055,27 +1107,49 @@ export class ProfilePageStore implements ILocalStore {
     });
   };
 
-  loadStats = (courseId: number): void => {
-    const stats = MockDb.getAttendanceStats(
-      courseId,
-      this.statsPeriodFrom || undefined,
-      this.statsPeriodTo || undefined
-    );
+  loadStats = async (courseId: number): Promise<void> => {
+    const params = buildAttendanceStatsQueryParams(this.statsPeriodFrom, this.statsPeriodTo);
+
+    const response = await this._requests.attendanceStats.call({
+      ...ENDPOINTS.courses.attendanceStats(courseId),
+      params,
+    });
+
+    if (response.isError) {
+      return;
+    }
+
+    const stats = normalizeCourseAttendanceStats(response.data);
 
     runInAction(() => {
-      this.statsData = stats;
+      if (this.selectedCourseId === courseId) {
+        this.statsData = stats;
+      }
     });
   };
 
-  loadCompareStats = (courseId: number): void => {
+  loadCompareStats = async (courseId: number): Promise<void> => {
     if (!this.comparePeriodFrom || !this.comparePeriodTo) {
       return;
     }
 
-    const stats = MockDb.getAttendanceStats(courseId, this.comparePeriodFrom, this.comparePeriodTo);
+    const params = buildAttendanceStatsQueryParams(this.comparePeriodFrom, this.comparePeriodTo);
+
+    const response = await this._requests.attendanceStats.call({
+      ...ENDPOINTS.courses.attendanceStats(courseId),
+      params,
+    });
+
+    if (response.isError) {
+      return;
+    }
+
+    const stats = normalizeCourseAttendanceStats(response.data);
 
     runInAction(() => {
-      this.compareStatsData = stats;
+      if (this.selectedCourseId === courseId) {
+        this.compareStatsData = stats;
+      }
     });
   };
 
@@ -1228,32 +1302,34 @@ export class ProfilePageStore implements ILocalStore {
     }
   };
 
-  exportStatsCsv = (courseId: number): void => {
-    const stats = MockDb.getAttendanceStats(
-      courseId,
-      this.statsPeriodFrom || undefined,
-      this.statsPeriodTo || undefined
+  exportStatsCsv = async (courseId: number): Promise<void> => {
+    const params = buildAttendanceStatsQueryParams(this.statsPeriodFrom, this.statsPeriodTo);
+
+    const response = await this._requests.attendanceStats.call({
+      ...ENDPOINTS.courses.attendanceStats(courseId),
+      params,
+    });
+
+    if (response.isError) {
+      return;
+    }
+
+    const stats = normalizeCourseAttendanceStats(response.data);
+    const csvText = buildAttendanceStatsCsvContent(stats);
+    const course = this.teacherCourses.find((c) => c.id === courseId);
+    const displayName = course?.name ?? `Курс_${courseId}`;
+    const fileName = buildAttendanceStatsExportFileName(
+      displayName,
+      this.statsPeriodFrom,
+      this.statsPeriodTo,
+      courseId
     );
-
-    const rows: string[] = [];
-
-    rows.push('Тип,Имя/Дата,Посещено,Пропущено,Всего,Процент');
-
-    for (const s of stats.perStudent) {
-      rows.push(`Ученик,"${s.studentName}",${s.attended},${s.missed},${s.total},${s.percent}%`);
-    }
-
-    for (const l of stats.perLesson) {
-      rows.push(`Занятие,${l.date},${l.present},${l.absent},${l.total},${l.percent}%`);
-    }
-
-    const bom = '\uFEFF';
-    const blob = new Blob([bom + rows.join('\n')], { type: 'text/csv;charset=utf-8;' });
+    const blob = new Blob([csvText], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
 
     a.href = url;
-    a.download = `attendance_course_${courseId}.csv`;
+    a.download = fileName;
     a.click();
     URL.revokeObjectURL(url);
   };

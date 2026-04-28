@@ -78,6 +78,25 @@
   gap: 12px;
 }
 
+.tableScroll {
+  width: 100%;
+  max-width: 100%;
+
+  @include media-down(sm) {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior-x: contain;
+
+    /* Имя в «По ученикам» не обрезаем многоточием при горизонтальном скролле */
+    .colName {
+      white-space: normal;
+      overflow: visible;
+      text-overflow: clip;
+      min-width: 120px;
+    }
+  }
+}
+
 .subTitle {
   margin: 0;
   font-size: 16px;
@@ -88,11 +107,17 @@
   border-radius: 12px;
   overflow: hidden;
   border: 1px solid $color-bg-tertiary;
+
+  @include media-down(sm) {
+    min-width: 560px;
+    overflow: visible;
+  }
 }
 
 .tableHeader {
   display: flex;
   align-items: center;
+  gap: 4px;
   padding: 10px 16px;
   background: $color-bg-tertiary;
   font-size: 12px;
@@ -148,6 +173,49 @@
   }
 }
 
+.colPct {
+  flex: 0 0 38px;
+  box-sizing: border-box;
+  min-width: 34px;
+  max-width: 42px;
+  padding-left: 2px;
+  padding-right: 2px;
+  text-align: center;
+
+  @include media-down(sm) {
+    flex: 0 0 36px;
+    min-width: 32px;
+    max-width: 40px;
+    font-size: 13px;
+  }
+}
+
+.colTotalLabel {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  line-height: 1.15;
+  text-transform: none;
+}
+
+.colTotalLabelMain {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  color: $color-white-secondary;
+  text-transform: uppercase;
+}
+
+.colTotalLabelSub {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  color: $color-white-secondary;
+  text-transform: uppercase;
+}
+
 .percent {
   font-weight: 600;
 }
@@ -155,7 +223,7 @@
 .compareSection {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 20px;
 }
 
 .toggleCompare {

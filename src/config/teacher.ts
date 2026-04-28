@@ -25,6 +25,12 @@ export type TeacherCourseStatus = 'active' | 'cancelled' | 'completed';
 export type TeacherCourse = CourseConfigItem & {
   createdByTeacherId: number;
   courseStatus: TeacherCourseStatus;
+
+  /** Начало курса YYYY-MM-DD (для периода статистики по умолчанию) */
+  dateRangeFromIso?: string;
+
+  /** Конец курса YYYY-MM-DD */
+  dateRangeToIso?: string;
 };
 
 export type CourseFormData = {
