@@ -127,7 +127,7 @@ const TeacherStats: React.FC<Props> = ({ store }) => {
             </div>
             <div className={s.card}>
               <div className={s.cardValue}>{stats.conductedLessons}</div>
-              <div className={s.cardLabel}>Проведено</div>
+              <div className={s.cardLabel}>Завершено</div>
             </div>
             <div className={s.card}>
               <div className={s.cardValue}>{stats.cancelledLessons}</div>
@@ -146,7 +146,7 @@ const TeacherStats: React.FC<Props> = ({ store }) => {
             <div className={s.tableSection}>
               <h3 className={s.subTitle}>По занятиям</h3>
               <div className={s.tableScroll}>
-                <div className={s.table}>
+                <div className={cx(s.table, s.table_byLesson)}>
                   <div className={s.tableHeader}>
                     <span className={s.colDate}>Дата</span>
                     <span className={s.colNum}>Присут.</span>
@@ -188,7 +188,7 @@ const TeacherStats: React.FC<Props> = ({ store }) => {
             <div className={s.tableSection}>
               <h3 className={s.subTitle}>По ученикам</h3>
               <div className={s.tableScroll}>
-                <div className={s.table}>
+                <div className={cx(s.table, s.table_byStudent)}>
                   <div className={s.tableHeader}>
                     <span className={s.colName}>Имя</span>
                     <span className={s.colNum}>Присут.</span>

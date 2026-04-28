@@ -2,8 +2,9 @@ import cx from 'clsx';
 import { observer } from 'mobx-react';
 import * as React from 'react';
 
-import { SelectDropdown } from 'components/common';
+import { Modal, SelectDropdown } from 'components/common';
 import type { ProfilePageStore } from 'store/ProfilePageStore';
+import { formatRu } from 'utils/dateUtils';
 
 import s from './TeacherSchedule.module.scss';
 
@@ -12,6 +13,8 @@ type Props = {
 };
 
 const TeacherSchedule: React.FC<Props> = ({ store }) => {
+  const [pendingCancelLessonId, setPendingCancelLessonId] = React.useState<number | null>(null);
+
   const courseOptions = React.useMemo(
     () =>
       store.activeCourses.map((c) => ({
@@ -34,15 +37,48 @@ const TeacherSchedule: React.FC<Props> = ({ store }) => {
     [store]
   );
 
-  const handleCancelLesson = React.useCallback(
-    (lessonId: number) => {
-      void store.cancelLesson(lessonId);
-    },
-    [store]
-  );
+  const closeCancelLessonModal = React.useCallback(() => {
+    setPendingCancelLessonId(null);
+  }, []);
+
+  const confirmCancelLesson = React.useCallback(() => {
+    if (pendingCancelLessonId === null) {
+      return;
+    }
+
+    const id = pendingCancelLessonId;
+
+    setPendingCancelLessonId(null);
+    void store.cancelLesson(id);
+  }, [pendingCancelLessonId, store]);
+
+  const cancelLessonModalMessage = React.useMemo(() => {
+    if (pendingCancelLessonId === null) {
+      return 'Отменить это занятие?';
+    }
+
+    const lesson = store.lessons.find((l) => l.id === pendingCancelLessonId);
+    if (!lesson) {
+      return 'Отменить это занятие?';
+    }
+
+    const dateStr = formatRu(lesson.date);
+
+    if (!dateStr) {
+      return 'Отменить это занятие?';
+    }
+
+    return `Отменить занятие от ${dateStr}?`;
+  }, [pendingCancelLessonId, store.lessons]);
 
   return (
     <div className={s.root}>
+      <Modal
+        open={pendingCancelLessonId !== null}
+        message={cancelLessonModalMessage}
+        onClose={closeCancelLessonModal}
+        onConfirm={confirmCancelLesson}
+      />
       <div className={s.selector}>
         <label className={s.label}>Курс</label>
         <SelectDropdown
@@ -57,36 +93,52 @@ const TeacherSchedule: React.FC<Props> = ({ store }) => {
         <div className={s.empty}>Нет занятий для этого курса</div>
       )}
       {store.lessons.length > 0 && (
-        <div className={s.list}>
-          <div className={s.listHeader}>
-            <span className={s.colDate}>Дата</span>
-            <span className={s.colTime}>Время</span>
-            <span className={s.colLocation}>Место</span>
-            <span className={s.colStatus}>Статус</span>
-            <span className={s.colAction} />
-          </div>
-          {store.lessons.map((lesson) => (
-            <div
-              key={lesson.id}
-              className={cx(s.row, lesson.status === 'cancelled' && s.row_cancelled)}
-            >
-              <span className={s.colDate}>{lesson.date}</span>
-              <span className={s.colTime}>
-                {lesson.timeFrom}–{lesson.timeTo}
-              </span>
-              <span className={s.colLocation}>{lesson.location ?? '—'}</span>
-              <span className={cx(s.colStatus, s[`status_${lesson.status}`])}>
-                {lesson.status === 'scheduled' ? 'Запланировано' : 'Отменено'}
-              </span>
-              <span className={s.colAction}>
-                {lesson.status === 'scheduled' && (
-                  <button className={s.cancelBtn} onClick={() => handleCancelLesson(lesson.id)}>
-                    Отменить
-                  </button>
-                )}
-              </span>
+        <div className={s.tableScroll}>
+          <div className={s.tableInner}>
+            <div className={s.list}>
+              <div className={s.listHeader}>
+                <span className={s.colDate}>Дата</span>
+                <span className={s.colTime}>Время</span>
+                <span className={s.colLocation}>Место</span>
+                <span className={s.colStatus}>Статус</span>
+                <span className={s.colAction} />
+              </div>
+              {store.lessons.map((lesson) => (
+                <div
+                  key={lesson.id}
+                  className={cx(
+                    s.row,
+                    lesson.status === 'cancelled' && s.row_cancelled,
+                    lesson.status === 'completed' && s.row_completed
+                  )}
+                >
+                  <span className={s.colDate}>{formatRu(lesson.date)}</span>
+                  <span className={s.colTime}>
+                    {lesson.timeFrom}–{lesson.timeTo}
+                  </span>
+                  <span className={s.colLocation}>{lesson.location ?? '—'}</span>
+                  <span className={cx(s.colStatus, s[`status_${lesson.status}`])}>
+                    {lesson.status === 'scheduled'
+                      ? 'Запланировано'
+                      : lesson.status === 'completed'
+                        ? 'Завершено'
+                        : 'Отменено'}
+                  </span>
+                  <span className={s.colAction}>
+                    {lesson.status === 'scheduled' && (
+                      <button
+                        type="button"
+                        className={s.cancelBtn}
+                        onClick={() => setPendingCancelLessonId(lesson.id)}
+                      >
+                        Отменить
+                      </button>
+                    )}
+                  </span>
+                </div>
+              ))}
             </div>
-          ))}
+          </div>
         </div>
       )}
     </div>

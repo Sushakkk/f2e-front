@@ -1,6 +1,6 @@
 import type { CourseConfigItem } from './cards';
 
-export type LessonStatus = 'scheduled' | 'cancelled';
+export type LessonStatus = 'scheduled' | 'cancelled' | 'completed';
 
 export type Lesson = {
   id: number;

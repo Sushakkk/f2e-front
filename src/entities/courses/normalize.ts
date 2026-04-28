@@ -1,6 +1,7 @@
 import type { ScheduleEntry } from 'config/cards';
 import { parseCourseActivityStatus } from 'config/courseActivity';
 import type { CourseLevel } from 'config/levels';
+import { formatClockToHhMm } from 'utils/dateUtils';
 
 import type { CourseListItemClient } from './client';
 import type { CourseListItemServer, ScheduleEntryServer } from './server';
@@ -25,8 +26,8 @@ function formatShortDate(iso: string): string {
 function normalizeScheduleEntry(entry: ScheduleEntryServer): ScheduleEntry {
   return {
     weekday: entry.weekday,
-    timeFrom: entry.time_from,
-    timeTo: entry.time_to,
+    timeFrom: formatClockToHhMm(entry.time_from),
+    timeTo: formatClockToHhMm(entry.time_to),
   };
 }
 

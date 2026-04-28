@@ -32,6 +32,7 @@ export const ENDPOINTS = {
     create: createApiEndpoint('courses/', 'POST'),
     detail: (id: number): EndpointType => createApiEndpoint(`courses/${id}/`, 'GET'),
     update: (id: number): EndpointType => createApiEndpoint(`courses/${id}/`, 'PATCH'),
+    delete: (id: number): EndpointType => createApiEndpoint(`courses/${id}/`, 'DELETE'),
     students: (id: number): EndpointType => createApiEndpoint(`courses/${id}/students/`, 'GET'),
     lessons: (id: number): EndpointType => createApiEndpoint(`courses/${id}/lessons/`, 'GET'),
     attendance: (id: number): EndpointType => createApiEndpoint(`courses/${id}/attendance/`, 'GET'),
@@ -41,8 +42,10 @@ export const ENDPOINTS = {
       createApiEndpoint(`courses/${id}/enroll/`, method),
   },
   lessons: {
+    cancel: (id: number): EndpointType => createApiEndpoint(`lessons/${id}/cancel/`, 'POST'),
     markAttendance: (id: number): EndpointType =>
       createApiEndpoint(`lessons/${id}/attendance/mark/`, 'POST'),
+    update: (id: number): EndpointType => createApiEndpoint(`lessons/${id}/`, 'PATCH'),
   },
 
   /** Записи студента: полные карточки курсов — только для раздела «Мои записи». */

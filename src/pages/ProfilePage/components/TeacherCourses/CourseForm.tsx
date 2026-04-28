@@ -8,6 +8,7 @@ import {
   DateRangePicker,
   FormField,
   ImageUploadButton,
+  Modal,
   SectionHeader,
   SelectDropdown,
 } from 'components/common';
@@ -15,7 +16,7 @@ import Button from 'components/common/Button/Button';
 import { COURSE_LEVELS } from 'config/levels';
 import type { ProfilePageStore } from 'store/ProfilePageStore';
 import { useDanceStylesStore } from 'store/hooks';
-import { ddmmToIso, fromIsoDate, toDDMM } from 'utils/dateUtils';
+import { ddmmToIso, formatRu, fromIsoDate, toDDMM } from 'utils/dateUtils';
 
 import s from './CourseForm.module.scss';
 
@@ -38,6 +39,7 @@ const CourseForm: React.FC<Props> = ({ store, teacherId, isEditing }) => {
   const form = store.courseFormData;
   const errors = store.courseFormErrors;
   const [selectedPhotoIndex, setSelectedPhotoIndex] = React.useState(0);
+  const [pendingCancelLessonId, setPendingCancelLessonId] = React.useState<number | null>(null);
   const getError = React.useCallback((key: string) => errors[key], [errors]);
 
   React.useEffect(() => {
@@ -101,8 +103,48 @@ const CourseForm: React.FC<Props> = ({ store, teacherId, isEditing }) => {
     [isEditing, store, teacherId]
   );
 
+  const closeCancelLessonModal = React.useCallback(() => {
+    setPendingCancelLessonId(null);
+  }, []);
+
+  const confirmCancelLesson = React.useCallback(() => {
+    if (pendingCancelLessonId === null) {
+      return;
+    }
+
+    const id = pendingCancelLessonId;
+
+    setPendingCancelLessonId(null);
+    void store.cancelLesson(id);
+  }, [pendingCancelLessonId, store]);
+
+  const cancelLessonModalMessage = React.useMemo(() => {
+    if (pendingCancelLessonId === null) {
+      return 'Отменить это занятие?';
+    }
+
+    const lesson = store.courseFormLessons.find((l) => l.id === pendingCancelLessonId);
+    if (!lesson) {
+      return 'Отменить это занятие?';
+    }
+
+    const dateStr = formatRu(lesson.date);
+
+    if (!dateStr) {
+      return 'Отменить это занятие?';
+    }
+
+    return `Отменить занятие от ${dateStr}?`;
+  }, [pendingCancelLessonId, store.courseFormLessons]);
+
   return (
     <form className={s.form} onSubmit={handleSubmit}>
+      <Modal
+        open={pendingCancelLessonId !== null}
+        message={cancelLessonModalMessage}
+        onClose={closeCancelLessonModal}
+        onConfirm={confirmCancelLesson}
+      />
       <div className={s.header}>
         <h2 className={s.formTitle}>{isEditing ? 'Редактировать курс' : 'Создать курс'}</h2>
         <button type="button" className={s.closeBtn} onClick={store.closeForm}>
@@ -382,16 +424,12 @@ const CourseForm: React.FC<Props> = ({ store, teacherId, isEditing }) => {
                 className={s.scheduleField}
                 label="Время"
                 labelClassName={s.scheduleLabel}
-                error={
-                  getError(`schedule.${idx}.timeFrom`) ?? getError(`schedule.${idx}.timeTo`)
-                }
+                error={getError(`schedule.${idx}.timeFrom`) ?? getError(`schedule.${idx}.timeTo`)}
                 errorClassName={s.error}
               >
                 <div className={s.scheduleTimeRow}>
                   <input
-                    className={cx(
-                      getError(`schedule.${idx}.timeFrom`) && s.inputError
-                    )}
+                    className={cx(getError(`schedule.${idx}.timeFrom`) && s.inputError)}
                     value={entry.timeFrom}
                     placeholder="18:00"
                     onChange={(e) => store.updateScheduleEntry(idx, 'timeFrom', e.target.value)}
@@ -435,6 +473,70 @@ const CourseForm: React.FC<Props> = ({ store, teacherId, isEditing }) => {
           </div>
         ))}
       </div>
+      {isEditing && (
+        <section className={s.formLessons} aria-labelledby="course-form-lessons-heading">
+          <h3 id="course-form-lessons-heading" className={s.formLessons__title}>
+            Занятия
+          </h3>
+          {store.courseFormLessons.length === 0 ? (
+            <p className={s.formLessons__empty}>Нет занятий для этого курса</p>
+          ) : (
+            <div className={s.formLessons__tableScroll}>
+              <div className={s.formLessons__tableInner}>
+                <div className={s.formLessons__head}>
+                  <span className={s.formLessons__colDate}>Дата</span>
+                  <span className={s.formLessons__colTime}>Время</span>
+                  <span className={s.formLessons__colLocation}>Место</span>
+                  <span className={s.formLessons__colStatus}>Статус</span>
+                  <span className={s.formLessons__colAction} />
+                </div>
+                {store.courseFormLessons.map((lesson) => (
+                  <div
+                    key={lesson.id}
+                    className={cx(
+                      s.formLessons__row,
+                      lesson.status === 'cancelled' && s.formLessons__row_cancelled,
+                      lesson.status === 'completed' && s.formLessons__row_completed
+                    )}
+                  >
+                    <span className={s.formLessons__colDate}>{formatRu(lesson.date)}</span>
+                    <span className={s.formLessons__colTime}>
+                      {lesson.timeFrom}–{lesson.timeTo}
+                    </span>
+                    <span className={s.formLessons__colLocation}>{lesson.location ?? '—'}</span>
+                    <span
+                      className={cx(
+                        s.formLessons__colStatus,
+                        lesson.status === 'scheduled' && s.formLessons__statusScheduled,
+                        lesson.status === 'cancelled' && s.formLessons__statusCancelled,
+                        lesson.status === 'completed' && s.formLessons__statusCompleted
+                      )}
+                    >
+                      {lesson.status === 'scheduled'
+                        ? 'Запланировано'
+                        : lesson.status === 'completed'
+                          ? 'Завершено'
+                          : 'Отменено'}
+                    </span>
+                    <span className={s.formLessons__colAction}>
+                      {lesson.status === 'scheduled' && (
+                        <button
+                          type="button"
+                          className={s.formLessons__cancelBtn}
+                          disabled={store.isLoading}
+                          onClick={() => setPendingCancelLessonId(lesson.id)}
+                        >
+                          Отменить занятие
+                        </button>
+                      )}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </section>
+      )}
       <div className={s.formActions}>
         <Button mode="purple" type="submit" className={s.submitBtn} disabled={store.isLoading}>
           {store.isLoading ? 'Сохранение...' : isEditing ? 'Сохранить' : 'Создать'}

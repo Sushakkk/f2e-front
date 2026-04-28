@@ -81,20 +81,10 @@
 .tableScroll {
   width: 100%;
   max-width: 100%;
-
-  @include media-down(sm) {
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
-    overscroll-behavior-x: contain;
-
-    /* Имя в «По ученикам» не обрезаем многоточием при горизонтальном скролле */
-    .colName {
-      white-space: normal;
-      overflow: visible;
-      text-overflow: clip;
-      min-width: 120px;
-    }
-  }
+  min-width: 0;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-x: contain;
 }
 
 .subTitle {
@@ -104,21 +94,126 @@
 }
 
 .table {
+  box-sizing: border-box;
+  width: 100%;
+  min-width: min-content;
   border-radius: 12px;
   overflow: hidden;
   border: 1px solid $color-bg-tertiary;
+}
 
-  @include media-down(sm) {
-    min-width: 560px;
-    overflow: visible;
+/* Outer grid задаёт дорожки на всю таблицу; строки через subgrid — одна колонка «Имя/Дата» по всем строкам */
+.table_byLesson {
+  display: grid;
+  grid-template-columns:
+    minmax(96px, 1fr)
+    minmax(76px, 92px)
+    minmax(76px, 92px)
+    minmax(108px, 124px)
+    minmax(44px, 56px);
+  column-gap: 12px;
+
+  .tableHeader,
+  .tableRow {
+    display: grid;
+    grid-column: 1 / -1;
+    grid-template-columns: subgrid;
+    align-items: center;
+    padding: 10px 16px;
+  }
+}
+
+.table_byStudent {
+  display: grid;
+  grid-template-columns:
+    minmax(120px, 1fr)
+    minmax(76px, 92px)
+    minmax(76px, 92px)
+    minmax(108px, 124px)
+    minmax(44px, 56px);
+  column-gap: 12px;
+
+  .tableHeader,
+  .tableRow {
+    display: grid;
+    grid-column: 1 / -1;
+    grid-template-columns: subgrid;
+    align-items: center;
+    padding: 10px 16px;
+  }
+}
+
+@include media-up(md) {
+  .table_byLesson {
+    grid-template-columns:
+      minmax(96px, max-content)
+      repeat(4, minmax(0, 1fr));
+  }
+
+  .table_byStudent {
+    grid-template-columns:
+      minmax(120px, max-content)
+      repeat(4, minmax(0, 1fr));
+  }
+}
+
+@supports not (grid-template-columns: subgrid) {
+  .table_byLesson {
+    display: block;
+  }
+
+  .table_byStudent {
+    display: block;
+  }
+
+  .table_byLesson .tableHeader,
+  .table_byLesson .tableRow {
+    align-items: center;
+    display: grid;
+    grid-column: auto;
+    grid-template-columns:
+      minmax(96px, 1fr)
+      minmax(76px, 92px)
+      minmax(76px, 92px)
+      minmax(108px, 124px)
+      minmax(44px, 56px);
+    column-gap: 12px;
+    padding: 10px 16px;
+  }
+
+  .table_byStudent .tableHeader,
+  .table_byStudent .tableRow {
+    align-items: center;
+    display: grid;
+    grid-column: auto;
+    grid-template-columns:
+      minmax(120px, 1fr)
+      minmax(76px, 92px)
+      minmax(76px, 92px)
+      minmax(108px, 124px)
+      minmax(44px, 56px);
+    column-gap: 12px;
+    padding: 10px 16px;
+  }
+
+  @include media-up(md) {
+    .table_byLesson .tableHeader,
+    .table_byLesson .tableRow {
+      grid-template-columns:
+        minmax(96px, max-content)
+        repeat(4, minmax(0, 1fr));
+    }
+
+    .table_byStudent .tableHeader,
+    .table_byStudent .tableRow {
+      grid-template-columns:
+        minmax(120px, max-content)
+        repeat(4, minmax(0, 1fr));
+    }
   }
 }
 
 .tableHeader {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  padding: 10px 16px;
   background: $color-bg-tertiary;
   font-size: 12px;
   font-weight: 600;
@@ -128,9 +223,6 @@
 }
 
 .tableRow {
-  display: flex;
-  align-items: center;
-  padding: 10px 16px;
   font-size: 14px;
   background: $color-bg-secondary;
   border-bottom: 1px solid $color-bg-tertiary;
@@ -141,32 +233,40 @@
 }
 
 .colDate {
-  flex: 3;
+  box-sizing: border-box;
+  max-width: 100%;
   min-width: 0;
+  overflow: hidden;
+  text-align: left;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  justify-self: stretch;
 
   @include media-down(sm) {
-    flex: 2;
     font-size: 13px;
   }
 }
 
 .colName {
-  flex: 3;
+  box-sizing: border-box;
+  max-width: 100%;
   min-width: 0;
   overflow: hidden;
+  text-align: left;
   text-overflow: ellipsis;
   white-space: nowrap;
+  justify-self: stretch;
 
   @include media-down(sm) {
-    flex: 2;
     font-size: 13px;
   }
 }
 
 .colNum {
-  flex: 1;
+  box-sizing: border-box;
   min-width: 0;
   text-align: center;
+  justify-self: stretch;
 
   @include media-down(sm) {
     font-size: 13px;
@@ -174,18 +274,14 @@
 }
 
 .colPct {
-  flex: 0 0 38px;
   box-sizing: border-box;
-  min-width: 34px;
-  max-width: 42px;
+  min-width: 0;
   padding-left: 2px;
   padding-right: 2px;
   text-align: center;
+  justify-self: stretch;
 
   @include media-down(sm) {
-    flex: 0 0 36px;
-    min-width: 32px;
-    max-width: 40px;
     font-size: 13px;
   }
 }
@@ -196,8 +292,11 @@
   align-items: center;
   justify-content: center;
   gap: 2px;
+  width: 100%;
   line-height: 1.15;
+  text-align: center;
   text-transform: none;
+  justify-self: stretch;
 }
 
 .colTotalLabelMain {

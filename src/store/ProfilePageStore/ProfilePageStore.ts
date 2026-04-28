@@ -33,7 +33,11 @@ import {
   normalizeCourseAttendanceStats,
   type CourseAttendanceStatsServer,
 } from 'entities/courseAttendanceStats';
-import { normalizeCourseLesson, type CourseLessonsResponseServer } from 'entities/courseLessons';
+import {
+  normalizeCourseLesson,
+  type CourseLessonServer,
+  type CourseLessonsResponseServer,
+} from 'entities/courseLessons';
 import {
   normalizeCourseStudent,
   type CourseStudentClient,
@@ -46,13 +50,12 @@ import {
   type BackendUser,
   type UserClient,
 } from 'entities/user';
-import { MockDb } from 'services/mockDb';
 import { ErrorResponse } from 'store/globals/api/types';
 import { type IRootStore } from 'store/globals/root/declaration';
 import { ILocalStore } from 'store/interfaces';
 import { IApiRequest } from 'store/models/ApiRequest/declaration';
 import { resolveCourseImageFetchUrl } from 'utils/courseImageFetchUrl';
-import { ddmmToIso, fromIsoDate } from 'utils/dateUtils';
+import { ddmmToIso, formatClockToHhMm, fromIsoDate } from 'utils/dateUtils';
 import {
   buildAttendanceStatsCsvContent,
   buildAttendanceStatsExportFileName,
@@ -191,8 +194,8 @@ const mapCourseStatusToEnrollmentFields = (
 
 const normalizeScheduleEntryForTeacherCourse = (entry: ScheduleEntryServer): ScheduleEntry => ({
   weekday: entry.weekday,
-  timeFrom: entry.time_from,
-  timeTo: entry.time_to,
+  timeFrom: formatClockToHhMm(entry.time_from),
+  timeTo: formatClockToHhMm(entry.time_to),
   location: entry.location ?? undefined,
 });
 
@@ -284,6 +287,7 @@ export class ProfilePageStore implements ILocalStore {
     markAttendance: IApiRequest<CourseAttendanceServer, ErrorResponse>;
     createCourse: IApiRequest<CourseDetailServer, ErrorResponse>;
     updateCourse: IApiRequest<CourseDetailServer, ErrorResponse>;
+    cancelLessonRequest: IApiRequest<CourseLessonServer, ErrorResponse>;
   };
 
   activeSection: ProfileSection = 'profile';
@@ -295,6 +299,9 @@ export class ProfilePageStore implements ILocalStore {
   studios: StudioServer[] = [];
   selectedCourseId: number | null = null;
   lessons: Lesson[] = [];
+
+  /** Занятия курса в форме редактирования (список GET /courses/:id/lessons/) */
+  courseFormLessons: Lesson[] = [];
   students: CourseStudentClient[] = [];
   attendanceData: AttendanceRecord[] = [];
   statsData: AttendanceStats | null = null;
@@ -407,6 +414,14 @@ export class ProfilePageStore implements ILocalStore {
         showExpectedError: false,
         showUnexpectedError: false,
       }),
+      cancelLessonRequest: this._rootStore.apiStore.createExtendedRequest<
+        CourseLessonServer,
+        ErrorResponse
+      >({
+        ...ENDPOINTS.lessons.cancel(0),
+        showExpectedError: true,
+        showUnexpectedError: true,
+      }),
     };
 
     makeObservable(this, {
@@ -418,6 +433,7 @@ export class ProfilePageStore implements ILocalStore {
       studios: observable.ref,
       selectedCourseId: observable,
       lessons: observable.ref,
+      courseFormLessons: observable.ref,
       students: observable.ref,
       attendanceData: observable.ref,
       statsData: observable.ref,
@@ -559,6 +575,7 @@ export class ProfilePageStore implements ILocalStore {
       sharedLocation: '',
       schedule: [{ weekday: 'Пн', timeFrom: '18:00', timeTo: '19:30' }],
     };
+    this.courseFormLessons = [];
     this.isFormOpen = true;
   };
 
@@ -590,8 +607,8 @@ export class ProfilePageStore implements ILocalStore {
         response.data.schedule.length > 0
           ? response.data.schedule.map((entry) => ({
               weekday: entry.weekday,
-              timeFrom: entry.time_from,
-              timeTo: entry.time_to,
+              timeFrom: formatClockToHhMm(entry.time_from),
+              timeTo: formatClockToHhMm(entry.time_to),
               location: entry.location ?? undefined,
             }))
           : [{ weekday: 'Пн', timeFrom: '18:00', timeTo: '19:30', location: undefined }];
@@ -627,6 +644,8 @@ export class ProfilePageStore implements ILocalStore {
       this.isFormOpen = true;
       this.isLoading = false;
     });
+
+    void this.loadCourseFormLessons(courseId);
   };
 
   closeForm = (): void => {
@@ -635,6 +654,7 @@ export class ProfilePageStore implements ILocalStore {
     this.courseFormErrors = {};
     this.courseImageFileSlots = [];
     this.courseImagePreviews = [];
+    this.courseFormLessons = [];
   };
 
   updateFormField = <K extends keyof CourseFormData>(field: K, value: CourseFormData[K]): void => {
@@ -1071,6 +1091,24 @@ export class ProfilePageStore implements ILocalStore {
     });
   };
 
+  loadCourseFormLessons = async (courseId: number): Promise<void> => {
+    const response = await this._requests.courseLessons.call({
+      ...ENDPOINTS.courses.lessons(courseId),
+    });
+
+    if (response.isError) {
+      return;
+    }
+
+    const items = response.data.map(normalizeCourseLesson);
+
+    runInAction(() => {
+      if (this.editingCourseId === courseId && this.isFormOpen) {
+        this.courseFormLessons = items;
+      }
+    });
+  };
+
   loadStudents = async (courseId: number): Promise<void> => {
     const response = await this._requests.courseStudents.call({
       ...ENDPOINTS.courses.students(courseId),
@@ -1192,18 +1230,19 @@ export class ProfilePageStore implements ILocalStore {
       return;
     }
 
-    runInAction(() => {
-      const createdCourse = normalizeApiCourseToTeacherCourse(
-        response.data,
-        response.data.status,
-        this._rootStore.userStore.user as BackendUser | null | undefined
-      );
+    const createdCourse = normalizeApiCourseToTeacherCourse(
+      response.data,
+      response.data.status,
+      this._rootStore.userStore.user as BackendUser | null | undefined
+    );
 
+    runInAction(() => {
       this.teacherCourses = [createdCourse, ...this.teacherCourses];
       this.isLoading = false;
       this.isFormOpen = false;
-      this.selectedCourseId = createdCourse.id;
     });
+
+    this.setSelectedCourse(createdCourse.id);
   };
 
   updateCourse = async (teacherId: number): Promise<void> => {
@@ -1248,39 +1287,126 @@ export class ProfilePageStore implements ILocalStore {
       return;
     }
 
-    runInAction(() => {
-      const updatedCourse = normalizeApiCourseToTeacherCourse(
-        response.data,
-        response.data.status,
-        this._rootStore.userStore.user as BackendUser | null | undefined
-      );
+    const updatedCourse = normalizeApiCourseToTeacherCourse(
+      response.data,
+      response.data.status,
+      this._rootStore.userStore.user as BackendUser | null | undefined
+    );
 
+    runInAction(() => {
       this.teacherCourses = this.teacherCourses.map((course) =>
         course.id === updatedCourse.id ? updatedCourse : course
       );
       this.isLoading = false;
       this.isFormOpen = false;
       this.editingCourseId = null;
-      this.selectedCourseId = updatedCourse.id;
+      this.courseFormLessons = [];
     });
+
+    this.setSelectedCourse(updatedCourse.id);
   };
 
-  cancelCourse = async (courseId: number, teacherId: number): Promise<void> => {
-    await MockDb.cancelTeacherCourse(courseId);
-    void this.loadTeacherCourses(teacherId);
+  /** Завершает курс на бэке (status completed), без удаления записи. */
+  completeCourse = async (courseId: number, teacherId: number): Promise<void> => {
+    void teacherId;
 
-    if (this.selectedCourseId === courseId) {
-      void this.loadLessons(courseId);
+    runInAction(() => {
+      this.isLoading = true;
+    });
+
+    const response = await this._requests.updateCourse.call({
+      url: ENDPOINTS.courses.update(courseId).url,
+      data: { status: 'completed' },
+    });
+
+    if (response.isError) {
+      runInAction(() => {
+        this.isLoading = false;
+      });
+
+      return;
     }
+
+    const updatedCourse = normalizeApiCourseToTeacherCourse(
+      response.data,
+      response.data.status,
+      this._rootStore.userStore.user as BackendUser | null | undefined
+    );
+
+    runInAction(() => {
+      this.teacherCourses = this.teacherCourses.map((course) =>
+        course.id === courseId ? updatedCourse : course
+      );
+
+      if (this.selectedCourseId === courseId) {
+        this.selectedCourseId = null;
+        this.lessons = [];
+        this.students = [];
+        this.attendanceData = [];
+        this.statsData = null;
+        this.compareStatsData = null;
+      }
+
+      if (this.editingCourseId === courseId) {
+        this.closeForm();
+      }
+
+      this.isLoading = false;
+    });
+
+    void this.loadTeacherCourses(teacherId);
+    void this._rootStore.coursesStore.loadCourses();
   };
 
   cancelLesson = async (lessonId: number): Promise<void> => {
-    await MockDb.cancelLesson(lessonId);
+    const lesson =
+      this.courseFormLessons.find((l) => l.id === lessonId) ??
+      this.lessons.find((l) => l.id === lessonId);
 
-    if (this.selectedCourseId) {
-      void this.loadLessons(this.selectedCourseId);
+    if (!lesson) {
+      return;
     }
+
+    const courseId = lesson.courseId;
+
+    const response = await this._requests.cancelLessonRequest.call({
+      ...ENDPOINTS.lessons.cancel(lessonId),
+    });
+
+    if (response.isError) {
+      return;
+    }
+
+    runInAction(() => {
+      this.courseFormLessons = this.courseFormLessons.map((item) =>
+        item.id === lessonId ? { ...item, status: 'cancelled' } : item
+      );
+      this.lessons = this.lessons.map((item) =>
+        item.id === lessonId ? { ...item, status: 'cancelled' } : item
+      );
+    });
+
+    await this._refreshDataAfterLessonCancelled(courseId);
   };
+
+  private async _refreshDataAfterLessonCancelled(courseId: number): Promise<void> {
+    const tasks: Promise<void>[] = [];
+
+    if (this.editingCourseId === courseId && this.isFormOpen) {
+      tasks.push(this.loadCourseFormLessons(courseId));
+    }
+
+    if (this.selectedCourseId === courseId) {
+      tasks.push(
+        this.loadLessons(courseId),
+        this.loadAttendance(courseId),
+        this.loadStats(courseId),
+        this.loadCompareStats(courseId)
+      );
+    }
+
+    await Promise.all(tasks);
+  }
 
   markAttendance = async (lessonId: number, studentId: number, present: boolean): Promise<void> => {
     const payload: MarkAttendancePayloadServer = {

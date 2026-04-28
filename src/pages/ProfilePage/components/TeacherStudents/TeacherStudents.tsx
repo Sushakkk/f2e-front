@@ -3,6 +3,7 @@ import * as React from 'react';
 
 import { SelectDropdown } from 'components/common';
 import type { ProfilePageStore } from 'store/ProfilePageStore';
+import { formatRu } from 'utils/dateUtils';
 
 import ProfileCard from '../ProfileCard';
 
@@ -28,7 +29,7 @@ const TeacherStudents: React.FC<Props> = ({ store }) => {
         .filter((l) => l.status === 'scheduled')
         .map((l) => ({
           value: String(l.id),
-          label: `${l.date} (${l.timeFrom}–${l.timeTo})`,
+          label: `${formatRu(l.date)} (${l.timeFrom}–${l.timeTo})`,
         })),
     [store.lessons]
   );

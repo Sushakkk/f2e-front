@@ -39,6 +39,23 @@ export function formatRu(value: string): string {
   return `${pad2(d.getDate())}.${pad2(d.getMonth() + 1)}.${d.getFullYear()}`;
 }
 
+/**
+ * Reduces time strings from the API (e.g. Django) to HH:MM, dropping seconds.
+ */
+export function formatClockToHhMm(value: string): string {
+  const t = value.trim();
+  const match = /^(\d{1,2}):(\d{2})/.exec(t);
+
+  if (!match) {
+    return t;
+  }
+
+  const hours = match[1]?.padStart(2, '0') ?? '00';
+  const minutes = match[2] ?? '00';
+
+  return `${hours}:${minutes}`;
+}
+
 export function isSameDay(a: Date, b: Date): boolean {
   return (
     a.getFullYear() === b.getFullYear() &&

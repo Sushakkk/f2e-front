@@ -2,8 +2,7 @@ import { observer } from 'mobx-react';
 import * as React from 'react';
 import { useSearchParams } from 'react-router-dom';
 
-import { SectionHeader, Card } from 'components/common';
-import Button from 'components/common/Button/Button';
+import { Button, Card, Modal, SectionHeader } from 'components/common';
 import {
   PROFILE_COURSES_QUERY_CREATE,
   PROFILE_COURSES_QUERY_EDIT,
@@ -26,6 +25,7 @@ const STATUS_LABELS: Record<string, string> = {
 
 const TeacherCourses: React.FC<Props> = ({ store, teacherId }) => {
   const [searchParams, setSearchParams] = useSearchParams();
+  const [pendingCompleteCourseId, setPendingCompleteCourseId] = React.useState<number | null>(null);
   const createParam = searchParams.get(PROFILE_COURSES_QUERY_CREATE);
   const editParam = searchParams.get(PROFILE_COURSES_QUERY_EDIT);
 
@@ -95,13 +95,25 @@ const TeacherCourses: React.FC<Props> = ({ store, teacherId }) => {
     [setSearchParams]
   );
 
-  const handleCancel = React.useCallback(
-    (e: React.MouseEvent, courseId: number) => {
-      e.stopPropagation();
-      void store.cancelCourse(courseId, teacherId);
-    },
-    [store, teacherId]
-  );
+  const openCompleteConfirm = React.useCallback((e: React.MouseEvent, courseId: number) => {
+    e.stopPropagation();
+    setPendingCompleteCourseId(courseId);
+  }, []);
+
+  const closeCompleteConfirm = React.useCallback(() => {
+    setPendingCompleteCourseId(null);
+  }, []);
+
+  const confirmComplete = React.useCallback(() => {
+    if (pendingCompleteCourseId === null) {
+      return;
+    }
+
+    const id = pendingCompleteCourseId;
+
+    setPendingCompleteCourseId(null);
+    void store.completeCourse(id, teacherId);
+  }, [pendingCompleteCourseId, store, teacherId]);
 
   const handleEdit = React.useCallback(
     (e: React.MouseEvent, courseId: number) => {
@@ -123,6 +135,12 @@ const TeacherCourses: React.FC<Props> = ({ store, teacherId }) => {
 
   return (
     <div className={s.root}>
+      <Modal
+        open={pendingCompleteCourseId !== null}
+        onClose={closeCompleteConfirm}
+        onConfirm={confirmComplete}
+        message="Вы уверены, что хотите отменить курс?"
+      />
       {store.teacherCourses.length === 0 && (
         <>
           <SectionHeader title="Мои курсы" onAdd={openCreateInUrl} addLabel="Создать курс" />
@@ -155,7 +173,12 @@ const TeacherCourses: React.FC<Props> = ({ store, teacherId }) => {
                         >
                           Редактировать
                         </Button>
-                        <button className={s.cancelBtn} onClick={(e) => handleCancel(e, course.id)}>
+                        <button
+                          type="button"
+                          className={s.cancelBtn}
+                          disabled={store.isLoading}
+                          onClick={(e) => openCompleteConfirm(e, course.id)}
+                        >
                           Отменить курс
                         </button>
                       </>
