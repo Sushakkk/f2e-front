@@ -23,6 +23,10 @@ export const ENDPOINTS = {
     danceStyles: createApiEndpoint('dance-styles/', 'GET'),
     studios: createApiEndpoint('studios/', 'GET'),
   },
+  map: {
+    points: createApiEndpoint('map/points/', 'GET'),
+  },
+  calendar: createApiEndpoint('calendar/', 'GET'),
   flag: createApiEndpoint('user/flag', 'POST'),
   restart: createApiEndpoint('user/restart', 'POST'),
   getUser: createApiEndpoint('user/', 'GET'),

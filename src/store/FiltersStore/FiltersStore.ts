@@ -145,7 +145,6 @@ export class FiltersStore implements ILocalStore {
         const courseStart = parseDDMM(course.dateFrom, referenceYear);
         const courseEnd = parseDDMM(course.dateTo, referenceYear);
 
-        // Дата курса должна полностью входить в выбранный диапазон
         if (filterDateFrom && courseStart && courseStart < filterDateFrom) {
           return false;
         }

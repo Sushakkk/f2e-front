@@ -7,9 +7,10 @@ import s from './StudioCard.module.scss';
 type StudioCardProps = {
   studio: StudioData;
   onClose: () => void;
+  onClick?: (studio: StudioData) => void;
 };
 
-const StudioCard: React.FC<StudioCardProps> = ({ studio, onClose }) => (
+const StudioCard: React.FC<StudioCardProps> = ({ studio, onClose, onClick }) => (
   <>
     <button className={s.backButton} onClick={onClose} aria-label="Закрыть">
       <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
@@ -22,7 +23,12 @@ const StudioCard: React.FC<StudioCardProps> = ({ studio, onClose }) => (
         />
       </svg>
     </button>
-    <div className={s.card}>
+    <div
+      className={s.card}
+      onClick={onClick ? () => onClick(studio) : undefined}
+      role={onClick ? 'button' : undefined}
+      tabIndex={onClick ? 0 : undefined}
+    >
       <div className={s.imageWrapper}>
         <img src={studio.image} alt={studio.name} className={s.image} />
       </div>

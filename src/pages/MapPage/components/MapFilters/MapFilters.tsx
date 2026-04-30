@@ -1,20 +1,21 @@
+import { observer } from 'mobx-react';
 import * as React from 'react';
 
 import { Button } from 'components/common';
 import { SelectDropdown } from 'components/common/SelectDropdown';
 import { useDanceStylesStore } from 'store/hooks';
 
-import {
-  CITY_OPTIONS,
-  STUDIO_OPTIONS,
-  getMetroOptionsForCities,
-  MapFilters as MapFiltersType,
-} from '../../config';
+import { MapFilters as MapFiltersType } from '../../config';
 
 import s from './MapFilters.module.scss';
 
+type SelectOption = { value: string; label: string };
+
 type MapFiltersProps = {
   draft: MapFiltersType;
+  cityOptions: SelectOption[];
+  getMetroOptionsForCities: (cities: string[]) => SelectOption[];
+  getStudioOptionsForCities: (cities: string[]) => SelectOption[];
   onDraftChange: (patch: Partial<MapFiltersType>) => void;
   onApply: () => void;
   onReset: () => void;
@@ -23,13 +24,23 @@ type MapFiltersProps = {
 
 const MapFilters: React.FC<MapFiltersProps> = ({
   draft,
+  cityOptions,
+  getMetroOptionsForCities,
+  getStudioOptionsForCities,
   onDraftChange,
   onApply,
   onReset,
   onClose,
 }) => {
   const danceStylesStore = useDanceStylesStore();
-  const metroOptions = React.useMemo(() => getMetroOptionsForCities(draft.cities), [draft.cities]);
+  const metroOptions = React.useMemo(
+    () => getMetroOptionsForCities(draft.cities),
+    [draft.cities, getMetroOptionsForCities]
+  );
+  const studioOptions = React.useMemo(
+    () => getStudioOptionsForCities(draft.cities),
+    [draft.cities, getStudioOptionsForCities]
+  );
 
   React.useEffect(() => {
     void danceStylesStore.requestDanceStyles();
@@ -38,12 +49,15 @@ const MapFilters: React.FC<MapFiltersProps> = ({
   const handleCitiesChange = React.useCallback(
     (nextCities: string[]) => {
       const validMetro = getMetroOptionsForCities(nextCities);
-      const validValues = new Set(validMetro.map((o) => o.value));
-      const filteredMetro = draft.metro.filter((m) => validValues.has(m));
+      const validStudios = getStudioOptionsForCities(nextCities);
+      const validMetroValues = new Set(validMetro.map((o) => o.value));
+      const validStudioValues = new Set(validStudios.map((o) => o.value));
+      const filteredMetro = draft.metro.filter((m) => validMetroValues.has(m));
+      const filteredStudios = draft.studios.filter((studio) => validStudioValues.has(studio));
 
-      onDraftChange({ cities: nextCities, metro: filteredMetro });
+      onDraftChange({ cities: nextCities, metro: filteredMetro, studios: filteredStudios });
     },
-    [draft.metro, onDraftChange]
+    [draft.metro, draft.studios, getMetroOptionsForCities, getStudioOptionsForCities, onDraftChange]
   );
 
   return (
@@ -68,7 +82,7 @@ const MapFilters: React.FC<MapFiltersProps> = ({
               mode="multi"
               value={draft.cities}
               placeholder="Выберите город"
-              options={CITY_OPTIONS}
+              options={cityOptions}
               onChange={handleCitiesChange}
               searchable
             />
@@ -90,7 +104,7 @@ const MapFilters: React.FC<MapFiltersProps> = ({
               mode="multi"
               value={draft.studios}
               placeholder="Выберите студию"
-              options={STUDIO_OPTIONS}
+              options={studioOptions}
               onChange={(v: string[]) => onDraftChange({ studios: v })}
               searchable
             />
@@ -120,4 +134,4 @@ const MapFilters: React.FC<MapFiltersProps> = ({
   );
 };
 
-export default React.memo(MapFilters);
+export default observer(MapFilters);

@@ -355,6 +355,16 @@
   }
 }
 
+.state {
+  flex: 1;
+  min-height: 320px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: $color-white-secondary;
+  font-size: 16px;
+}
+
 /* ---- Event detail popup ---- */
 
 .overlay {

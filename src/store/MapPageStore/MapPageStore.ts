@@ -8,18 +8,52 @@ import {
   runInAction,
 } from 'mobx';
 
+import { ENDPOINTS } from 'config/api';
+import { normalizeMapPoints, type MapPointsResponseServer } from 'entities/mapPoint';
 import {
   DEFAULT_FILTERS,
   MapFilters,
   MOSCOW_CENTER,
   MOSCOW_ZOOM,
-  STUDIOS_MAP,
   StudioData,
 } from 'pages/MapPage/config';
+import type { ErrorResponse } from 'store/globals/api/types';
+import type { IRootStore } from 'store/globals/root/declaration';
 import { ILocalStore } from 'store/interfaces';
 
 const SEARCH_DEBOUNCE_MS = 300;
 const MAP_LOAD_TIMEOUT_MS = 5_000;
+
+type SelectOption = { value: string; label: string };
+type PrivateFields = '_debouncedSearch' | '_studios' | '_allStudios' | '_isLoading' | '_loadError';
+
+function uniqSortedOptions(values: string[]): SelectOption[] {
+  return Array.from(new Set(values.filter(Boolean)))
+    .sort((a, b) => a.localeCompare(b, 'ru'))
+    .map((value) => ({ value, label: value }));
+}
+
+function buildMapQueryParams(filters: MapFilters): Record<string, string> {
+  const params: Record<string, string> = {};
+
+  if (filters.cities.length > 0) {
+    params.city = filters.cities.join(',');
+  }
+
+  if (filters.metro.length > 0) {
+    params.metro = filters.metro.join(',');
+  }
+
+  if (filters.studios.length > 0) {
+    params.studio = filters.studios.join(',');
+  }
+
+  if (filters.danceTypes.length > 0) {
+    params.style = filters.danceTypes.join(',');
+  }
+
+  return params;
+}
 
 export class MapPageStore implements ILocalStore {
   selectedStudio: StudioData | null = null;
@@ -29,22 +63,34 @@ export class MapPageStore implements ILocalStore {
   filters: MapFilters = DEFAULT_FILTERS;
   draft: MapFilters = DEFAULT_FILTERS;
 
+  private _studios: StudioData[] = [];
+  private _allStudios: StudioData[] = [];
+  private _isLoading = false;
+  private _loadError = false;
   private _debouncedSearch = '';
   private _mapRef: ymaps.Map | null = null;
   private _disposers: IReactionDisposer[] = [];
   private _loadTimer: number | null = null;
+  private _loadRequestId = 0;
 
-  constructor() {
-    makeObservable<this, '_debouncedSearch'>(this, {
+  constructor(private _rootStore: IRootStore) {
+    makeObservable<this, PrivateFields>(this, {
       selectedStudio: observable.ref,
       searchQuery: observable,
       isFiltersOpen: observable,
       isMapLoaded: observable,
       filters: observable.ref,
       draft: observable.ref,
+      _studios: observable.ref,
+      _allStudios: observable.ref,
+      _isLoading: observable,
+      _loadError: observable,
       _debouncedSearch: observable,
 
       filteredStudios: computed,
+      isLoading: computed,
+      loadError: computed,
+      cityOptions: computed,
 
       setSearchQuery: action,
       setMapLoaded: action,
@@ -55,6 +101,8 @@ export class MapPageStore implements ILocalStore {
       setDraft: action,
       applyFilters: action,
       resetFilters: action,
+      loadStudios: action.bound,
+      loadFilterOptions: action.bound,
     });
 
     this._disposers.push(
@@ -96,23 +144,7 @@ export class MapPageStore implements ILocalStore {
   }
 
   get filteredStudios(): StudioData[] {
-    let result = STUDIOS_MAP;
-
-    if (this.filters.cities.length > 0) {
-      result = result.filter((st) => this.filters.cities.includes(st.city));
-    }
-
-    if (this.filters.metro.length > 0) {
-      result = result.filter((st) => this.filters.metro.includes(st.metro));
-    }
-
-    if (this.filters.studios.length > 0) {
-      result = result.filter((st) => this.filters.studios.includes(st.name));
-    }
-
-    if (this.filters.danceTypes.length > 0) {
-      result = result.filter((st) => st.courses.some((c) => this.filters.danceTypes.includes(c)));
-    }
+    let result = this._studios;
 
     if (this._debouncedSearch.trim()) {
       const q = this._debouncedSearch.toLowerCase();
@@ -127,6 +159,36 @@ export class MapPageStore implements ILocalStore {
 
     return result;
   }
+
+  get isLoading(): boolean {
+    return this._isLoading;
+  }
+
+  get loadError(): boolean {
+    return this._loadError;
+  }
+
+  get cityOptions(): SelectOption[] {
+    return uniqSortedOptions(this._allStudios.map((studio) => studio.city));
+  }
+
+  getMetroOptionsForCities = (cities: string[]): SelectOption[] => {
+    const source =
+      cities.length > 0
+        ? this._allStudios.filter((studio) => cities.includes(studio.city))
+        : this._allStudios;
+
+    return uniqSortedOptions(source.map((studio) => studio.metro));
+  };
+
+  getStudioOptionsForCities = (cities: string[]): SelectOption[] => {
+    const source =
+      cities.length > 0
+        ? this._allStudios.filter((studio) => cities.includes(studio.city))
+        : this._allStudios;
+
+    return uniqSortedOptions(source.map((studio) => studio.name));
+  };
 
   setMapRef = (ref: ymaps.Map | null): void => {
     this._mapRef = ref;
@@ -147,6 +209,7 @@ export class MapPageStore implements ILocalStore {
 
     this.isMapLoaded = true;
     this._clearLoadTimeout();
+    this._fitToFilters();
   };
 
   selectStudio = (studio: StudioData): void => {
@@ -180,35 +243,74 @@ export class MapPageStore implements ILocalStore {
     this.filters = this.draft;
     this.isFiltersOpen = false;
     this.selectedStudio = null;
-
-    let result = STUDIOS_MAP;
-
-    if (this.draft.cities.length > 0) {
-      result = result.filter((st) => this.draft.cities.includes(st.city));
-    }
-
-    if (this.draft.metro.length > 0) {
-      result = result.filter((st) => this.draft.metro.includes(st.metro));
-    }
-
-    if (this.draft.studios.length > 0) {
-      result = result.filter((st) => this.draft.studios.includes(st.name));
-    }
-
-    if (this.draft.danceTypes.length > 0) {
-      result = result.filter((st) => st.courses.some((c) => this.draft.danceTypes.includes(c)));
-    }
-
-    if (result.length > 0 && result.length < STUDIOS_MAP.length) {
-      requestAnimationFrame(() => this._fitBounds(result));
-    }
+    void this.loadStudios();
   };
 
   resetFilters = (): void => {
     this.draft = DEFAULT_FILTERS;
     this.filters = DEFAULT_FILTERS;
     this.isFiltersOpen = false;
-    void this._mapRef?.setCenter(MOSCOW_CENTER, MOSCOW_ZOOM, { duration: 400 });
+    this.selectedStudio = null;
+    void this.loadStudios();
+  };
+
+  loadFilterOptions = async (): Promise<void> => {
+    const response = await this._rootStore.apiStore
+      .createExtendedRequest<MapPointsResponseServer, ErrorResponse>({
+        ...ENDPOINTS.map.points,
+        showExpectedError: false,
+        showUnexpectedError: false,
+      })
+      .call();
+
+    if (response.isError) {
+      return;
+    }
+
+    runInAction(() => {
+      this._allStudios = normalizeMapPoints(response.data, { keepWithoutCoordinates: true });
+    });
+  };
+
+  loadStudios = async (): Promise<void> => {
+    const requestId = this._loadRequestId + 1;
+
+    this._loadRequestId = requestId;
+    this._isLoading = true;
+    this._loadError = false;
+
+    const response = await this._rootStore.apiStore
+      .createExtendedRequest<MapPointsResponseServer, ErrorResponse>({
+        ...ENDPOINTS.map.points,
+        showExpectedError: false,
+        showUnexpectedError: true,
+      })
+      .call({ params: buildMapQueryParams(this.filters) });
+
+    runInAction(() => {
+      if (requestId !== this._loadRequestId) {
+        return;
+      }
+
+      this._isLoading = false;
+
+      if (response.isError) {
+        if (!response.isCancelled) {
+          this._loadError = true;
+          this._studios = [];
+        }
+
+        return;
+      }
+
+      this._studios = normalizeMapPoints(response.data);
+
+      if (this._allStudios.length === 0) {
+        this._allStudios = this._studios;
+      }
+
+      requestAnimationFrame(() => this._fitToFilters());
+    });
   };
 
   zoomIn = (): void => {

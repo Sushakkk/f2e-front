@@ -1,8 +1,9 @@
 import React, { useCallback } from 'react';
 import { generatePath, useNavigate } from 'react-router-dom';
 
+import fallbackImage from 'assets/images/courses/five-to-eight-placeholder.png';
 import { CoverflowSwiper } from 'components';
-import { CourseActivityStatus, CourseConfigItem, courseActivityStatusLabelRu } from 'config';
+import { CourseConfigItem } from 'config';
 import { RoutePath } from 'config/router/paths';
 import { getScheduleDisplay } from 'utils/scheduleUtils';
 
@@ -14,7 +15,7 @@ type Props = {
 
 export const Recommendations: React.FC<Props> = ({ items }) => {
   const navigate = useNavigate();
-  const getImage = useCallback((it: CourseConfigItem) => it.images?.[0] ?? '', []);
+  const getImage = useCallback((it: CourseConfigItem) => it.images?.[0] || fallbackImage, []);
   const getKey = useCallback((it: CourseConfigItem) => it.id, []);
   const getAlt = useCallback((it: CourseConfigItem) => it.name, []);
 
@@ -54,7 +55,6 @@ export const Recommendations: React.FC<Props> = ({ items }) => {
             {' '}
             <div className={s.level}>
               {it.level}
-              <span> · {courseActivityStatusLabelRu(it.activityStatus ?? CourseActivityStatus.Active)}</span>
             </div>
             <div className={s.overlay}>
               <div className={s.title}>{it.name}</div>

@@ -88,6 +88,63 @@ export type CalendarEvent = {
   courseTo: string;
 };
 
+export function getCourseOptionsFromEvents(
+  mode: CalendarFilterMode,
+  events: CalendarEvent[]
+): SelectOption[] {
+  const allLabel =
+    mode === 'all' ? 'Все курсы' : mode === 'enrolled' ? 'Все мои записи' : 'Все мои курсы';
+  const options: SelectOption[] = [{ value: 'all', label: allLabel }];
+  const courseNamesById = new Map<number, string>();
+
+  for (const event of events) {
+    if (!courseNamesById.has(event.courseId)) {
+      courseNamesById.set(event.courseId, event.title);
+    }
+  }
+
+  for (const [courseId, title] of courseNamesById) {
+    options.push({ value: String(courseId), label: title });
+  }
+
+  return options;
+}
+
+export function getFilteredEvents(
+  selectedCourseId: string,
+  events: CalendarEvent[]
+): CalendarEvent[] {
+  if (selectedCourseId === 'all') {
+    return events;
+  }
+
+  const courseId = Number(selectedCourseId);
+
+  return events.filter((event) => event.courseId === courseId);
+}
+
+export function getDateToNavigateByEvents(
+  selectedCourseId: string,
+  events: CalendarEvent[],
+  currentDate: Date
+): Date | null {
+  if (selectedCourseId === 'all') {
+    return null;
+  }
+
+  const firstEvent = events[0];
+
+  if (!firstEvent) {
+    return null;
+  }
+
+  const sameMonth =
+    currentDate.getMonth() === firstEvent.start.getMonth() &&
+    currentDate.getFullYear() === firstEvent.start.getFullYear();
+
+  return sameMonth ? null : firstEvent.start;
+}
+
 const COURSE_PALETTE = [
   '#d81b60',
   '#1e88e5',

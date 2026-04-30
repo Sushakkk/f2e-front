@@ -19,6 +19,7 @@ import {
 } from 'config/calendar';
 import { RoutePath } from 'config/router/paths';
 import { CalendarPageStore } from 'store/CalendarPageStore';
+import { useRootStore } from 'store/globals/root';
 import { useLocalStore, useUserStore } from 'store/hooks';
 
 import s from './CalendarPage.module.scss';
@@ -36,14 +37,23 @@ const localizer = dateFnsLocalizer({
 });
 
 const CalendarPage: React.FC = () => {
+  const rootStore = useRootStore();
   const userStore = useUserStore();
   const navigate = useNavigate();
-  const store = useLocalStore(() => new CalendarPageStore(userStore));
+  const store = useLocalStore(() => new CalendarPageStore(rootStore));
+
+  useEffect(() => {
+    if (!userStore.user) {
+      return;
+    }
+
+    void store.loadEvents();
+  }, [store, store.filterMode, userStore.user]);
 
   useEffect(() => {
     store.navigateToAppropriateDate();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [store.selectedCourseId, store.filterMode]);
+  }, [store.selectedCourseId, store.filterMode, store.events]);
 
   const eventPropGetter = useCallback(
     (event: CalendarEvent) => ({
@@ -98,26 +108,32 @@ const CalendarPage: React.FC = () => {
         )}
       </div>
       <div className={s.calendarWrapper} data-view={store.view}>
-        <Calendar<CalendarEvent>
-          localizer={localizer}
-          events={store.events}
-          view={store.view}
-          onView={store.setView}
-          date={store.date}
-          onNavigate={store.setDate}
-          views={['month', 'week', 'day']}
-          culture="ru"
-          messages={CALENDAR_MESSAGES}
-          formats={CALENDAR_FORMATS}
-          eventPropGetter={eventPropGetter}
-          onSelectEvent={store.setSelectedEvent}
-          popup
-          showAllEvents
-          min={MIN_TIME}
-          max={MAX_TIME}
-          step={30}
-          timeslots={2}
-        />
+        {store.isLoading && <div className={s.state}>Загрузка календаря...</div>}
+        {store.loadError && !store.isLoading && (
+          <div className={s.state}>Не удалось загрузить календарь</div>
+        )}
+        {!store.isLoading && !store.loadError && (
+          <Calendar<CalendarEvent>
+            localizer={localizer}
+            events={store.events}
+            view={store.view}
+            onView={store.setView}
+            date={store.date}
+            onNavigate={store.setDate}
+            views={['month', 'week', 'day']}
+            culture="ru"
+            messages={CALENDAR_MESSAGES}
+            formats={CALENDAR_FORMATS}
+            eventPropGetter={eventPropGetter}
+            onSelectEvent={store.setSelectedEvent}
+            popup
+            showAllEvents
+            min={MIN_TIME}
+            max={MAX_TIME}
+            step={30}
+            timeslots={2}
+          />
+        )}
       </div>
       {store.selectedEvent && (
         <div className={s.overlay} onClick={() => store.setSelectedEvent(null)}>
