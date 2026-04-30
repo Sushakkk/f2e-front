@@ -1,5 +1,7 @@
 import { teacherImages } from 'assets/images/teachers';
 
+import type { CourseConfigItem } from './cards';
+
 export type EnrollmentStatus = 'active' | 'completed' | 'cancelled' | 'pending';
 
 export type UserRole = 'teacher' | 'student';
@@ -11,6 +13,7 @@ export type Enrollment = {
   paid: boolean;
   courseStatus?: EnrollmentStatus;
   courseDateTo?: string;
+  course?: CourseConfigItem;
 };
 
 export type UserConfig = {

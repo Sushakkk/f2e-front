@@ -40,6 +40,8 @@ export class UserStore<UserT extends UserClient = UserClient> implements IUserSt
       logout: action,
       refreshUser: action,
       requestUser: action,
+      setFavoriteCourseOptimistic: action,
+      setFavoriteTeacherOptimistic: action,
       flag: action,
     });
   }
@@ -88,6 +90,65 @@ export class UserStore<UserT extends UserClient = UserClient> implements IUserSt
 
   refreshUser = (): void => {
     void this.requestUser();
+  };
+
+  setFavoriteCourseOptimistic = (courseId: number, isFavorite: boolean): void => {
+    const user = this._user.value;
+
+    if (!user) {
+      return;
+    }
+
+    const currentIds = user.favoriteCourseIds ?? [];
+    const favoriteCourseIds = isFavorite
+      ? Array.from(new Set([...currentIds, courseId]))
+      : currentIds.filter((id) => id !== courseId);
+
+    this._user.setValue({
+      ...user,
+      favoriteCourseIds,
+    });
+  };
+
+  setFavoriteTeacherOptimistic = (
+    teacherId: number,
+    teacherName: string,
+    isFavorite: boolean
+  ): void => {
+    const user = this._user.value;
+
+    if (!user) {
+      return;
+    }
+
+    const currentIds = user.favoriteTeacherIds ?? [];
+    const currentNames = user.favoriteTeacherNames ?? [];
+    const pairs = currentIds.map((id, idx) => ({
+      id,
+      name: currentNames[idx] ?? '',
+    }));
+
+    if (isFavorite) {
+      if (pairs.some((pair) => pair.id === teacherId)) {
+        return;
+      }
+
+      this._user.setValue({
+        ...user,
+        favoriteTeacherIds: [...currentIds, teacherId],
+        favoriteTeacherNames: [...currentNames, teacherName],
+      });
+
+      return;
+    }
+
+    const filtered = pairs.filter((pair) => pair.id !== teacherId);
+
+    this._user.setValue({
+      ...user,
+      favoriteTeacherIds: filtered.map((pair) => pair.id),
+      favoriteTeacherNames: filtered.map((pair) => pair.name),
+    });
   };
 
   requestUser = async (): Promise<UserT | null> => {

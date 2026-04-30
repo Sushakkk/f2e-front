@@ -44,6 +44,8 @@ export const ENDPOINTS = {
       createApiEndpoint(`courses/${id}/attendance-stats/`, 'GET'),
     enroll: (id: number, method: EndpointType['method'] = 'POST'): EndpointType =>
       createApiEndpoint(`courses/${id}/enroll/`, method),
+    favorite: (id: number, method: EndpointType['method'] = 'POST'): EndpointType =>
+      createApiEndpoint(`favorite-courses/${id}/`, method),
   },
   lessons: {
     cancel: (id: number): EndpointType => createApiEndpoint(`lessons/${id}/cancel/`, 'POST'),

@@ -84,16 +84,24 @@ export class TeacherStore implements ILocalStore {
       return false;
     }
 
+    const { id, name } = this._teacher;
+
+    this._rootStore.userStore.setFavoriteTeacherOptimistic(id, name, !isFavorite);
+
     const request = this._rootStore.apiStore.createExtendedRequest<unknown, ErrorResponse>({
-      ...ENDPOINTS.teachers.favorite(this._teacher.id, isFavorite ? 'DELETE' : 'POST'),
+      ...ENDPOINTS.teachers.favorite(id, isFavorite ? 'DELETE' : 'POST'),
+      showExpectedError: false,
+      showUnexpectedError: true,
     });
     const response = await request.call();
 
     if (response.isError) {
+      this._rootStore.userStore.setFavoriteTeacherOptimistic(id, name, isFavorite);
+
       return false;
     }
 
-    await this._rootStore.userStore.requestUser();
+    void this._rootStore.userStore.requestUser();
 
     return true;
   };

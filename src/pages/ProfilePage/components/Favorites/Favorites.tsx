@@ -29,13 +29,45 @@ const Favorites: React.FC<Props> = ({
     [favoriteCourseIds]
   );
 
-  const getTeacherAvatar = React.useCallback((name: string) => {
-    const course = COURSES_CONFIG.find((c) => c.teacher.name === name);
+  const teacherRows = React.useMemo(() => {
+    const ids = favoriteTeacherIds;
+    const names = favoriteTeacherNames;
+    const length = Math.max(ids.length, names.length);
+    const rows: { id: number | undefined; name: string }[] = [];
 
-    return course?.teacher.images?.[0];
+    for (let index = 0; index < length; index += 1) {
+      const rawName = names[index];
+
+      rows.push({
+        id: ids[index],
+        name: rawName?.trim() ? rawName : 'Преподаватель',
+      });
+    }
+
+    return rows.filter((row) => typeof row.id === 'number' || row.name !== 'Преподаватель');
+  }, [favoriteTeacherIds, favoriteTeacherNames]);
+
+  const getTeacherAvatar = React.useCallback((teacherId?: number, teacherName?: string) => {
+    if (teacherId) {
+      const courseById = COURSES_CONFIG.find((c) => c.teacher.id === teacherId);
+
+      if (courseById?.teacher.images?.[0]) {
+        return courseById.teacher.images[0];
+      }
+    }
+
+    if (teacherName) {
+      const courseByName = COURSES_CONFIG.find((c) => c.teacher.name === teacherName);
+
+      return courseByName?.teacher.images?.[0];
+    }
+
+    return undefined;
   }, []);
 
-  if (favoriteCourses.length === 0 && favoriteTeacherNames.length === 0) {
+  const hasFavoriteTeachers = teacherRows.length > 0;
+
+  if (favoriteCourses.length === 0 && !hasFavoriteTeachers) {
     return <div className={s.empty}>У вас пока нет избранного</div>;
   }
 
@@ -51,22 +83,24 @@ const Favorites: React.FC<Props> = ({
           </div>
         </div>
       )}
-      {favoriteTeacherNames.length > 0 && (
+      {hasFavoriteTeachers && (
         <div className={s.section}>
           <SectionHeader title="Избранные преподаватели" />
           <div className={s.list}>
-            {favoriteTeacherNames.map((name, index) => (
-              <ProfileCard
-                key={`${name}-${favoriteTeacherIds[index] ?? index}`}
-                title={name}
-                avatar={getTeacherAvatar(name)}
-                onClick={
-                  favoriteTeacherIds[index]
-                    ? () => onTeacherClick(favoriteTeacherIds[index])
-                    : undefined
-                }
-              />
-            ))}
+            {teacherRows.map((row, index) => {
+              const teacherId = row.id;
+
+              return (
+                <ProfileCard
+                  key={`${row.id ?? 't'}-${row.name}-${index}`}
+                  title={row.name}
+                  avatar={getTeacherAvatar(teacherId, row.name)}
+                  onClick={
+                    typeof teacherId === 'number' ? () => onTeacherClick(teacherId) : undefined
+                  }
+                />
+              );
+            })}
           </div>
         </div>
       )}

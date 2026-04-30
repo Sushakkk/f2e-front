@@ -18,13 +18,13 @@ const StudentEnrollments: React.FC<Props> = ({ enrollments }) => {
       return true;
     }
 
-    const courseDateTo = enrollment.courseDateTo
-      ? fromIsoDate(enrollment.courseDateTo)
-      : null;
+    const courseDateTo = enrollment.courseDateTo ? fromIsoDate(enrollment.courseDateTo) : null;
 
     if (courseDateTo) {
       const today = new Date();
+
       today.setHours(0, 0, 0, 0);
+
       return courseDateTo < today;
     }
 
@@ -52,7 +52,7 @@ const StudentEnrollments: React.FC<Props> = ({ enrollments }) => {
           <SectionHeader title="Активные курсы" />
           <div className={s.courseList}>
             {active.map((e) => {
-              const course = COURSES_CONFIG.find((c) => c.id === e.courseId);
+              const course = e.course ?? COURSES_CONFIG.find((c) => c.id === e.courseId);
 
               if (!course) {
                 return null;
@@ -72,7 +72,7 @@ const StudentEnrollments: React.FC<Props> = ({ enrollments }) => {
           <SectionHeader title="Завершённые курсы" />
           <div className={s.courseList}>
             {completed.map((e) => {
-              const course = COURSES_CONFIG.find((c) => c.id === e.courseId);
+              const course = e.course ?? COURSES_CONFIG.find((c) => c.id === e.courseId);
 
               if (!course) {
                 return null;
