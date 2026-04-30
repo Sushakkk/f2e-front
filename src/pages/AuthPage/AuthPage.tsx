@@ -46,9 +46,11 @@ const AuthPage: React.FC = () => {
   return (
     <div className={s.page}>
       <div className={s.bg} />
-      <button type="button" className={s.backBtn} onClick={handleGoBack} aria-label="Назад">
-        <ArrowIcon />
-      </button>
+      <div className={s.top}>
+        <button type="button" className={s.backBtn} onClick={handleGoBack} aria-label="Назад">
+          <ArrowIcon />
+        </button>
+      </div>
       <div className={s.center}>
         <div className={s.card}>
           <div className={s.logo}>FiveToEight</div>

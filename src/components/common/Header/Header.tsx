@@ -11,30 +11,32 @@ const Header: React.FC = () => {
 
   return (
     <header className={s.header}>
-      <div className={s.logo}>FiveToEight</div>
-      <nav className={s.nav}>
-        {HEADER_NAV.map(({ id, label, to, end, activePathPrefix }) => (
-          <NavLink
-            key={id}
-            className={({ isActive }) => {
-              let navActive = isActive;
+      <div className={s.inner}>
+        <div className={s.logo}>FiveToEight</div>
+        <nav className={s.nav}>
+          {HEADER_NAV.map(({ id, label, to, end, activePathPrefix }) => (
+            <NavLink
+              key={id}
+              className={({ isActive }) => {
+                let navActive = isActive;
 
-              if (activePathPrefix !== undefined) {
-                navActive =
-                  location.pathname === activePathPrefix ||
-                  location.pathname.startsWith(`${activePathPrefix}/`);
-              }
+                if (activePathPrefix !== undefined) {
+                  navActive =
+                    location.pathname === activePathPrefix ||
+                    location.pathname.startsWith(`${activePathPrefix}/`);
+                }
 
-              return cn(s.link, navActive && s.linkActive);
-            }}
-            to={to}
-            end={end}
-          >
-            {label}
-          </NavLink>
-        ))}
-      </nav>
-      <Notifications />
+                return cn(s.link, navActive && s.linkActive);
+              }}
+              to={to}
+              end={end}
+            >
+              {label}
+            </NavLink>
+          ))}
+        </nav>
+        <Notifications />
+      </div>
     </header>
   );
 };
