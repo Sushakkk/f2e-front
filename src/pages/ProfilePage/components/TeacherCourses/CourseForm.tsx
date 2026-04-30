@@ -329,7 +329,7 @@ const CourseForm: React.FC<Props> = ({ store, teacherId, isEditing }) => {
         </label>
         <FormField
           className={s.field}
-          label="Вместимость"
+          label="Количество мест"
           labelClassName={s.label}
           error={getError('capacity')}
           errorClassName={s.error}
@@ -339,8 +339,10 @@ const CourseForm: React.FC<Props> = ({ store, teacherId, isEditing }) => {
           <input
             className={cx(getError('capacity') && s.inputError)}
             type="number"
+            min={1}
             value={form.capacity}
-            onChange={(e) => store.updateFormField('capacity', Number(e.target.value))}
+            placeholder="Введите количество мест"
+            onChange={(e) => store.updateFormField('capacity', e.target.value)}
             required
           />
         </FormField>
@@ -431,13 +433,13 @@ const CourseForm: React.FC<Props> = ({ store, teacherId, isEditing }) => {
                   <input
                     className={cx(getError(`schedule.${idx}.timeFrom`) && s.inputError)}
                     value={entry.timeFrom}
-                    placeholder="18:00"
+                    placeholder="Начало, ЧЧ:ММ"
                     onChange={(e) => store.updateScheduleEntry(idx, 'timeFrom', e.target.value)}
                   />
                   <input
                     className={cx(getError(`schedule.${idx}.timeTo`) && s.inputError)}
                     value={entry.timeTo}
-                    placeholder="19:30"
+                    placeholder="Конец, ЧЧ:ММ"
                     onChange={(e) => store.updateScheduleEntry(idx, 'timeTo', e.target.value)}
                   />
                 </div>

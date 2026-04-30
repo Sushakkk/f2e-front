@@ -131,10 +131,10 @@ const EMPTY_FORM: CourseFormData = {
   city: '',
   description: '',
   musicUrl: '',
-  capacity: 20,
+  capacity: '',
   useSameLocation: true,
   sharedLocation: '',
-  schedule: [{ weekday: 'Пн', timeFrom: '18:00', timeTo: '19:30' }],
+  schedule: [{ weekday: '', timeFrom: '', timeTo: '' }],
 };
 
 const EMPTY_TEACHER_PROFILE_FORM = {
@@ -569,12 +569,7 @@ export class ProfilePageStore implements ILocalStore {
     this.courseFormErrors = {};
     this.courseImageFileSlots = [];
     this.courseImagePreviews = [];
-    this.courseFormData = {
-      ...EMPTY_FORM,
-      useSameLocation: true,
-      sharedLocation: '',
-      schedule: [{ weekday: 'Пн', timeFrom: '18:00', timeTo: '19:30' }],
-    };
+    this.courseFormData = { ...EMPTY_FORM };
     this.courseFormLessons = [];
     this.isFormOpen = true;
   };
@@ -611,7 +606,7 @@ export class ProfilePageStore implements ILocalStore {
               timeTo: formatClockToHhMm(entry.time_to),
               location: entry.location ?? undefined,
             }))
-          : [{ weekday: 'Пн', timeFrom: '18:00', timeTo: '19:30', location: undefined }];
+          : [{ weekday: '', timeFrom: '', timeTo: '', location: undefined }];
       const filledLocations = normalizedSchedule
         .map((entry) => (entry.location ?? '').trim())
         .filter(Boolean);
@@ -636,7 +631,7 @@ export class ProfilePageStore implements ILocalStore {
         city: response.data.city,
         description: response.data.description,
         musicUrl: response.data.music.url,
-        capacity: response.data.capacity,
+        capacity: String(response.data.capacity ?? ''),
         useSameLocation,
         sharedLocation: useSameLocation ? uniqueLocations[0] ?? '' : '',
         schedule: normalizedSchedule,
@@ -699,7 +694,7 @@ export class ProfilePageStore implements ILocalStore {
   };
 
   addScheduleEntry = (): void => {
-    this.courseFormData.schedule.push({ weekday: 'Пн', timeFrom: '18:00', timeTo: '19:30' });
+    this.courseFormData.schedule.push({ weekday: '', timeFrom: '', timeTo: '' });
     this.clearCourseFormError('schedule');
   };
 
@@ -1550,7 +1545,7 @@ export class ProfilePageStore implements ILocalStore {
       payload.append('music_url', this.courseFormData.musicUrl.trim());
       payload.append('level', LEVEL_TO_API[this.courseFormData.level] ?? 'beginner');
       payload.append('price', String(Number(this.courseFormData.price)));
-      payload.append('capacity', String(this.courseFormData.capacity));
+      payload.append('capacity', String(Number(this.courseFormData.capacity)));
       payload.append(
         'date_from',
         ddmmToIso(this.courseFormData.dateFrom, PROFILE_PAGE_REFERENCE_YEAR)
@@ -1576,7 +1571,7 @@ export class ProfilePageStore implements ILocalStore {
       music_url: this.courseFormData.musicUrl.trim(),
       level: LEVEL_TO_API[this.courseFormData.level] ?? 'beginner',
       price: Number(this.courseFormData.price),
-      capacity: this.courseFormData.capacity,
+      capacity: Number(this.courseFormData.capacity),
       date_from: ddmmToIso(this.courseFormData.dateFrom, PROFILE_PAGE_REFERENCE_YEAR),
       date_to: ddmmToIso(this.courseFormData.dateTo, PROFILE_PAGE_REFERENCE_YEAR),
       status: 'published',
@@ -1643,8 +1638,10 @@ export class ProfilePageStore implements ILocalStore {
       errors.city = 'Выберите город';
     }
 
-    if (!Number.isFinite(form.capacity) || form.capacity <= 0) {
-      errors.capacity = 'Вместимость должна быть больше 0';
+    const capacityNumber = Number(form.capacity);
+
+    if (!Number.isFinite(capacityNumber) || capacityNumber <= 0) {
+      errors.capacity = 'Количество мест должно быть больше 0';
     }
 
     if (form.schedule.length === 0) {

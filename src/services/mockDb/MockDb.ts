@@ -738,8 +738,8 @@ class MockDb {
       studio: data.studio,
       city: data.city,
       description: data.description,
-      capacity: data.capacity,
-      spotsLeft: data.capacity,
+      capacity: Number(data.capacity),
+      spotsLeft: Number(data.capacity),
       schedule: scheduleEntries,
       music: { artist: '', track: '', url: '' },
       createdByTeacherId: teacherId,
@@ -810,7 +810,7 @@ class MockDb {
     }
 
     if (data.capacity !== undefined) {
-      course.capacity = data.capacity;
+      course.capacity = Number(data.capacity);
     }
 
     if (data.schedule !== undefined) {
