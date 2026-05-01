@@ -56,6 +56,38 @@ export function formatClockToHhMm(value: string): string {
   return `${hours}:${minutes}`;
 }
 
+const SCHEDULE_TIME_MAX_DIGITS = 4;
+
+/**
+ * Formats HH:MM while typing: at most four digits only; inserts ":" after the hour pair.
+ * If the user removes ":" from "HH:", keeps "HH" so hours can be edited.
+ *
+ * @param previous value shown before this edit (from controlled state)
+ * @param raw value from the input event
+ */
+export function normalizeScheduleTimeInput(previous: string, raw: string): string {
+  const digits = raw.replace(/\D/g, '').slice(0, SCHEDULE_TIME_MAX_DIGITS);
+  const prevDigitsOnly = previous.replace(/\D/g, '').slice(0, SCHEDULE_TIME_MAX_DIGITS);
+
+  if (digits.length === 0) {
+    return '';
+  }
+
+  if (digits.length === 1) {
+    return digits;
+  }
+
+  if (digits.length === 2) {
+    if (digits === prevDigitsOnly && previous.includes(':')) {
+      return digits;
+    }
+
+    return `${digits}:`;
+  }
+
+  return `${digits.slice(0, 2)}:${digits.slice(2)}`;
+}
+
 export function isSameDay(a: Date, b: Date): boolean {
   return (
     a.getFullYear() === b.getFullYear() &&

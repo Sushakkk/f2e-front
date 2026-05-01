@@ -16,7 +16,7 @@ import Button from 'components/common/Button/Button';
 import { COURSE_LEVELS } from 'config/levels';
 import type { ProfilePageStore } from 'store/ProfilePageStore';
 import { useDanceStylesStore } from 'store/hooks';
-import { ddmmToIso, formatRu, fromIsoDate, toDDMM } from 'utils/dateUtils';
+import { ddmmToIso, formatRu, fromIsoDate, normalizeScheduleTimeInput, toDDMM } from 'utils/dateUtils';
 
 import s from './CourseForm.module.scss';
 
@@ -432,15 +432,29 @@ const CourseForm: React.FC<Props> = ({ store, teacherId, isEditing }) => {
                 <div className={s.scheduleTimeRow}>
                   <input
                     className={cx(getError(`schedule.${idx}.timeFrom`) && s.inputError)}
+                    inputMode="numeric"
+                    autoComplete="off"
+                    maxLength={5}
                     value={entry.timeFrom}
                     placeholder="Начало, ЧЧ:ММ"
-                    onChange={(e) => store.updateScheduleEntry(idx, 'timeFrom', e.target.value)}
+                    onChange={(e) => {
+                      const next = normalizeScheduleTimeInput(entry.timeFrom, e.target.value);
+
+                      store.updateScheduleEntry(idx, 'timeFrom', next);
+                    }}
                   />
                   <input
                     className={cx(getError(`schedule.${idx}.timeTo`) && s.inputError)}
+                    inputMode="numeric"
+                    autoComplete="off"
+                    maxLength={5}
                     value={entry.timeTo}
                     placeholder="Конец, ЧЧ:ММ"
-                    onChange={(e) => store.updateScheduleEntry(idx, 'timeTo', e.target.value)}
+                    onChange={(e) => {
+                      const next = normalizeScheduleTimeInput(entry.timeTo, e.target.value);
+
+                      store.updateScheduleEntry(idx, 'timeTo', next);
+                    }}
                   />
                 </div>
               </FormField>
