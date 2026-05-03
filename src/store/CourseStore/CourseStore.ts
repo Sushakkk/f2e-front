@@ -28,6 +28,7 @@ export class CourseStore implements ILocalStore {
       isLoading: computed,
       loadError: computed,
       loadCourse: action.bound,
+      toggleFavorite: action.bound,
       destroy: action.bound,
     });
   }
@@ -72,6 +73,33 @@ export class CourseStore implements ILocalStore {
 
       this._course = normalizeCourseDetail(response.data);
     });
+  };
+
+  toggleFavorite = async (isFavorite: boolean): Promise<boolean> => {
+    if (!this._course) {
+      return false;
+    }
+
+    const courseId = this._course.id;
+
+    this._rootStore.userStore.setFavoriteCourseOptimistic(courseId, !isFavorite);
+
+    const request = this._rootStore.apiStore.createExtendedRequest<unknown, ErrorResponse>({
+      ...ENDPOINTS.courses.favorite(courseId, isFavorite ? 'DELETE' : 'POST'),
+      showExpectedError: false,
+      showUnexpectedError: true,
+    });
+    const response = await request.call();
+
+    if (response.isError) {
+      this._rootStore.userStore.setFavoriteCourseOptimistic(courseId, isFavorite);
+
+      return false;
+    }
+
+    void this._rootStore.userStore.requestUser();
+
+    return true;
   };
 
   destroy(): void {

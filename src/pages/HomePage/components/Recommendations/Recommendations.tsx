@@ -53,9 +53,7 @@ export const Recommendations: React.FC<Props> = ({ items }) => {
         return (
           <>
             {' '}
-            <div className={s.level}>
-              {it.level}
-            </div>
+            <div className={s.level}>{it.level}</div>
             <div className={s.overlay}>
               <div className={s.title}>{it.name}</div>
               {it.teacher && (

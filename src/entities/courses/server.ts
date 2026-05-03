@@ -11,6 +11,7 @@ export type CourseListItemServer = {
   price: number;
   date_from: string;
   date_to: string;
+
   /** Витрина: active | completed по date_to (см. CourseLifecycleStatus на бэке). */
   status?: string;
   image: string;

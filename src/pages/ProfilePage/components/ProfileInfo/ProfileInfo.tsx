@@ -15,6 +15,16 @@ type Props = {
 };
 
 const ProfileInfo: React.FC<Props> = ({ user, store, onLogout, onRetrySurvey }) => {
+  React.useLayoutEffect(() => {
+    if (!store.isEditingProfile) {
+      return;
+    }
+
+    window.scrollTo(0, 0);
+    document.documentElement.scrollTop = 0;
+    document.body.scrollTop = 0;
+  }, [store.isEditingProfile]);
+
   const fullName = [user.lastName, user.firstName, user.middleName].filter(Boolean).join(' ');
   const teacherSpecializations = store.teacherProfileForm.specializations
     .split('\n')

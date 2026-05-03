@@ -18,12 +18,13 @@ export const LEVEL_FROM_API = {
   any: 'Любой уровень',
 } as const;
 
-export const WEEKDAY_TO_API: Record<string, 'mon' | 'tue' | 'wed' | 'thu' | 'fri' | 'sat' | 'sun'> = {
-  Пн: 'mon',
-  Вт: 'tue',
-  Ср: 'wed',
-  Чт: 'thu',
-  Пт: 'fri',
-  Сб: 'sat',
-  Вс: 'sun',
-};
+export const WEEKDAY_TO_API: Record<string, 'mon' | 'tue' | 'wed' | 'thu' | 'fri' | 'sat' | 'sun'> =
+  {
+    Пн: 'mon',
+    Вт: 'tue',
+    Ср: 'wed',
+    Чт: 'thu',
+    Пт: 'fri',
+    Сб: 'sat',
+    Вс: 'sun',
+  };

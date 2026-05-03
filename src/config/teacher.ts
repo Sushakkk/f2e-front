@@ -44,6 +44,7 @@ export type CourseFormData = {
   city: string;
   description: string;
   musicUrl: string;
+
   /** Строковое значение как у `price`: пусто до ввода, для placeholder в форме */
   capacity: string;
   useSameLocation: boolean;

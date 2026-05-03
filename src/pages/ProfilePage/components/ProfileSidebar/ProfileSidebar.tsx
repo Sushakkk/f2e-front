@@ -1,19 +1,17 @@
 import cx from 'clsx';
 import { observer } from 'mobx-react';
 import * as React from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 
-import { RoutePath } from 'config/router/paths';
 import { profilePath } from 'config/router/profilePaths';
 import type { ProfileSection, ViewMode } from 'store/ProfilePageStore';
 
 import s from './ProfileSidebar.module.scss';
 
 type SidebarItem = {
-  id: ProfileSection | 'calendar';
+  id: ProfileSection;
   label: string;
   teacherOnly?: boolean;
-  href?: string;
 };
 
 const SIDEBAR_ITEMS: SidebarItem[] = [
@@ -21,7 +19,6 @@ const SIDEBAR_ITEMS: SidebarItem[] = [
   { id: 'enrollments', label: 'Мои записи' },
   { id: 'favorites', label: 'Избранное' },
   { id: 'teacherCourses', label: 'Мои курсы', teacherOnly: true },
-  { id: 'calendar', label: 'Календарь', teacherOnly: true, href: RoutePath.calendar },
   { id: 'students', label: 'Ученики', teacherOnly: true },
   { id: 'stats', label: 'Статистика', teacherOnly: true },
 ];
@@ -40,7 +37,6 @@ const ProfileSidebar: React.FC<Props> = ({
   onViewModeChange,
 }) => {
   const isTeacher = viewMode === 'teacher';
-  const location = useLocation();
   const items = isTeacher ? SIDEBAR_ITEMS : SIDEBAR_ITEMS.filter((i) => !i.teacherOnly);
   const teacherStart = items.findIndex((i) => i.teacherOnly);
 
@@ -66,25 +62,12 @@ const ProfileSidebar: React.FC<Props> = ({
         {items.map((item, idx) => (
           <React.Fragment key={item.id}>
             {teacherStart === idx && <div className={s.divider} />}
-            {item.href ? (
-              <Link
-                to={item.href}
-                className={cx(
-                  s.item,
-                  s.item_link,
-                  location.pathname === item.href && s.item_active
-                )}
-              >
-                {item.label}
-              </Link>
-            ) : (
-              <Link
-                to={profilePath(item.id as ProfileSection)}
-                className={cx(s.item, s.item_link, activeSection === item.id && s.item_active)}
-              >
-                {item.label}
-              </Link>
-            )}
+            <Link
+              to={profilePath(item.id)}
+              className={cx(s.item, s.item_link, activeSection === item.id && s.item_active)}
+            >
+              {item.label}
+            </Link>
           </React.Fragment>
         ))}
       </div>

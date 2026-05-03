@@ -153,7 +153,9 @@ const HomePage: React.FC = () => {
               <Card
                 key={item.id}
                 item={item}
-                statusLabel={courseActivityStatusLabelRu(item.activityStatus ?? CourseActivityStatus.Active)}
+                statusLabel={courseActivityStatusLabelRu(
+                  item.activityStatus ?? CourseActivityStatus.Active
+                )}
               />
             ))}
           </div>

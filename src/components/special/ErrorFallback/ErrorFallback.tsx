@@ -50,9 +50,7 @@ const ErrorFallback: React.FC = () => {
             <WarningCircleIcon className={s.root__icon} />
           </div>
           <h1 className={s.root__title}>Что-то пошло не так</h1>
-          <p className={s.root__text}>
-            Попробуйте вернуться на главную или обновить страницу.
-          </p>
+          <p className={s.root__text}>Попробуйте вернуться на главную или обновить страницу.</p>
           <div className={s.root__actions}>
             <Button mode="purple" type="button" className={s.root__btn} onClick={goHome}>
               На главную

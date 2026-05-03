@@ -11,7 +11,6 @@ import { ENDPOINTS } from 'config/api';
 import { RoutePath } from 'config/router/paths';
 import type { EnrollmentStatus } from 'config/users';
 import type { CourseDetailServer } from 'entities/course/server';
-import { MockDb } from 'services/mockDb';
 import { CourseStore } from 'store/CourseStore';
 import type { ErrorResponse } from 'store/globals/api/types';
 import { useRootStore } from 'store/globals/root';
@@ -41,18 +40,15 @@ const CoursePage: React.FC = () => {
   }, [courseStore, numericCourseId]);
 
   const courseData = courseStore.course;
-
   const isLoggedIn = Boolean(userStore.user);
+
+  const isFavorite = Boolean(
+    courseData && userStore.user?.favoriteCourseIds?.includes(courseData.id)
+  );
 
   const isEnrolled = React.useMemo(
     () => enrollmentStatus === 'active' || enrollmentStatus === 'pending',
     [enrollmentStatus]
-  );
-
-  const isFavorite = React.useMemo(
-    () => (courseData ? MockDb.isCourseFavorite(courseData.id) : false),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [courseData, userStore.user]
   );
 
   const scheduleLines = React.useMemo(
@@ -141,9 +137,8 @@ const CoursePage: React.FC = () => {
       return;
     }
 
-    MockDb.toggleFavoriteCourse(courseData.id);
-    userStore.refreshUser();
-  }, [isLoggedIn, courseData, navigate, userStore]);
+    void courseStore.toggleFavorite(isFavorite);
+  }, [courseData, courseStore, isFavorite, isLoggedIn, navigate]);
 
   React.useEffect(() => {
     if (!isLoggedIn || !courseData) {
@@ -269,7 +264,7 @@ const CoursePage: React.FC = () => {
               rel="noopener noreferrer"
               className={cn(s.text, s.text_accent)}
             >
-              {musicLabel || courseData.music.url}
+              {musicLabel || 'Ссылка'}
             </a>
           ) : (
             musicLabel
