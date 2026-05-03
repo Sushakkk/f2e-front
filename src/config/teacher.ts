@@ -48,7 +48,13 @@ export type CourseFormData = {
   capacity: string;
   useSameLocation: boolean;
   sharedLocation: string;
-  schedule: { weekday: string; timeFrom: string; timeTo: string; location?: string }[];
+  schedule: {
+    weekday: string;
+    timeFrom: string;
+    timeTo: string;
+    location?: string;
+    studio?: string;
+  }[];
 };
 
 export type AttendanceStats = {

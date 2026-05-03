@@ -27,6 +27,8 @@ export const useAppParamsStore = createSubStoreHook('appParamsStore');
 
 export const useDanceStylesStore = createSubStoreHook('danceStylesStore');
 
+export const useNotificationsStore = createSubStoreHook('notificationsStore');
+
 export const useRouterStore = createSubStoreHook('routerStore');
 
 export const useUserStore = createSubStoreHook('userStore');

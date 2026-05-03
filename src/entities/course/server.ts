@@ -1,8 +1,16 @@
+/**
+ * Элемент расписания курса с API (детальная карточка).
+ */
 export type ScheduleEntryServer = {
   weekday: string;
   time_from: string;
   time_to: string;
+  /** Текст локации (общий адрес или строка, собранная из студии). */
   location?: string | null;
+  /** Название студии для строки (если у правила указан зал со студией). */
+  studio?: string | null;
+  /** Идентификатор студии строки (если есть зал). */
+  studio_id?: number | null;
 };
 
 export type CourseDetailServer = {

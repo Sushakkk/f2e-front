@@ -4,6 +4,7 @@ import { IAppStateModel } from 'store/models/AppStateModel/declaration';
 import { IApiStore } from '../api/declaration';
 import { IAppParamsStore } from '../appParams/declaration';
 import { IDanceStylesStore } from '../danceStyles/declaration';
+import { INotificationsStore } from '../notifications/declaration';
 import { IRouterStore } from '../router/declaration';
 import { ISnackbarStore } from '../snackbar/declaration';
 import { IStorageStore } from '../storage/declaration';
@@ -19,6 +20,8 @@ export interface IRootStore {
   coursesStore: CoursesStore;
 
   danceStylesStore: IDanceStylesStore;
+
+  notificationsStore: INotificationsStore;
 
   routerStore: IRouterStore;
 

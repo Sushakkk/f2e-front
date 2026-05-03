@@ -70,6 +70,7 @@ export class UserStore<UserT extends UserClient = UserClient> implements IUserSt
   login = (user: UserT): void => {
     this._user.setValue(user);
     this._flags.setValue(user.flags ?? {});
+    void this.rootStore.notificationsStore.load();
   };
 
   logout = (): void => {
@@ -86,6 +87,7 @@ export class UserStore<UserT extends UserClient = UserClient> implements IUserSt
     this.rootStore.apiStore.clearAuthData();
     this._user.setValue(null);
     this._flags.setValue({});
+    this.rootStore.notificationsStore.clear();
   };
 
   refreshUser = (): void => {
@@ -158,6 +160,7 @@ export class UserStore<UserT extends UserClient = UserClient> implements IUserSt
       this.rootStore.apiStore.clearAuthData();
       this._user.setValue(null);
       this._flags.setValue({});
+      this.rootStore.notificationsStore.clear();
 
       return null;
     }
@@ -166,6 +169,7 @@ export class UserStore<UserT extends UserClient = UserClient> implements IUserSt
 
     this._user.setValue(normalizedUser);
     this._flags.setValue(normalizedUser.flags ?? {});
+    void this.rootStore.notificationsStore.load();
 
     return normalizedUser;
   };
@@ -180,6 +184,7 @@ export class UserStore<UserT extends UserClient = UserClient> implements IUserSt
     this.rootStore.apiStore.clearAuthData();
     this._user.setValue(null);
     this._flags.setValue({});
+    this.rootStore.notificationsStore.clear();
 
     return Promise.resolve();
   };

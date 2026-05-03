@@ -123,7 +123,7 @@ const toComparableTime = (value: string): number => {
 const EMPTY_FORM: CourseFormData = {
   name: '',
   type: '',
-  level: 'Начинающие',
+  level: 'Любой уровень',
   dateFrom: '',
   dateTo: '',
   price: '',
@@ -134,7 +134,7 @@ const EMPTY_FORM: CourseFormData = {
   capacity: '',
   useSameLocation: true,
   sharedLocation: '',
-  schedule: [{ weekday: '', timeFrom: '', timeTo: '' }],
+  schedule: [{ weekday: '', timeFrom: '', timeTo: '', studio: '', location: '' }],
 };
 
 const EMPTY_TEACHER_PROFILE_FORM = {
@@ -197,6 +197,7 @@ const normalizeScheduleEntryForTeacherCourse = (entry: ScheduleEntryServer): Sch
   timeFrom: formatClockToHhMm(entry.time_from),
   timeTo: formatClockToHhMm(entry.time_to),
   location: entry.location ?? undefined,
+  studio: entry.studio ?? undefined,
 });
 
 const normalizeCourseDetailToEnrollment = (data: CourseDetailServer): Enrollment => {
@@ -209,6 +210,7 @@ const normalizeCourseDetailToEnrollment = (data: CourseDetailServer): Enrollment
     paid: false,
     courseStatus,
     courseDateTo: data.date_to,
+    course: normalizeCourseDetail(data),
   };
 };
 
@@ -605,16 +607,21 @@ export class ProfilePageStore implements ILocalStore {
               timeFrom: formatClockToHhMm(entry.time_from),
               timeTo: formatClockToHhMm(entry.time_to),
               location: entry.location ?? undefined,
+              studio: (entry.studio ?? '').trim(),
             }))
-          : [{ weekday: '', timeFrom: '', timeTo: '', location: undefined }];
+          : [{ weekday: '', timeFrom: '', timeTo: '', studio: '', location: '' }];
+      const anyRowHasStudioId = response.data.schedule.some(
+        (entry) => typeof entry.studio_id === 'number'
+      );
       const filledLocations = normalizedSchedule
         .map((entry) => (entry.location ?? '').trim())
         .filter(Boolean);
       const uniqueLocations = Array.from(new Set(filledLocations));
-      const useSameLocation =
-        normalizedSchedule.length > 0 &&
-        uniqueLocations.length === 1 &&
-        normalizedSchedule.every((entry) => (entry.location ?? '').trim().length > 0);
+      const useSameLocation = anyRowHasStudioId
+        ? false
+        : normalizedSchedule.length > 0 &&
+          uniqueLocations.length === 1 &&
+          normalizedSchedule.every((entry) => (entry.location ?? '').trim().length > 0);
 
       this.editingCourseId = courseId;
       this.courseFormErrors = {};
@@ -675,9 +682,16 @@ export class ProfilePageStore implements ILocalStore {
     this.courseFormData.useSameLocation = value;
     this.clearCourseFormError('sharedLocation');
 
+    if (!value) {
+      this.clearCourseFormError('studio');
+    }
+
     if (value) {
       Object.keys(this.courseFormErrors)
-        .filter((key) => key.startsWith('schedule.') && key.endsWith('.location'))
+        .filter(
+          (key) =>
+            key.startsWith('schedule.') && (key.endsWith('.location') || key.endsWith('.studio'))
+        )
         .forEach((key) => this.clearCourseFormError(key));
     }
   };
@@ -694,7 +708,13 @@ export class ProfilePageStore implements ILocalStore {
   };
 
   addScheduleEntry = (): void => {
-    this.courseFormData.schedule.push({ weekday: '', timeFrom: '', timeTo: '' });
+    this.courseFormData.schedule.push({
+      weekday: '',
+      timeFrom: '',
+      timeTo: '',
+      studio: '',
+      location: '',
+    });
     this.clearCourseFormError('schedule');
   };
 
@@ -1519,14 +1539,29 @@ export class ProfilePageStore implements ILocalStore {
         .split(',')
         .map((weekday) => weekday.trim())
         .filter(Boolean)
-        .map((weekday) => ({
-          weekday: WEEKDAY_TO_API[weekday] ?? 'mon',
-          time_from: entry.timeFrom,
-          time_to: entry.timeTo,
-          location_text: this.courseFormData.useSameLocation
-            ? this.courseFormData.sharedLocation.trim()
-            : entry.location?.trim() ?? '',
-        }))
+        .map((weekday) => {
+          const row: Record<string, unknown> = {
+            weekday: WEEKDAY_TO_API[weekday] ?? 'mon',
+            time_from: entry.timeFrom,
+            time_to: entry.timeTo,
+          };
+
+          if (this.courseFormData.useSameLocation) {
+            row.location_text = this.courseFormData.sharedLocation.trim();
+          } else {
+            row.location_text = (entry.location ?? '').trim();
+
+            const rowStudio = this.studios.find(
+              (item) => item.name === (entry.studio ?? '').trim()
+            );
+
+            if (rowStudio?.id) {
+              row.studio_id = rowStudio.id;
+            }
+          }
+
+          return row;
+        })
     );
 
     const hasNewUploads = this.courseImageFileSlots.some((slot) => slot !== null);
@@ -1536,7 +1571,7 @@ export class ProfilePageStore implements ILocalStore {
 
       payload.append('dance_style_id', String(danceStyle.id));
 
-      if (studio?.id) {
+      if (this.courseFormData.useSameLocation && studio?.id) {
         payload.append('studio_id', String(studio.id));
       }
 
@@ -1565,7 +1600,7 @@ export class ProfilePageStore implements ILocalStore {
 
     const jsonPayload: Record<string, unknown> = {
       dance_style_id: danceStyle.id,
-      studio_id: studio?.id ?? null,
+      studio_id: this.courseFormData.useSameLocation ? studio?.id ?? null : null,
       name: this.courseFormData.name.trim(),
       description: this.courseFormData.description.trim(),
       music_url: this.courseFormData.musicUrl.trim(),
@@ -1630,10 +1665,6 @@ export class ProfilePageStore implements ILocalStore {
       errors.price = 'Цена должна быть больше 0';
     }
 
-    if (!trimmedStudio) {
-      errors.studio = 'Выберите студию';
-    }
-
     if (!trimmedCity) {
       errors.city = 'Выберите город';
     }
@@ -1649,6 +1680,10 @@ export class ProfilePageStore implements ILocalStore {
     }
 
     if (form.useSameLocation) {
+      if (!trimmedStudio) {
+        errors.studio = 'Выберите студию';
+      }
+
       if (!form.sharedLocation.trim()) {
         errors.sharedLocation = 'Введите адрес занятий';
       }

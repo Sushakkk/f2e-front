@@ -7,6 +7,8 @@ import { AppParamsStore } from 'store/globals/appParams';
 import { IAppParamsStore } from 'store/globals/appParams/declaration';
 import { DanceStylesStore } from 'store/globals/danceStyles';
 import { IDanceStylesStore } from 'store/globals/danceStyles/declaration';
+import { NotificationsStore } from 'store/globals/notifications';
+import { INotificationsStore } from 'store/globals/notifications/declaration';
 import { RouterStore } from 'store/globals/router';
 import { IRouterStore } from 'store/globals/router/declaration';
 import { SnackbarStore } from 'store/globals/snackbar';
@@ -35,6 +37,8 @@ class RootStore implements IRootStore {
   readonly coursesStore: CoursesStore = new CoursesStore(this);
 
   readonly danceStylesStore: IDanceStylesStore = new DanceStylesStore(this);
+
+  readonly notificationsStore: INotificationsStore = new NotificationsStore(this);
 
   readonly routerStore: IRouterStore = new RouterStore(this);
 
@@ -80,6 +84,7 @@ class RootStore implements IRootStore {
 
     tasks.push(this.routerStore.init(initProps.navigate));
     tasks.push(this.userStore.init());
+    tasks.push(this.notificationsStore.init());
     tasks.push(this.coursesStore.loadCourses().then(() => true));
 
     return tasks;
@@ -93,6 +98,7 @@ class RootStore implements IRootStore {
 
   readonly destroy = (): void => {
     this.coursesStore.destroy();
+    this.notificationsStore.destroy();
     this.routerStore.destroy();
   };
 }
