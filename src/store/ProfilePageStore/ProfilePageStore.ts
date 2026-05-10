@@ -1,4 +1,4 @@
-import { action, computed, makeObservable, observable, runInAction } from 'mobx';
+﻿import { action, computed, makeObservable, observable, runInAction } from 'mobx';
 
 import fallbackImage from 'assets/images/courses/five-to-eight-placeholder.png';
 import { ENDPOINTS } from 'config/api';
@@ -16,6 +16,7 @@ import type { Enrollment, EnrollmentStatus } from 'config/users';
 import type { CityServer } from 'entities/city';
 import { normalizeCourseDetail } from 'entities/course';
 import {
+  API_TO_WEEKDAY,
   LEVEL_FROM_API,
   LEVEL_TO_API,
   PROFILE_PAGE_MOCK_TEACHER_ID,
@@ -65,6 +66,7 @@ export type ProfileSection =
   | 'profile'
   | 'enrollments'
   | 'favorites'
+  | 'calendar'
   | 'teacherCourses'
   | 'students'
   | 'stats';
@@ -123,7 +125,7 @@ const toComparableTime = (value: string): number => {
 const EMPTY_FORM: CourseFormData = {
   name: '',
   type: '',
-  level: 'Любой уровень',
+  level: 'РќР°С‡РёРЅР°СЋС‰РёРµ',
   dateFrom: '',
   dateTo: '',
   price: '',
@@ -134,7 +136,7 @@ const EMPTY_FORM: CourseFormData = {
   capacity: '',
   useSameLocation: true,
   sharedLocation: '',
-  schedule: [{ weekday: '', timeFrom: '', timeTo: '', studio: '', location: '' }],
+  schedule: [{ weekday: '', timeFrom: '', timeTo: '' }],
 };
 
 const EMPTY_TEACHER_PROFILE_FORM = {
@@ -164,7 +166,7 @@ const formatIsoDateForUi = (iso: string): string => {
 };
 
 const getLevelLabelFromApi = (level: string): CourseLevel =>
-  LEVEL_FROM_API[level as keyof typeof LEVEL_FROM_API] ?? 'Любой уровень';
+  LEVEL_FROM_API[level as keyof typeof LEVEL_FROM_API] ?? 'Р›СЋР±РѕР№ СѓСЂРѕРІРµРЅСЊ';
 
 const mapApiCourseStatusToTeacherCourseStatus = (status: string): TeacherCourseStatus => {
   if (status === 'completed') {
@@ -197,7 +199,6 @@ const normalizeScheduleEntryForTeacherCourse = (entry: ScheduleEntryServer): Sch
   timeFrom: formatClockToHhMm(entry.time_from),
   timeTo: formatClockToHhMm(entry.time_to),
   location: entry.location ?? undefined,
-  studio: entry.studio ?? undefined,
 });
 
 const normalizeCourseDetailToEnrollment = (data: CourseDetailServer): Enrollment => {
@@ -219,7 +220,7 @@ const normalizeMyTeachingCourseToTeacherCourse = (
   user: UserClient
 ): TeacherCourse => {
   const teacherDisplayName =
-    [user.lastName, user.firstName].filter(Boolean).join(' ') || user.username || 'Преподаватель';
+    [user.lastName, user.firstName].filter(Boolean).join(' ') || user.username || 'РџСЂРµРїРѕРґР°РІР°С‚РµР»СЊ';
   const rawPrice = row.price as number | string | undefined;
   const priceNum = typeof rawPrice === 'number' ? rawPrice : Number(rawPrice);
 
@@ -249,6 +250,10 @@ const normalizeMyTeachingCourseToTeacherCourse = (
     spotsLeft: row.spots_left ?? 0,
     schedule: (row.schedule ?? []).map(normalizeScheduleEntryForTeacherCourse),
     music: row.music ?? { artist: '', track: '', url: '' },
+    canEnroll: row.can_enroll ?? true,
+    canCancelEnrollment: row.can_cancel_enrollment ?? true,
+    canEdit: row.can_edit ?? true,
+    firstLessonAt: row.first_lesson_at ?? undefined,
     createdByTeacherId: user.id,
     courseStatus: mapApiCourseStatusToTeacherCourseStatus(row.status),
     dateRangeFromIso: row.date_from ? row.date_from.slice(0, 10) : undefined,
@@ -302,7 +307,7 @@ export class ProfilePageStore implements ILocalStore {
   selectedCourseId: number | null = null;
   lessons: Lesson[] = [];
 
-  /** Занятия курса в форме редактирования (список GET /courses/:id/lessons/) */
+  /** Р—Р°РЅСЏС‚РёСЏ РєСѓСЂСЃР° РІ С„РѕСЂРјРµ СЂРµРґР°РєС‚РёСЂРѕРІР°РЅРёСЏ (СЃРїРёСЃРѕРє GET /courses/:id/lessons/) */
   courseFormLessons: Lesson[] = [];
   students: CourseStudentClient[] = [];
   attendanceData: AttendanceRecord[] = [];
@@ -334,7 +339,7 @@ export class ProfilePageStore implements ILocalStore {
   avatarFile: File | null = null;
   avatarPreview = '';
 
-  /** Параллельно courseImagePreviews: null = уже сохранённое фото (URL), File = новая загрузка */
+  /** РџР°СЂР°Р»Р»РµР»СЊРЅРѕ courseImagePreviews: null = СѓР¶Рµ СЃРѕС…СЂР°РЅС‘РЅРЅРѕРµ С„РѕС‚Рѕ (URL), File = РЅРѕРІР°СЏ Р·Р°РіСЂСѓР·РєР° */
   courseImageFileSlots: (File | null)[] = [];
   courseImagePreviews: string[] = [];
   teacherProfileForm = { ...EMPTY_TEACHER_PROFILE_FORM };
@@ -524,11 +529,11 @@ export class ProfilePageStore implements ILocalStore {
     const user = this._rootStore.userStore.user;
 
     if (!user) {
-      return 'Преподаватель';
+      return 'РџСЂРµРїРѕРґР°РІР°С‚РµР»СЊ';
     }
 
     return (
-      [user.lastName, user.firstName].filter(Boolean).join(' ') || user.username || 'Преподаватель'
+      [user.lastName, user.firstName].filter(Boolean).join(' ') || user.username || 'РџСЂРµРїРѕРґР°РІР°С‚РµР»СЊ'
     );
   }
 
@@ -564,7 +569,7 @@ export class ProfilePageStore implements ILocalStore {
     }
   };
 
-  // ── Form management ──────────────────────────────────────────────────
+  // в”Ђв”Ђ Form management в”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђ
 
   openCreateForm = (): void => {
     this.editingCourseId = null;
@@ -603,25 +608,20 @@ export class ProfilePageStore implements ILocalStore {
       const normalizedSchedule =
         response.data.schedule.length > 0
           ? response.data.schedule.map((entry) => ({
-              weekday: entry.weekday,
+              weekday: API_TO_WEEKDAY[entry.weekday as keyof typeof API_TO_WEEKDAY] ?? entry.weekday,
               timeFrom: formatClockToHhMm(entry.time_from),
               timeTo: formatClockToHhMm(entry.time_to),
               location: entry.location ?? undefined,
-              studio: (entry.studio ?? '').trim(),
             }))
-          : [{ weekday: '', timeFrom: '', timeTo: '', studio: '', location: '' }];
-      const anyRowHasStudioId = response.data.schedule.some(
-        (entry) => typeof entry.studio_id === 'number'
-      );
+          : [{ weekday: '', timeFrom: '', timeTo: '', location: undefined }];
       const filledLocations = normalizedSchedule
         .map((entry) => (entry.location ?? '').trim())
         .filter(Boolean);
       const uniqueLocations = Array.from(new Set(filledLocations));
-      const useSameLocation = anyRowHasStudioId
-        ? false
-        : normalizedSchedule.length > 0 &&
-          uniqueLocations.length === 1 &&
-          normalizedSchedule.every((entry) => (entry.location ?? '').trim().length > 0);
+      const useSameLocation =
+        normalizedSchedule.length > 0 &&
+        uniqueLocations.length === 1 &&
+        normalizedSchedule.every((entry) => (entry.location ?? '').trim().length > 0);
 
       this.editingCourseId = courseId;
       this.courseFormErrors = {};
@@ -682,16 +682,9 @@ export class ProfilePageStore implements ILocalStore {
     this.courseFormData.useSameLocation = value;
     this.clearCourseFormError('sharedLocation');
 
-    if (!value) {
-      this.clearCourseFormError('studio');
-    }
-
     if (value) {
       Object.keys(this.courseFormErrors)
-        .filter(
-          (key) =>
-            key.startsWith('schedule.') && (key.endsWith('.location') || key.endsWith('.studio'))
-        )
+        .filter((key) => key.startsWith('schedule.') && key.endsWith('.location'))
         .forEach((key) => this.clearCourseFormError(key));
     }
   };
@@ -708,13 +701,7 @@ export class ProfilePageStore implements ILocalStore {
   };
 
   addScheduleEntry = (): void => {
-    this.courseFormData.schedule.push({
-      weekday: '',
-      timeFrom: '',
-      timeTo: '',
-      studio: '',
-      location: '',
-    });
+    this.courseFormData.schedule.push({ weekday: '', timeFrom: '', timeTo: '' });
     this.clearCourseFormError('schedule');
   };
 
@@ -752,8 +739,8 @@ export class ProfilePageStore implements ILocalStore {
   };
 
   /**
-   * Заполняет период статистики датами выбранного курса (границы из API).
-   * Пользователь может изменить значения в DateRangePicker после подстановки.
+   * Р—Р°РїРѕР»РЅСЏРµС‚ РїРµСЂРёРѕРґ СЃС‚Р°С‚РёСЃС‚РёРєРё РґР°С‚Р°РјРё РІС‹Р±СЂР°РЅРЅРѕРіРѕ РєСѓСЂСЃР° (РіСЂР°РЅРёС†С‹ РёР· API).
+   * РџРѕР»СЊР·РѕРІР°С‚РµР»СЊ РјРѕР¶РµС‚ РёР·РјРµРЅРёС‚СЊ Р·РЅР°С‡РµРЅРёСЏ РІ DateRangePicker РїРѕСЃР»Рµ РїРѕРґСЃС‚Р°РЅРѕРІРєРё.
    */
   applyStatsPeriodFromCourse = (courseId: number): void => {
     const course = this.teacherCourses.find((c) => c.id === courseId);
@@ -921,7 +908,7 @@ export class ProfilePageStore implements ILocalStore {
     if (response.isError) {
       runInAction(() => {
         this.isSavingProfile = false;
-        this.profileError = 'Не удалось сохранить профиль.';
+        this.profileError = 'РќРµ СѓРґР°Р»РѕСЃСЊ СЃРѕС…СЂР°РЅРёС‚СЊ РїСЂРѕС„РёР»СЊ.';
       });
 
       return false;
@@ -948,7 +935,7 @@ export class ProfilePageStore implements ILocalStore {
       if (teacherResponse.isError) {
         runInAction(() => {
           this.isSavingProfile = false;
-          this.profileError = 'Не удалось сохранить данные преподавателя.';
+          this.profileError = 'РќРµ СѓРґР°Р»РѕСЃСЊ СЃРѕС…СЂР°РЅРёС‚СЊ РґР°РЅРЅС‹Рµ РїСЂРµРїРѕРґР°РІР°С‚РµР»СЏ.';
         });
 
         return false;
@@ -978,15 +965,15 @@ export class ProfilePageStore implements ILocalStore {
     const errors: ProfileFormErrors = {};
 
     if (!this.profileForm.username.trim()) {
-      errors.username = 'Введите username';
+      errors.username = 'Р’РІРµРґРёС‚Рµ username';
     }
 
     if (!this.profileForm.lastName.trim()) {
-      errors.lastName = 'Введите фамилию';
+      errors.lastName = 'Р’РІРµРґРёС‚Рµ С„Р°РјРёР»РёСЋ';
     }
 
     if (!this.profileForm.firstName.trim()) {
-      errors.firstName = 'Введите имя';
+      errors.firstName = 'Р’РІРµРґРёС‚Рµ РёРјСЏ';
     }
 
     this.profileFormErrors = errors;
@@ -1011,7 +998,7 @@ export class ProfilePageStore implements ILocalStore {
   syncTeacherProfileFromUser = (): void => {
     this.applyTeacherProfile(this._rootStore.userStore.user?.teacher);
   };
-  // ── Data loading ─────────────────────────────────────────────────────
+  // в”Ђв”Ђ Data loading в”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђ
 
   loadReferenceData = async (): Promise<void> => {
     const [citiesResponse, studiosResponse] = await Promise.all([
@@ -1206,7 +1193,7 @@ export class ProfilePageStore implements ILocalStore {
     });
   };
 
-  // ── Teacher actions ──────────────────────────────────────────────────
+  // в”Ђв”Ђ Teacher actions в”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђ
 
   createCourse = async (teacherId: number): Promise<void> => {
     void teacherId;
@@ -1321,7 +1308,7 @@ export class ProfilePageStore implements ILocalStore {
     this.setSelectedCourse(updatedCourse.id);
   };
 
-  /** Завершает курс на бэке (status completed), без удаления записи. */
+  /** Р—Р°РІРµСЂС€Р°РµС‚ РєСѓСЂСЃ РЅР° Р±СЌРєРµ (status completed), Р±РµР· СѓРґР°Р»РµРЅРёСЏ Р·Р°РїРёСЃРё. */
   completeCourse = async (courseId: number, teacherId: number): Promise<void> => {
     void teacherId;
 
@@ -1458,7 +1445,7 @@ export class ProfilePageStore implements ILocalStore {
     const stats = normalizeCourseAttendanceStats(response.data);
     const csvText = buildAttendanceStatsCsvContent(stats);
     const course = this.teacherCourses.find((c) => c.id === courseId);
-    const displayName = course?.name ?? `Курс_${courseId}`;
+    const displayName = course?.name ?? `РљСѓСЂСЃ_${courseId}`;
     const fileName = buildAttendanceStatsExportFileName(
       displayName,
       this.statsPeriodFrom,
@@ -1476,8 +1463,8 @@ export class ProfilePageStore implements ILocalStore {
   };
 
   /**
-   * Для multipart: бэкенд при replace_existing удаляет всю галерею и создаёт только из image_files.
-   * Поэтому в запрос должны попасть все картинки по порядку: новые File и уже сохранённые (fetch по URL превью).
+   * Р”Р»СЏ multipart: Р±СЌРєРµРЅРґ РїСЂРё replace_existing СѓРґР°Р»СЏРµС‚ РІСЃСЋ РіР°Р»РµСЂРµСЋ Рё СЃРѕР·РґР°С‘С‚ С‚РѕР»СЊРєРѕ РёР· image_files.
+   * РџРѕСЌС‚РѕРјСѓ РІ Р·Р°РїСЂРѕСЃ РґРѕР»Р¶РЅС‹ РїРѕРїР°СЃС‚СЊ РІСЃРµ РєР°СЂС‚РёРЅРєРё РїРѕ РїРѕСЂСЏРґРєСѓ: РЅРѕРІС‹Рµ File Рё СѓР¶Рµ СЃРѕС…СЂР°РЅС‘РЅРЅС‹Рµ (fetch РїРѕ URL РїСЂРµРІСЊСЋ).
    */
   private async _previewToFileForMultipart(preview: string, index: number): Promise<File> {
     if (preview.startsWith('blob:')) {
@@ -1492,7 +1479,7 @@ export class ProfilePageStore implements ILocalStore {
     const res = await fetch(fetchUrl, { credentials: 'include', mode: 'cors' });
 
     if (!res.ok) {
-      throw new Error(`Не удалось подгрузить фото ${index + 1} для сохранения`);
+      throw new Error(`РќРµ СѓРґР°Р»РѕСЃСЊ РїРѕРґРіСЂСѓР·РёС‚СЊ С„РѕС‚Рѕ ${index + 1} РґР»СЏ СЃРѕС…СЂР°РЅРµРЅРёСЏ`);
     }
 
     const blob = await res.blob();
@@ -1524,6 +1511,62 @@ export class ProfilePageStore implements ILocalStore {
     return out;
   }
 
+  private _buildExpandedScheduleEntries(): Array<{
+    weekday: string;
+    time_from: string;
+    time_to: string;
+    location_text: string;
+  }> {
+    return this.courseFormData.schedule.flatMap((entry) =>
+      entry.weekday
+        .split(',')
+        .map((weekday) => weekday.trim())
+        .filter(Boolean)
+        .map((weekday) => ({
+          weekday: WEEKDAY_TO_API[weekday] ?? 'mon',
+          time_from: entry.timeFrom,
+          time_to: entry.timeTo,
+          location_text: this.courseFormData.useSameLocation
+            ? this.courseFormData.sharedLocation.trim()
+            : entry.location?.trim() ?? '',
+        }))
+    );
+  }
+
+  private _dedupeScheduleEntries(
+    schedule: Array<{
+      weekday: string;
+      time_from: string;
+      time_to: string;
+      location_text: string;
+    }>
+  ): Array<{
+    weekday: string;
+    time_from: string;
+    time_to: string;
+    location_text: string;
+  }> {
+    const unique = new Map<
+      string,
+      {
+        weekday: string;
+        time_from: string;
+        time_to: string;
+        location_text: string;
+      }
+    >();
+
+    schedule.forEach((entry) => {
+      const key = `${entry.weekday}|${entry.time_from}|${entry.time_to}`;
+
+      if (!unique.has(key)) {
+        unique.set(key, entry);
+      }
+    });
+
+    return [...unique.values()];
+  }
+
   private async _buildCoursePayload(): Promise<FormData | Record<string, unknown>> {
     const danceStyle = this._rootStore.danceStylesStore.styles.find(
       (item) => item.name === this.courseFormData.type
@@ -1534,35 +1577,7 @@ export class ProfilePageStore implements ILocalStore {
       throw new Error('Dance style not found');
     }
 
-    const schedule = this.courseFormData.schedule.flatMap((entry) =>
-      entry.weekday
-        .split(',')
-        .map((weekday) => weekday.trim())
-        .filter(Boolean)
-        .map((weekday) => {
-          const row: Record<string, unknown> = {
-            weekday: WEEKDAY_TO_API[weekday] ?? 'mon',
-            time_from: entry.timeFrom,
-            time_to: entry.timeTo,
-          };
-
-          if (this.courseFormData.useSameLocation) {
-            row.location_text = this.courseFormData.sharedLocation.trim();
-          } else {
-            row.location_text = (entry.location ?? '').trim();
-
-            const rowStudio = this.studios.find(
-              (item) => item.name === (entry.studio ?? '').trim()
-            );
-
-            if (rowStudio?.id) {
-              row.studio_id = rowStudio.id;
-            }
-          }
-
-          return row;
-        })
-    );
+    const schedule = this._dedupeScheduleEntries(this._buildExpandedScheduleEntries());
 
     const hasNewUploads = this.courseImageFileSlots.some((slot) => slot !== null);
 
@@ -1571,7 +1586,7 @@ export class ProfilePageStore implements ILocalStore {
 
       payload.append('dance_style_id', String(danceStyle.id));
 
-      if (this.courseFormData.useSameLocation && studio?.id) {
+      if (studio?.id) {
         payload.append('studio_id', String(studio.id));
       }
 
@@ -1600,7 +1615,7 @@ export class ProfilePageStore implements ILocalStore {
 
     const jsonPayload: Record<string, unknown> = {
       dance_style_id: danceStyle.id,
-      studio_id: this.courseFormData.useSameLocation ? studio?.id ?? null : null,
+      studio_id: studio?.id ?? null,
       name: this.courseFormData.name.trim(),
       description: this.courseFormData.description.trim(),
       music_url: this.courseFormData.musicUrl.trim(),
@@ -1633,23 +1648,23 @@ export class ProfilePageStore implements ILocalStore {
     const priceNumber = Number(form.price);
 
     if (!trimmedName) {
-      errors.name = 'Введите название курса';
+      errors.name = 'Р’РІРµРґРёС‚Рµ РЅР°Р·РІР°РЅРёРµ РєСѓСЂСЃР°';
     }
 
     if (!trimmedType) {
-      errors.type = 'Выберите стиль танца';
+      errors.type = 'Р’С‹Р±РµСЂРёС‚Рµ СЃС‚РёР»СЊ С‚Р°РЅС†Р°';
     }
 
     if (!form.level.trim()) {
-      errors.level = 'Выберите уровень';
+      errors.level = 'Р’С‹Р±РµСЂРёС‚Рµ СѓСЂРѕРІРµРЅСЊ';
     }
 
     if (!isValidDDMM(form.dateFrom)) {
-      errors.dateFrom = 'Укажите дату начала в формате ДД.ММ';
+      errors.dateFrom = 'РЈРєР°Р¶РёС‚Рµ РґР°С‚Сѓ РЅР°С‡Р°Р»Р° РІ С„РѕСЂРјР°С‚Рµ Р”Р”.РњРњ';
     }
 
     if (!isValidDDMM(form.dateTo)) {
-      errors.dateTo = 'Укажите дату окончания в формате ДД.ММ';
+      errors.dateTo = 'РЈРєР°Р¶РёС‚Рµ РґР°С‚Сѓ РѕРєРѕРЅС‡Р°РЅРёСЏ РІ С„РѕСЂРјР°С‚Рµ Р”Р”.РњРњ';
     }
 
     if (!errors.dateFrom && !errors.dateTo) {
@@ -1657,49 +1672,49 @@ export class ProfilePageStore implements ILocalStore {
       const dateTo = fromIsoDate(ddmmToIso(form.dateTo, PROFILE_PAGE_REFERENCE_YEAR));
 
       if (dateFrom && dateTo && dateTo < dateFrom) {
-        errors.dateTo = 'Дата окончания не может быть раньше даты начала';
+        errors.dateTo = 'Р”Р°С‚Р° РѕРєРѕРЅС‡Р°РЅРёСЏ РЅРµ РјРѕР¶РµС‚ Р±С‹С‚СЊ СЂР°РЅСЊС€Рµ РґР°С‚С‹ РЅР°С‡Р°Р»Р°';
       }
     }
 
     if (!Number.isFinite(priceNumber) || priceNumber <= 0) {
-      errors.price = 'Цена должна быть больше 0';
+      errors.price = 'Р¦РµРЅР° РґРѕР»Р¶РЅР° Р±С‹С‚СЊ Р±РѕР»СЊС€Рµ 0';
+    }
+
+    if (!trimmedStudio) {
+      errors.studio = 'Р’С‹Р±РµСЂРёС‚Рµ СЃС‚СѓРґРёСЋ';
     }
 
     if (!trimmedCity) {
-      errors.city = 'Выберите город';
+      errors.city = 'Р’С‹Р±РµСЂРёС‚Рµ РіРѕСЂРѕРґ';
     }
 
     const capacityNumber = Number(form.capacity);
 
     if (!Number.isFinite(capacityNumber) || capacityNumber <= 0) {
-      errors.capacity = 'Количество мест должно быть больше 0';
+      errors.capacity = 'РљРѕР»РёС‡РµСЃС‚РІРѕ РјРµСЃС‚ РґРѕР»Р¶РЅРѕ Р±С‹С‚СЊ Р±РѕР»СЊС€Рµ 0';
     }
 
     if (form.schedule.length === 0) {
-      errors.schedule = 'Добавьте хотя бы одно занятие в расписание';
+      errors.schedule = 'Р”РѕР±Р°РІСЊС‚Рµ С…РѕС‚СЏ Р±С‹ РѕРґРЅРѕ Р·Р°РЅСЏС‚РёРµ РІ СЂР°СЃРїРёСЃР°РЅРёРµ';
     }
 
     if (form.useSameLocation) {
-      if (!trimmedStudio) {
-        errors.studio = 'Выберите студию';
-      }
-
       if (!form.sharedLocation.trim()) {
-        errors.sharedLocation = 'Введите адрес занятий';
+        errors.sharedLocation = 'Р’РІРµРґРёС‚Рµ Р°РґСЂРµСЃ Р·Р°РЅСЏС‚РёР№';
       }
     }
 
     form.schedule.forEach((entry, index) => {
       if (!entry.weekday.trim()) {
-        errors[`schedule.${index}.weekday`] = 'Выберите день недели';
+        errors[`schedule.${index}.weekday`] = 'Р’С‹Р±РµСЂРёС‚Рµ РґРµРЅСЊ РЅРµРґРµР»Рё';
       }
 
       if (!TIME_HHMM_REGEX.test(entry.timeFrom.trim())) {
-        errors[`schedule.${index}.timeFrom`] = 'Введите время в формате ЧЧ:ММ';
+        errors[`schedule.${index}.timeFrom`] = 'Р’РІРµРґРёС‚Рµ РІСЂРµРјСЏ РІ С„РѕСЂРјР°С‚Рµ Р§Р§:РњРњ';
       }
 
       if (!TIME_HHMM_REGEX.test(entry.timeTo.trim())) {
-        errors[`schedule.${index}.timeTo`] = 'Введите время в формате ЧЧ:ММ';
+        errors[`schedule.${index}.timeTo`] = 'Р’РІРµРґРёС‚Рµ РІСЂРµРјСЏ РІ С„РѕСЂРјР°С‚Рµ Р§Р§:РњРњ';
       }
 
       if (
@@ -1707,11 +1722,11 @@ export class ProfilePageStore implements ILocalStore {
         TIME_HHMM_REGEX.test(entry.timeTo.trim()) &&
         toComparableTime(entry.timeTo.trim()) <= toComparableTime(entry.timeFrom.trim())
       ) {
-        errors[`schedule.${index}.timeTo`] = 'Время окончания должно быть позже времени начала';
+        errors[`schedule.${index}.timeTo`] = 'Р’СЂРµРјСЏ РѕРєРѕРЅС‡Р°РЅРёСЏ РґРѕР»Р¶РЅРѕ Р±С‹С‚СЊ РїРѕР·Р¶Рµ РІСЂРµРјРµРЅРё РЅР°С‡Р°Р»Р°';
       }
 
       if (!form.useSameLocation && !(entry.location ?? '').trim()) {
-        errors[`schedule.${index}.location`] = 'Введите адрес занятия';
+        errors[`schedule.${index}.location`] = 'Р’РІРµРґРёС‚Рµ Р°РґСЂРµСЃ Р·Р°РЅСЏС‚РёСЏ';
       }
     });
 

@@ -15,7 +15,7 @@ export const normalizeUser = (user: BackendUser): UserClient => ({
   middleName: user.middle_name || undefined,
   lastName: user.last_name,
   email: user.email,
-  phone: '',
+  phone: user.phone ?? '',
   avatar: user.avatar ?? undefined,
   city: user.city ?? '',
   level: USER_LEVEL_MAP[user.dance_level] ?? user.dance_level,

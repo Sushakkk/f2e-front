@@ -6,16 +6,16 @@ import { Navigate, generatePath, useNavigate, useParams } from 'react-router-dom
 import Button from 'components/common/Button/Button';
 import { InfoPage } from 'components/common/InfoPage';
 import { Row } from 'components/common/Row';
-import { CourseActivityStatus } from 'config';
 import { ENDPOINTS } from 'config/api';
+import { CourseActivityStatus } from 'config';
 import { RoutePath } from 'config/router/paths';
 import type { EnrollmentStatus } from 'config/users';
 import type { CourseDetailServer } from 'entities/course/server';
-import { CourseStore } from 'store/CourseStore';
 import type { ErrorResponse } from 'store/globals/api/types';
 import { useRootStore } from 'store/globals/root';
 import { useUserStore } from 'store/hooks';
 import { useLocalStore } from 'store/hooks/useLocalStore';
+import { CourseStore } from 'store/CourseStore';
 import { getScheduleLines } from 'utils/scheduleUtils';
 
 import s from './CoursePage.module.scss';
@@ -41,10 +41,7 @@ const CoursePage: React.FC = () => {
 
   const courseData = courseStore.course;
   const isLoggedIn = Boolean(userStore.user);
-
-  const isFavorite = Boolean(
-    courseData && userStore.user?.favoriteCourseIds?.includes(courseData.id)
-  );
+  const isFavorite = Boolean(courseData && userStore.user?.favoriteCourseIds?.includes(courseData.id));
 
   const isEnrolled = React.useMemo(
     () => enrollmentStatus === 'active' || enrollmentStatus === 'pending',
@@ -57,7 +54,7 @@ const CoursePage: React.FC = () => {
   );
 
   const locationsFromSchedule = React.useMemo(
-    () => [...new Set(scheduleLines.map((l) => l.location).filter(Boolean))] as string[],
+    () => [...new Set(scheduleLines.map((line) => line.location).filter(Boolean))] as string[],
     [scheduleLines]
   );
 
@@ -82,14 +79,14 @@ const CoursePage: React.FC = () => {
       .call();
 
     if (!response.isError) {
-      setEnrollmentStatus(response.data.status === 'completed' ? 'completed' : 'active');
+      setEnrollmentStatus('active');
       void courseStore.loadCourse(courseData.id);
       void rootStore.coursesStore.loadCourses();
       void rootStore.notificationsStore.load();
     }
 
     setEnrolling(false);
-  }, [courseStore, courseData, enrolling, isLoggedIn, navigate, rootStore]);
+  }, [courseData, courseStore, enrolling, isLoggedIn, navigate, rootStore]);
 
   const handleCancel = React.useCallback(async () => {
     if (!courseData || enrolling) {
@@ -113,7 +110,7 @@ const CoursePage: React.FC = () => {
     }
 
     setEnrolling(false);
-  }, [courseStore, courseData, enrolling, rootStore]);
+  }, [courseData, courseStore, enrolling, rootStore]);
 
   const goToTeacher = React.useCallback(
     (teacherId?: number) => {
@@ -151,10 +148,7 @@ const CoursePage: React.FC = () => {
 
     const loadEnrollmentStatus = async (): Promise<void> => {
       const response = await rootStore.apiStore
-        .createExtendedRequest<
-          { course: { id: number }; status: EnrollmentStatus }[],
-          ErrorResponse
-        >({
+        .createExtendedRequest<CourseDetailServer[], ErrorResponse>({
           ...ENDPOINTS.myCourses,
           showExpectedError: false,
           showUnexpectedError: false,
@@ -165,9 +159,11 @@ const CoursePage: React.FC = () => {
         return;
       }
 
-      const row = response.data.find((e) => e.course.id === courseData.id);
+      const enrolledCourse = response.data.find((course) => course.id === courseData.id);
 
-      setEnrollmentStatus(row?.status ?? null);
+      setEnrollmentStatus(
+        enrolledCourse ? (enrolledCourse.status === 'completed' ? 'completed' : 'active') : null
+      );
     };
 
     void loadEnrollmentStatus();
@@ -183,7 +179,7 @@ const CoursePage: React.FC = () => {
     } else {
       void handleEnroll();
     }
-  }, [isEnrolled, handleCancel, handleEnroll]);
+  }, [handleCancel, handleEnroll, isEnrolled]);
 
   if (!id || !Number.isFinite(numericCourseId) || numericCourseId <= 0) {
     return <Navigate to={RoutePath.root} />;
@@ -202,6 +198,18 @@ const CoursePage: React.FC = () => {
   const hasMusic = Boolean(musicLabel || courseData.music.url);
   const isCourseCompleted =
     (courseData.activityStatus ?? CourseActivityStatus.Active) === CourseActivityStatus.Completed;
+  const enrollmentAllowed = isEnrolled
+    ? courseData.canCancelEnrollment !== false
+    : courseData.canEnroll !== false;
+  const enrollButtonLabel = enrolling
+    ? 'Загрузка...'
+    : isEnrolled
+      ? enrollmentAllowed
+        ? 'Отменить запись'
+        : 'Отмена записи закрыта'
+      : enrollmentAllowed
+        ? 'Записаться'
+        : 'Запись закрыта';
 
   return (
     <InfoPage
@@ -211,23 +219,20 @@ const CoursePage: React.FC = () => {
       liked={isFavorite}
       onToggleLike={handleToggleFavorite}
       button={
-        isCourseCompleted ? undefined : (
+        !isCourseCompleted ? (
           <Button
             mode={isEnrolled ? 'dark' : 'purple'}
             className={s.enrollBtn}
             onClick={handleEnrollClick}
-            disabled={enrolling}
+            disabled={enrolling || !enrollmentAllowed}
           >
-            {enrolling ? 'Загрузка...' : isEnrolled ? 'Отменить запись' : 'Записаться'}
+            {enrollButtonLabel}
           </Button>
-        )
+        ) : undefined
       }
     >
       <Row label="Преподаватель:" accent>
-        <div
-          className={cn(s.text, s.text_accent)}
-          onClick={() => goToTeacher(courseData.teacher.id)}
-        >
+        <div className={cn(s.text, s.text_accent)} onClick={() => goToTeacher(courseData.teacher.id)}>
           {courseData.teacher.name}
         </div>
       </Row>
@@ -241,11 +246,11 @@ const CoursePage: React.FC = () => {
       )}
       {scheduleLength > 0 && (
         <Row label="Расписание:">
-          {scheduleLines.map((line, i) => (
-            <React.Fragment key={i}>
+          {scheduleLines.map((line, index) => (
+            <React.Fragment key={index}>
               {line.day} {line.time}
               {scheduleLength > 1 && line.location && ` (${line.location})`}
-              {i < scheduleLines.length - 1 && <br />}
+              {index < scheduleLines.length - 1 && <br />}
             </React.Fragment>
           ))}
         </Row>

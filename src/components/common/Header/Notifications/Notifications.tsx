@@ -46,7 +46,6 @@ const Notifications: React.FC = () => {
   const userStore = useUserStore();
   const notificationsStore = useNotificationsStore();
   const navigate = useNavigate();
-
   const [open, setOpen] = React.useState(false);
 
   React.useEffect(() => {
@@ -59,7 +58,9 @@ const Notifications: React.FC = () => {
 
   const handleItemClick = React.useCallback(
     (item: NotificationClient) => {
-      void notificationsStore.markRead(item.id);
+      if (!item.readAt) {
+        void notificationsStore.markRead(item.id);
+      }
 
       if (item.courseId !== null) {
         navigate(generatePath(RoutePath.course, { id: String(item.courseId) }));
@@ -68,6 +69,26 @@ const Notifications: React.FC = () => {
     },
     [navigate, notificationsStore]
   );
+
+  const handleMarkRead = React.useCallback(
+    (event: React.MouseEvent, item: NotificationClient) => {
+      event.stopPropagation();
+      void notificationsStore.markRead(item.id);
+    },
+    [notificationsStore]
+  );
+
+  const handleDelete = React.useCallback(
+    (event: React.MouseEvent, item: NotificationClient) => {
+      event.stopPropagation();
+      void notificationsStore.deleteNotification(item.id);
+    },
+    [notificationsStore]
+  );
+
+  const handleMarkAllRead = React.useCallback(() => {
+    void notificationsStore.markAllRead();
+  }, [notificationsStore]);
 
   if (!userStore.user) {
     return null;
@@ -83,7 +104,7 @@ const Notifications: React.FC = () => {
         aria-label="Уведомления"
         aria-haspopup="dialog"
         aria-expanded={open}
-        onClick={() => setOpen((v) => !v)}
+        onClick={() => setOpen((value) => !value)}
         aria-hidden
       />
       {unread > 0 && <span className={s.badge}>{unread > 99 ? '99+' : unread}</span>}
@@ -91,14 +112,25 @@ const Notifications: React.FC = () => {
         <div className={s.popover} role="dialog" aria-label="Уведомления">
           <div className={s.popoverHead}>
             <div className={s.popoverTitle}>Уведомления</div>
-            <button
-              type="button"
-              className={s.popoverClose}
-              aria-label="Закрыть"
-              onClick={() => setOpen(false)}
-            >
-              ✕
-            </button>
+            <div className={s.popoverActions}>
+              {unread > 0 && (
+                <button
+                  type="button"
+                  className={s.popoverAction}
+                  onClick={handleMarkAllRead}
+                >
+                  Прочитать всё
+                </button>
+              )}
+              <button
+                type="button"
+                className={s.popoverClose}
+                aria-label="Закрыть"
+                onClick={() => setOpen(false)}
+              >
+                ✕
+              </button>
+            </div>
           </div>
           {notificationsStore.items.length === 0 ? (
             <div className={s.empty}>Пока нет уведомлений</div>
@@ -106,13 +138,29 @@ const Notifications: React.FC = () => {
             <div className={s.list}>
               {notificationsStore.items.map((item) => {
                 const unreadItem = !item.readAt;
+                const isNavigable = item.courseId !== null;
 
                 return (
-                  <button
+                  <div
                     key={item.id}
-                    type="button"
                     className={cn(s.item, unreadItem && s.itemUnread)}
-                    onClick={() => handleItemClick(item)}
+                    role={isNavigable ? 'button' : undefined}
+                    tabIndex={isNavigable ? 0 : -1}
+                    onClick={() => {
+                      if (isNavigable) {
+                        handleItemClick(item);
+                      }
+                    }}
+                    onKeyDown={(event) => {
+                      if (!isNavigable) {
+                        return;
+                      }
+
+                      if (event.key === 'Enter' || event.key === ' ') {
+                        event.preventDefault();
+                        handleItemClick(item);
+                      }
+                    }}
                   >
                     <span className={s.itemDot} aria-hidden />
                     <span className={s.itemMain}>
@@ -123,8 +171,26 @@ const Notifications: React.FC = () => {
                         </span>
                       </span>
                       <span className={s.itemText}>{item.body}</span>
+                      <span className={s.itemActions}>
+                        {unreadItem && (
+                          <button
+                            type="button"
+                            className={s.itemAction}
+                            onClick={(event) => handleMarkRead(event, item)}
+                          >
+                            Прочитано
+                          </button>
+                        )}
+                        <button
+                          type="button"
+                          className={s.itemActionDanger}
+                          onClick={(event) => handleDelete(event, item)}
+                        >
+                          Удалить
+                        </button>
+                      </span>
                     </span>
-                  </button>
+                  </div>
                 );
               })}
             </div>

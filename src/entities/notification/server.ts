@@ -1,6 +1,3 @@
-/**
- * Уведомление в ответе API (поля в snake_case, как у Django REST).
- */
 export type NotificationServer = {
   id: number;
   kind: string;

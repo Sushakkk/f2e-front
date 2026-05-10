@@ -10,6 +10,8 @@ export type Lesson = {
   timeTo: string;
   location?: string;
   status: LessonStatus;
+  startAt?: string;
+  canMarkAttendance?: boolean;
 };
 
 export type AttendanceRecord = {
@@ -44,18 +46,11 @@ export type CourseFormData = {
   city: string;
   description: string;
   musicUrl: string;
-
   /** Строковое значение как у `price`: пусто до ввода, для placeholder в форме */
   capacity: string;
   useSameLocation: boolean;
   sharedLocation: string;
-  schedule: {
-    weekday: string;
-    timeFrom: string;
-    timeTo: string;
-    location?: string;
-    studio?: string;
-  }[];
+  schedule: { weekday: string; timeFrom: string; timeTo: string; location?: string }[];
 };
 
 export type AttendanceStats = {

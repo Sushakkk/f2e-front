@@ -1,12 +1,6 @@
 import type { NotificationClient } from './client';
 import type { NotificationServer } from './server';
 
-/**
- * Преобразует ответ API в клиентскую модель.
- *
- * @param data объект из API
- * @returns нормализованное уведомление
- */
 export function normalizeNotification(data: NotificationServer): NotificationClient {
   return {
     id: data.id,

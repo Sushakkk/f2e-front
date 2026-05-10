@@ -303,29 +303,6 @@
   gap: 12px;
 }
 
-.sameLocationBar {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: flex-end;
-  gap: 16px;
-}
-
-.sameLocationStudio {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  min-width: 0;
-  flex: 1 1 220px;
-  font-size: 14px;
-  color: $color-white-secondary;
-}
-
-.sameLocationStudioLabel {
-  font-size: 12px;
-  font-weight: 500;
-  color: $color-white-secondary;
-}
-
 .checkboxRow {
   position: relative;
   display: inline-flex;

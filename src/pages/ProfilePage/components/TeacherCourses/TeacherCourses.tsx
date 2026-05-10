@@ -169,6 +169,7 @@ const TeacherCourses: React.FC<Props> = ({ store, teacherId }) => {
                         <Button
                           mode="dark"
                           className={s.actionBtn}
+                          disabled={course.canEdit === false}
                           onClick={(e) => handleEdit(e, course.id)}
                         >
                           Редактировать

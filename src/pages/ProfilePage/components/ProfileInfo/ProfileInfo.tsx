@@ -14,7 +14,7 @@ type Props = {
   onRetrySurvey: () => void;
 };
 
-const ProfileInfo: React.FC<Props> = ({ user, store, onLogout, onRetrySurvey }) => {
+const ProfileInfoComponent: React.FC<Props> = ({ user, store, onLogout, onRetrySurvey }) => {
   React.useLayoutEffect(() => {
     if (!store.isEditingProfile) {
       return;
@@ -25,7 +25,16 @@ const ProfileInfo: React.FC<Props> = ({ user, store, onLogout, onRetrySurvey }) 
     document.body.scrollTop = 0;
   }, [store.isEditingProfile]);
 
-  const fullName = [user.lastName, user.firstName, user.middleName].filter(Boolean).join(' ');
+  const fullName =
+    [user.lastName, user.firstName, user.middleName].filter(Boolean).join(' ') || user.username;
+
+  const profileFacts = [
+    { label: 'Username', value: `@${user.username}` },
+    { label: 'E-mail', value: user.email || 'Не указан' },
+    { label: 'Город', value: user.city || 'Не указан' },
+    { label: 'Уровень', value: user.level || 'Не указан' },
+  ];
+
   const teacherSpecializations = store.teacherProfileForm.specializations
     .split('\n')
     .map((item) => item.trim())
@@ -34,36 +43,32 @@ const ProfileInfo: React.FC<Props> = ({ user, store, onLogout, onRetrySurvey }) 
     .split('\n')
     .map((item) => item.trim())
     .filter(Boolean);
-  const profileFacts = [
-    { label: 'Username', value: `@${user.username}` },
-    { label: 'E-mail', value: user.email },
-    { label: 'Город', value: user.city || 'Не указан' },
-    { label: 'Уровень', value: user.level || 'Не указан' },
-  ];
 
   return (
     <div className={s.root}>
-      {!store.isEditingProfile && <ProfileInfoHero user={user} fullName={fullName} />}
+      <ProfileInfoHero user={user} fullName={fullName} />
       {store.isEditingProfile ? (
         <ProfileInfoEdit store={store} />
       ) : (
-        <ProfileInfoView
-          store={store}
-          profileFacts={profileFacts}
-          teacherSpecializations={teacherSpecializations}
-          teacherAchievements={teacherAchievements}
-        />
-      )}
-      {!store.isEditingProfile && (
-        <ProfileInfoActions
-          user={user}
-          store={store}
-          onLogout={onLogout}
-          onRetrySurvey={onRetrySurvey}
-        />
+        <>
+          <ProfileInfoView
+            store={store}
+            profileFacts={profileFacts}
+            teacherSpecializations={teacherSpecializations}
+            teacherAchievements={teacherAchievements}
+          />
+          <ProfileInfoActions
+            user={user}
+            store={store}
+            onLogout={onLogout}
+            onRetrySurvey={onRetrySurvey}
+          />
+        </>
       )}
     </div>
   );
 };
 
-export default observer(ProfileInfo);
+export const ProfileInfo = observer(ProfileInfoComponent);
+
+export default ProfileInfo;

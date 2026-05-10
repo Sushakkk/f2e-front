@@ -18,6 +18,7 @@ const SIDEBAR_ITEMS: SidebarItem[] = [
   { id: 'profile', label: 'Персональные данные' },
   { id: 'enrollments', label: 'Мои записи' },
   { id: 'favorites', label: 'Избранное' },
+  { id: 'calendar', label: 'Календарь', teacherOnly: true },
   { id: 'teacherCourses', label: 'Мои курсы', teacherOnly: true },
   { id: 'students', label: 'Ученики', teacherOnly: true },
   { id: 'stats', label: 'Статистика', teacherOnly: true },

@@ -16,13 +16,7 @@ import Button from 'components/common/Button/Button';
 import { COURSE_LEVELS } from 'config/levels';
 import type { ProfilePageStore } from 'store/ProfilePageStore';
 import { useDanceStylesStore } from 'store/hooks';
-import {
-  ddmmToIso,
-  formatRu,
-  fromIsoDate,
-  normalizeScheduleTimeInput,
-  toDDMM,
-} from 'utils/dateUtils';
+import { ddmmToIso, formatRu, fromIsoDate, normalizeScheduleTimeInput, toDDMM } from 'utils/dateUtils';
 
 import s from './CourseForm.module.scss';
 
@@ -130,7 +124,6 @@ const CourseForm: React.FC<Props> = ({ store, teacherId, isEditing }) => {
     }
 
     const lesson = store.courseFormLessons.find((l) => l.id === pendingCancelLessonId);
-
     if (!lesson) {
       return 'Отменить это занятие?';
     }
@@ -282,25 +275,6 @@ const CourseForm: React.FC<Props> = ({ store, teacherId, isEditing }) => {
           {getError('level') && <span className={s.error}>{getError('level')}</span>}
         </label>
         <FormField
-          className={s.field}
-          label="Количество мест"
-          labelClassName={s.label}
-          error={getError('capacity')}
-          errorClassName={s.error}
-          required
-          requiredMarkClassName={s.requiredMark}
-        >
-          <input
-            className={cx(getError('capacity') && s.inputError)}
-            type="number"
-            min={1}
-            value={form.capacity}
-            placeholder="Введите количество мест"
-            onChange={(e) => store.updateFormField('capacity', e.target.value)}
-            required
-          />
-        </FormField>
-        <FormField
           className={s.fieldWide}
           label="Даты курса"
           labelClassName={s.label}
@@ -323,12 +297,26 @@ const CourseForm: React.FC<Props> = ({ store, teacherId, isEditing }) => {
           <input
             className={cx(getError('price') && s.inputError)}
             type="number"
+            inputMode="numeric"
             value={form.price}
             placeholder="Введите цену"
             onChange={(e) => store.updateFormField('price', e.target.value)}
+            onWheel={(e) => e.currentTarget.blur()}
             required
           />
         </FormField>
+        <label className={s.field}>
+          <span className={s.label}>Студия {REQUIRED_MARK}</span>
+          <SelectDropdown
+            mode="single"
+            value={form.studio}
+            placeholder="Выберите студию"
+            options={studioOptions}
+            onChange={(v) => store.updateFormField('studio', v)}
+            searchable
+          />
+          {getError('studio') && <span className={s.error}>{getError('studio')}</span>}
+        </label>
         <label className={s.field}>
           <span className={s.label}>Город {REQUIRED_MARK}</span>
           <SelectDropdown
@@ -341,6 +329,27 @@ const CourseForm: React.FC<Props> = ({ store, teacherId, isEditing }) => {
           />
           {getError('city') && <span className={s.error}>{getError('city')}</span>}
         </label>
+        <FormField
+          className={s.field}
+          label="Количество мест"
+          labelClassName={s.label}
+          error={getError('capacity')}
+          errorClassName={s.error}
+          required
+          requiredMarkClassName={s.requiredMark}
+        >
+          <input
+            className={cx(getError('capacity') && s.inputError)}
+            type="number"
+            inputMode="numeric"
+            min={1}
+            value={form.capacity}
+            placeholder="Введите количество мест"
+            onChange={(e) => store.updateFormField('capacity', e.target.value)}
+            onWheel={(e) => e.currentTarget.blur()}
+            required
+          />
+        </FormField>
       </div>
       <FormField className={s.field} label="Описание" labelClassName={s.label}>
         <textarea
@@ -368,32 +377,16 @@ const CourseForm: React.FC<Props> = ({ store, teacherId, isEditing }) => {
       </div>
       <div className={s.scheduleSection}>
         <SectionHeader title="Расписание" onAdd={store.addScheduleEntry} addLabel="Добавить" />
-        <div className={s.sameLocationBar}>
-          <label className={s.checkboxRow}>
-            <input
-              type="checkbox"
-              className={s.checkboxInput}
-              checked={form.useSameLocation}
-              onChange={(e) => store.setUseSameLocation(e.target.checked)}
-            />
-            <span className={s.checkboxIndicator} aria-hidden="true" />
-            <span className={s.checkboxText}>Одинаковый адрес у всех занятий</span>
-          </label>
-          {form.useSameLocation && (
-            <label className={s.sameLocationStudio}>
-              <span className={s.sameLocationStudioLabel}>Студия {REQUIRED_MARK}</span>
-              <SelectDropdown
-                mode="single"
-                value={form.studio}
-                placeholder="Выберите студию"
-                options={studioOptions}
-                onChange={(v) => store.updateFormField('studio', v)}
-                searchable
-              />
-              {getError('studio') && <span className={s.error}>{getError('studio')}</span>}
-            </label>
-          )}
-        </div>
+        <label className={s.checkboxRow}>
+          <input
+            type="checkbox"
+            className={s.checkboxInput}
+            checked={form.useSameLocation}
+            onChange={(e) => store.setUseSameLocation(e.target.checked)}
+          />
+          <span className={s.checkboxIndicator} aria-hidden="true" />
+          <span className={s.checkboxText}>Одинаковый адрес у всех занятий</span>
+        </label>
         {form.useSameLocation && (
           <FormField
             className={s.field}
@@ -416,15 +409,8 @@ const CourseForm: React.FC<Props> = ({ store, teacherId, isEditing }) => {
         {form.schedule.map((entry, idx) => (
           <div key={idx} className={s.scheduleEntry}>
             <div className={s.scheduleFields}>
-              <FormField
-                className={s.scheduleField}
-                label="День недели"
-                labelClassName={s.scheduleLabel}
-                error={getError(`schedule.${idx}.weekday`)}
-                errorClassName={s.error}
-                required
-                requiredMarkClassName={s.requiredMark}
-              >
+              <div className={s.scheduleField}>
+                <span className={s.scheduleLabel}>День недели</span>
                 <SelectDropdown
                   mode="multi"
                   value={entry.weekday
@@ -436,15 +422,16 @@ const CourseForm: React.FC<Props> = ({ store, teacherId, isEditing }) => {
                   onChange={(v) => store.updateScheduleEntry(idx, 'weekday', v.join(', '))}
                   searchable
                 />
-              </FormField>
+                {getError(`schedule.${idx}.weekday`) && (
+                  <span className={s.error}>{getError(`schedule.${idx}.weekday`)}</span>
+                )}
+              </div>
               <FormField
                 className={s.scheduleField}
                 label="Время"
                 labelClassName={s.scheduleLabel}
                 error={getError(`schedule.${idx}.timeFrom`) ?? getError(`schedule.${idx}.timeTo`)}
                 errorClassName={s.error}
-                required
-                requiredMarkClassName={s.requiredMark}
               >
                 <div className={s.scheduleTimeRow}>
                   <input
@@ -454,7 +441,6 @@ const CourseForm: React.FC<Props> = ({ store, teacherId, isEditing }) => {
                     maxLength={5}
                     value={entry.timeFrom}
                     placeholder="Начало, ЧЧ:ММ"
-                    required
                     onChange={(e) => {
                       const next = normalizeScheduleTimeInput(entry.timeFrom, e.target.value);
 
@@ -468,7 +454,6 @@ const CourseForm: React.FC<Props> = ({ store, teacherId, isEditing }) => {
                     maxLength={5}
                     value={entry.timeTo}
                     placeholder="Конец, ЧЧ:ММ"
-                    required
                     onChange={(e) => {
                       const next = normalizeScheduleTimeInput(entry.timeTo, e.target.value);
 
@@ -478,36 +463,22 @@ const CourseForm: React.FC<Props> = ({ store, teacherId, isEditing }) => {
                 </div>
               </FormField>
               {!form.useSameLocation && (
-                <>
-                  <label className={s.scheduleField}>
-                    <span className={s.scheduleLabel}>Студия</span>
-                    <SelectDropdown
-                      mode="single"
-                      value={entry.studio ?? ''}
-                      placeholder="Выберите студию"
-                      options={studioOptions}
-                      onChange={(v) => store.updateScheduleEntry(idx, 'studio', v)}
-                      searchable
-                    />
-                  </label>
-                  <FormField
-                    className={s.scheduleField}
-                    label="Адрес"
-                    labelClassName={s.scheduleLabel}
-                    error={getError(`schedule.${idx}.location`)}
-                    errorClassName={s.error}
-                    required
-                    requiredMarkClassName={s.requiredMark}
-                  >
-                    <input
-                      className={cx(getError(`schedule.${idx}.location`) && s.inputError)}
-                      value={entry.location ?? ''}
-                      placeholder="м. Павелецкая"
-                      onChange={(e) => store.updateScheduleEntry(idx, 'location', e.target.value)}
-                      required
-                    />
-                  </FormField>
-                </>
+                <FormField
+                  className={s.scheduleField}
+                  label="Адрес"
+                  labelClassName={s.scheduleLabel}
+                  error={getError(`schedule.${idx}.location`)}
+                  errorClassName={s.error}
+                  required
+                  requiredMarkClassName={s.requiredMark}
+                >
+                  <input
+                    className={cx(getError(`schedule.${idx}.location`) && s.inputError)}
+                    value={entry.location ?? ''}
+                    placeholder="м. Павелецкая"
+                    onChange={(e) => store.updateScheduleEntry(idx, 'location', e.target.value)}
+                  />
+                </FormField>
               )}
             </div>
             {form.schedule.length > 1 && (

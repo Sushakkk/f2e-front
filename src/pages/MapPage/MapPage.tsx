@@ -46,10 +46,23 @@ const MapPage: React.FC = () => {
   return (
     <div className={s.page}>
       {!store.isMapLoaded && <ScreenSpinner />}
+      <button
+        type="button"
+        className={s.geoButton}
+        onClick={() => store.focusUserLocation()}
+        disabled={!store.userLocation}
+        aria-label="Вернуться к геолокации"
+        title="Вернуться к геолокации"
+      >
+        <span className={s.geoIcon} aria-hidden="true">
+          ➤
+        </span>
+      </button>
       <div className={s.mapWrapper}>
         <StudioMap
           studios={store.filteredStudios}
           selectedId={store.selectedStudio?.id ?? null}
+          userLocation={store.userLocation}
           onMarkerClick={store.selectStudio}
           mapRef={handleInstanceRef}
         />

@@ -1,7 +1,26 @@
 import type { CourseConfigItem, ScheduleEntry } from 'config/cards';
 
+const WEEKDAY_LABELS: Record<string, string> = {
+  mon: 'Пн',
+  tue: 'Вт',
+  wed: 'Ср',
+  thu: 'Чт',
+  fri: 'Пт',
+  sat: 'Сб',
+  sun: 'Вс',
+};
+
 function getEntries(course: CourseConfigItem): ScheduleEntry[] {
   return course.schedule ?? [];
+}
+
+function formatWeekdayLabel(value: string): string {
+  return value
+    .split(',')
+    .map((day) => day.trim())
+    .filter(Boolean)
+    .map((day) => WEEKDAY_LABELS[day] ?? day)
+    .join(', ');
 }
 
 function isUniform(entries: ScheduleEntry[]): boolean {
@@ -44,7 +63,7 @@ export function getScheduleDisplay(course: CourseConfigItem): ScheduleDisplay | 
     return null;
   }
 
-  const days = entries.map((e) => e.weekday).join(', ');
+  const days = entries.map((e) => formatWeekdayLabel(e.weekday)).join(', ');
 
   if (isUniform(entries)) {
     const first = entries[0];
@@ -71,7 +90,7 @@ export function getScheduleLines(course: CourseConfigItem): ScheduleLineItem[] {
   }
 
   if (isUniform(entries)) {
-    const days = entries.map((e) => e.weekday).join(', ');
+    const days = entries.map((e) => formatWeekdayLabel(e.weekday)).join(', ');
     const first = entries[0];
 
     return [
@@ -84,7 +103,7 @@ export function getScheduleLines(course: CourseConfigItem): ScheduleLineItem[] {
   }
 
   return entries.map((e) => ({
-    day: e.weekday,
+    day: formatWeekdayLabel(e.weekday),
     time: timeRange(e.timeFrom, e.timeTo),
     location: e.location,
   }));

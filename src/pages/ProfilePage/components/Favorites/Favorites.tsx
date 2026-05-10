@@ -2,7 +2,11 @@ import { observer } from 'mobx-react';
 import * as React from 'react';
 
 import { SectionHeader, Card } from 'components/common';
-import { COURSES_CONFIG } from 'config/cards';
+import type { CourseConfigItem } from 'config/cards';
+import { ENDPOINTS } from 'config/api';
+import type { BackendTeacher } from 'entities/teacher';
+import type { ErrorResponse } from 'store/globals/api/types';
+import { useRootStore } from 'store/globals/root';
 
 import ProfileCard from '../ProfileCard';
 
@@ -12,6 +16,7 @@ type Props = {
   favoriteCourseIds: number[];
   favoriteTeacherIds: number[];
   favoriteTeacherNames: string[];
+  courses: CourseConfigItem[];
   onTeacherClick: (id: number) => void;
 };
 
@@ -19,14 +24,20 @@ const Favorites: React.FC<Props> = ({
   favoriteCourseIds,
   favoriteTeacherIds,
   favoriteTeacherNames,
+  courses,
   onTeacherClick,
 }) => {
+  const rootStore = useRootStore();
+  const [teacherMetaById, setTeacherMetaById] = React.useState<
+    Record<number, { avatar?: string; city?: string }>
+  >({});
+
   const favoriteCourses = React.useMemo(
     () =>
       favoriteCourseIds
-        .map((id) => COURSES_CONFIG.find((c) => c.id === id))
+        .map((id) => courses.find((c) => c.id === id))
         .filter((c): c is NonNullable<typeof c> => Boolean(c)),
-    [favoriteCourseIds]
+    [courses, favoriteCourseIds]
   );
 
   const teacherRows = React.useMemo(() => {
@@ -47,23 +58,56 @@ const Favorites: React.FC<Props> = ({
     return rows.filter((row) => typeof row.id === 'number' || row.name !== 'Преподаватель');
   }, [favoriteTeacherIds, favoriteTeacherNames]);
 
-  const getTeacherAvatar = React.useCallback((teacherId?: number, teacherName?: string) => {
-    if (teacherId) {
-      const courseById = COURSES_CONFIG.find((c) => c.teacher.id === teacherId);
+  React.useEffect(() => {
+    const teacherIds = favoriteTeacherIds.filter((id): id is number => typeof id === 'number');
 
-      if (courseById?.teacher.images?.[0]) {
-        return courseById.teacher.images[0];
+    if (teacherIds.length === 0) {
+      setTeacherMetaById({});
+      return;
+    }
+
+    let cancelled = false;
+
+    const loadTeachers = async (): Promise<void> => {
+      const responses = await Promise.all(
+        teacherIds.map((teacherId) =>
+          rootStore.apiStore
+            .createExtendedRequest<BackendTeacher, ErrorResponse>({
+              ...ENDPOINTS.teachers.detail(teacherId),
+              showExpectedError: false,
+              showUnexpectedError: false,
+            })
+            .call()
+        )
+      );
+
+      if (cancelled) {
+        return;
       }
-    }
 
-    if (teacherName) {
-      const courseByName = COURSES_CONFIG.find((c) => c.teacher.name === teacherName);
+      const nextMeta = responses.reduce<Record<number, { avatar?: string; city?: string }>>(
+        (acc, response, index) => {
+          if (!response.isError) {
+            acc[teacherIds[index]] = {
+              avatar: response.data.avatar || response.data.images?.[0] || undefined,
+              city: response.data.city || undefined,
+            };
+          }
 
-      return courseByName?.teacher.images?.[0];
-    }
+          return acc;
+        },
+        {}
+      );
 
-    return undefined;
-  }, []);
+      setTeacherMetaById(nextMeta);
+    };
+
+    void loadTeachers();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [favoriteTeacherIds, rootStore.apiStore]);
 
   const hasFavoriteTeachers = teacherRows.length > 0;
 
@@ -89,12 +133,15 @@ const Favorites: React.FC<Props> = ({
           <div className={s.list}>
             {teacherRows.map((row, index) => {
               const teacherId = row.id;
+              const teacherMeta =
+                typeof teacherId === 'number' ? teacherMetaById[teacherId] : undefined;
 
               return (
                 <ProfileCard
                   key={`${row.id ?? 't'}-${row.name}-${index}`}
                   title={row.name}
-                  avatar={getTeacherAvatar(teacherId, row.name)}
+                  meta={teacherMeta?.city ?? 'Преподаватель'}
+                  avatar={teacherMeta?.avatar}
                   onClick={
                     typeof teacherId === 'number' ? () => onTeacherClick(teacherId) : undefined
                   }

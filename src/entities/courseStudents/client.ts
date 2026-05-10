@@ -5,7 +5,6 @@ export type CourseStudentClient = {
   firstName: string;
   lastName: string;
   email: string;
-  phone: string;
   level: string;
   enrolledAt: string;
   status: string;

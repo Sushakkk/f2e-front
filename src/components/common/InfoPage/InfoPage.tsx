@@ -2,8 +2,8 @@ import cn from 'classnames';
 import * as React from 'react';
 import { useNavigate } from 'react-router-dom';
 
-import ArrowIcon from 'assets/images/arrow.svg?react';
 import fallbackImage from 'assets/images/courses/five-to-eight-placeholder.png';
+import ArrowIcon from 'assets/images/arrow.svg?react';
 import HeartFilledIcon from 'assets/images/heart-filled.svg?react';
 import HeartIcon from 'assets/images/heart.svg?react';
 import { CoverflowSwiper } from 'components/common/CoverflowSwiper';

@@ -1,3 +1,4 @@
+import cx from 'clsx';
 import { observer } from 'mobx-react';
 import * as React from 'react';
 import { Navigate, generatePath, useNavigate, useParams } from 'react-router-dom';
@@ -12,6 +13,7 @@ import {
 } from 'config/router/profilePaths';
 import type { Enrollment } from 'config/users';
 import { UserRole } from 'entities/user';
+import CalendarContent from 'pages/CalendarPage/CalendarContent';
 import { ProfilePageStore, type ViewMode } from 'store/ProfilePageStore';
 import { useRootStore } from 'store/globals/root';
 import { useLocalStore, useUserStore } from 'store/hooks';
@@ -29,6 +31,7 @@ const SECTION_TITLES: Record<string, string> = {
   profile: 'Персональные данные',
   enrollments: 'Мои записи',
   favorites: 'Избранное',
+  calendar: 'Календарь',
   teacherCourses: 'Мои курсы',
   students: 'Ученики',
   stats: 'Статистика',
@@ -54,7 +57,6 @@ const ProfilePage: React.FC = () => {
   const store = useLocalStore(() => new ProfilePageStore(rootStore));
 
   const user = userStore.user;
-
   const sectionFromUrl = profileSectionFromSlug(sectionSlug);
 
   React.useLayoutEffect(() => {
@@ -76,9 +78,16 @@ const ProfilePage: React.FC = () => {
   }, [sectionFromUrl, store]);
 
   React.useEffect(() => {
+    if (sectionFromUrl === 'favorites') {
+      void rootStore.coursesStore.loadCourses();
+    }
+  }, [rootStore.coursesStore, sectionFromUrl]);
+
+  React.useEffect(() => {
     if (
       !store.isTeacherView ||
-      (sectionFromUrl !== 'teacherCourses' &&
+      (sectionFromUrl !== 'calendar' &&
+        sectionFromUrl !== 'teacherCourses' &&
         sectionFromUrl !== 'students' &&
         sectionFromUrl !== 'stats')
     ) {
@@ -166,9 +175,17 @@ const ProfilePage: React.FC = () => {
             favoriteCourseIds={favCourses}
             favoriteTeacherIds={favTeacherIds}
             favoriteTeacherNames={favTeachers}
+            courses={rootStore.coursesStore.courses}
             onTeacherClick={goToTeacher}
           />
         );
+
+      case 'calendar':
+        if (!store.isTeacherView) {
+          return null;
+        }
+
+        return <CalendarContent />;
 
       case 'teacherCourses':
         if (!store.isTeacherView) {
@@ -204,8 +221,8 @@ const ProfilePage: React.FC = () => {
         canSwitchMode={user.role === UserRole.teacher}
         onViewModeChange={handleViewModeChange}
       />
-      <div className={s.content}>
-        <Title>{SECTION_TITLES[store.activeSection]}</Title>
+      <div className={store.activeSection === 'calendar' ? cx(s.content, s.content_calendar) : s.content}>
+        {store.activeSection !== 'calendar' && <Title>{SECTION_TITLES[store.activeSection]}</Title>}
         {renderContent()}
       </div>
     </div>
