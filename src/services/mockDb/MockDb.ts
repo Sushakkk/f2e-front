@@ -87,7 +87,7 @@ function generateLessonsFromSchedule(
           date: current.toISOString().split('T')[0],
           timeFrom: entry.timeFrom,
           timeTo: entry.timeTo,
-          location: entry.location ?? entry.studio,
+          location: entry.location,
           status: 'scheduled',
         });
         current.setDate(current.getDate() + 7);
@@ -713,8 +713,7 @@ class MockDb {
       weekday: s.weekday,
       timeFrom: s.timeFrom,
       timeTo: s.timeTo,
-      location: data.useSameLocation ? data.sharedLocation : s.location,
-      studio: data.useSameLocation ? undefined : s.studio,
+      location: s.location,
     }));
 
     const newCourse: TeacherCourse = {
@@ -815,30 +814,12 @@ class MockDb {
     }
 
     if (data.schedule !== undefined) {
-      if (data.useSameLocation === true) {
-        course.schedule = data.schedule.map((s) => ({
-          weekday: s.weekday,
-          timeFrom: s.timeFrom,
-          timeTo: s.timeTo,
-          location: data.sharedLocation ?? '',
-        }));
-      } else if (data.useSameLocation === false) {
-        course.schedule = data.schedule.map((s) => ({
-          weekday: s.weekday,
-          timeFrom: s.timeFrom,
-          timeTo: s.timeTo,
-          location: s.location,
-          studio: s.studio,
-        }));
-      } else {
-        course.schedule = data.schedule.map((s) => ({
-          weekday: s.weekday,
-          timeFrom: s.timeFrom,
-          timeTo: s.timeTo,
-          location: s.location,
-          studio: s.studio,
-        }));
-      }
+      course.schedule = data.schedule.map((s) => ({
+        weekday: s.weekday,
+        timeFrom: s.timeFrom,
+        timeTo: s.timeTo,
+        location: s.location,
+      }));
     }
 
     courses[idx] = course;

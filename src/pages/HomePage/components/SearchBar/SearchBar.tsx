@@ -8,6 +8,7 @@ import SearchIcon from './img/search.svg?react';
 export type SearchBarProps = {
   value: string;
   onChange: (v: string) => void;
+  onSubmit?: () => void;
   onToggleFilters?: () => void;
   isFiltersOpen?: boolean;
   className?: string;
@@ -17,6 +18,7 @@ export type SearchBarProps = {
 const SearchBar: React.FC<SearchBarProps> = ({
   value,
   onChange,
+  onSubmit,
   onToggleFilters,
   isFiltersOpen,
   className,
@@ -26,9 +28,9 @@ const SearchBar: React.FC<SearchBarProps> = ({
 
   const onClear = React.useCallback(() => {
     onChange('');
-    // keep UX snappy: return focus to the input
+    onSubmit?.();
     inputRef.current?.focus();
-  }, [onChange]);
+  }, [onChange, onSubmit]);
 
   return (
     <div className={cn(s.root, className)}>
@@ -39,6 +41,12 @@ const SearchBar: React.FC<SearchBarProps> = ({
           className={s.input}
           value={value}
           onChange={(e) => onChange(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter') {
+              e.preventDefault();
+              onSubmit?.();
+            }
+          }}
           placeholder="Поиск"
         />
         {value.length > 0 && (
@@ -50,7 +58,7 @@ const SearchBar: React.FC<SearchBarProps> = ({
             onClick={onClear}
           >
             <span className={s.clearIcon} aria-hidden="true">
-              ×
+              x
             </span>
           </button>
         )}

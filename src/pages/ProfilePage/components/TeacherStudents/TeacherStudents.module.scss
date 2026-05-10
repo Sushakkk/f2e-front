@@ -57,6 +57,11 @@
   gap: 16px;
 }
 
+.hint {
+  font-size: 13px;
+  color: $color-white-secondary;
+}
+
 .attendanceList {
   display: flex;
   flex-direction: column;

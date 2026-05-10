@@ -23,20 +23,12 @@ function formatShortDate(iso: string): string {
   return `${String(d.getDate()).padStart(2, '0')}.${String(d.getMonth() + 1).padStart(2, '0')}`;
 }
 
-/**
- * Converts server schedule row into client schedule entry.
- * Pure mapping: no side effects.
- *
- * @param entry server response row
- * @returns normalized client row
- */
 function normalizeScheduleEntry(entry: ScheduleEntryServer): ScheduleEntry {
   return {
     weekday: entry.weekday,
     timeFrom: formatClockToHhMm(entry.time_from),
     timeTo: formatClockToHhMm(entry.time_to),
     location: entry.location ?? undefined,
-    studio: entry.studio ?? undefined,
   };
 }
 
@@ -72,6 +64,10 @@ export function normalizeCourseDetail(data: CourseDetailServer): CourseDetailCli
       track: data.music?.track ?? '',
       url: data.music?.url ?? '',
     },
+    canEnroll: data.can_enroll ?? true,
+    canCancelEnrollment: data.can_cancel_enrollment ?? true,
+    canEdit: data.can_edit ?? true,
+    firstLessonAt: data.first_lesson_at ?? undefined,
     activityStatus: parseCourseActivityStatus(data.status),
   };
 }

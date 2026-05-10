@@ -58,7 +58,6 @@ const TeacherSchedule: React.FC<Props> = ({ store }) => {
     }
 
     const lesson = store.lessons.find((l) => l.id === pendingCancelLessonId);
-
     if (!lesson) {
       return 'Отменить это занятие?';
     }

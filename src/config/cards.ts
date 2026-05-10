@@ -9,9 +9,6 @@ export type ScheduleEntry = {
   timeFrom: string;
   timeTo: string;
   location?: string;
-
-  /** Студия для строки расписания (разные адреса по занятиям). */
-  studio?: string;
 };
 
 export type Review = {
@@ -54,7 +51,10 @@ export type CourseConfigItem = {
     track: string;
     url: string;
   };
-
+  canEnroll?: boolean;
+  canCancelEnrollment?: boolean;
+  canEdit?: boolean;
+  firstLessonAt?: string;
   /** Витрина: active — пока не прошла дата окончания; completed — иначе. По умолчанию active. */
   activityStatus?: CourseActivityStatus;
 };
@@ -201,14 +201,7 @@ export const COURSES_CONFIG: CourseConfigItem[] = [
     price: 9500,
     images: [courseImages.contemporary, courseImages.contemporary, courseImages.contemporary],
     studio: 'Студия движения',
-    schedule: [
-      {
-        weekday: 'Пн, Ср',
-        timeFrom: '17:00',
-        timeTo: '18:30',
-        location: 'м. Чистые пруды',
-      },
-    ],
+    schedule: [{ weekday: 'Пн, Ср', timeFrom: '17:00', timeTo: '18:30', location: 'м. Чистые пруды' },],
     city: 'Москва',
     description: 'Импровизация и работа с телом.',
     capacity: 25,
@@ -313,14 +306,7 @@ export const COURSES_CONFIG: CourseConfigItem[] = [
     price: 12000,
     images: [courseImages.vogue, courseImages.vogue, courseImages.vogue],
     studio: 'Грация',
-    schedule: [
-      {
-        weekday: 'Ср, Пт',
-        timeFrom: '20:00',
-        timeTo: '21:30',
-        location: 'м. Новослободская',
-      },
-    ],
+    schedule: [{ weekday: 'Ср, Пт', timeFrom: '20:00', timeTo: '21:30', location: 'м. Новослободская' },],
     city: 'Москва',
     description: 'Подготовка к баттлам.',
     capacity: 20,
@@ -364,14 +350,7 @@ export const COURSES_CONFIG: CourseConfigItem[] = [
     price: 9000,
     images: [courseImages.hipHop, courseImages.hipHop, courseImages.hipHop],
     studio: 'ТанцХаб',
-    schedule: [
-      {
-        weekday: 'Пн, Чт',
-        timeFrom: '18:00',
-        timeTo: '19:30',
-        location: 'м. Павелецкая',
-      },
-    ],
+    schedule: [{ weekday: 'Пн, Чт', timeFrom: '18:00', timeTo: '19:30', location: 'м. Павелецкая' },],
     city: 'Санкт-Петербург',
     description: 'Грув и актуальные стили.',
     capacity: 40,
@@ -589,14 +568,7 @@ export const COURSES_CONFIG: CourseConfigItem[] = [
     price: 9000,
     images: [courseImages.ladyStyle, courseImages.ladyStyle, courseImages.ladyStyle],
     studio: 'Грация',
-    schedule: [
-      {
-        weekday: 'Пн, Ср',
-        timeFrom: '19:00',
-        timeTo: '20:30',
-        location: 'м. Новослободская',
-      },
-    ],
+    schedule: [{ weekday: 'Пн, Ср', timeFrom: '19:00', timeTo: '20:30', location: 'м. Новослободская' },],
     city: 'Москва',
     description: 'Плавность и женственность.',
     capacity: 30,

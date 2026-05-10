@@ -32,11 +32,6 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-
-  @include mobile {
-    font-size: 17px;
-    line-height: 22px;
-  }
 }
 
 .btnCaret {

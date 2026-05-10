@@ -12,21 +12,21 @@ import { useRootStore } from 'store/globals/root';
 import { useLocalStore, useUserStore } from 'store/hooks';
 
 import s from './SurveyPage.module.scss';
-import {
-  BUDGET_OPTIONS,
-  CITIES,
-  LEVELS_ORDER,
-  SURVEY_DANCE_TYPES,
-  SURVEY_STEPS,
-  TIME_PREFERENCES,
-  WEEKDAYS,
-} from './config';
+import { BUDGET_OPTIONS, LEVELS_ORDER, SURVEY_STEPS, TIME_PREFERENCES, WEEKDAYS } from './config';
 
 const SurveyPage: React.FC = () => {
   const rootStore = useRootStore();
   const store = useLocalStore(() => new SurveyPageStore(rootStore));
   const userStore = useUserStore();
   const navigate = useNavigate();
+
+  React.useEffect(() => {
+    store.initializeFromUser(userStore.user);
+  }, [store, userStore.user]);
+
+  React.useEffect(() => {
+    void store.loadDictionaries();
+  }, [store]);
 
   const handleComplete = React.useCallback(async () => {
     const isSuccess = await store.syncSurveyToBackend();
@@ -48,8 +48,7 @@ const SurveyPage: React.FC = () => {
     navigate(RoutePath.home);
   }, [navigate]);
 
-  const cityOptions = React.useMemo(() => CITIES.map((city) => ({ value: city, label: city })), []);
-  const isAllTypesSelected = store.answers.types.length === SURVEY_DANCE_TYPES.length;
+  const isAllTypesSelected = store.answers.types.length === store.danceTypeOptions.length;
   const isAnyDaySelected = store.answers.weekdays.length === WEEKDAYS.length;
 
   const renderStepContent = () => {
@@ -83,13 +82,13 @@ const SurveyPage: React.FC = () => {
               type="button"
               className={cn(
                 s.chip,
-                store.answers.types.length === SURVEY_DANCE_TYPES.length && s.chipActive
+                store.answers.types.length === store.danceTypeOptions.length && s.chipActive
               )}
-              onClick={() => store.setTypes([...SURVEY_DANCE_TYPES])}
+              onClick={() => store.setTypes([...store.danceTypeOptions])}
             >
               Все
             </button>
-            {SURVEY_DANCE_TYPES.map((type) => (
+            {store.danceTypeOptions.map((type) => (
               <button
                 key={type}
                 type="button"
@@ -125,7 +124,7 @@ const SurveyPage: React.FC = () => {
         return (
           <div className={s.selectWrap}>
             <SelectDropdown
-              options={cityOptions}
+              options={store.cityOptions}
               value={store.answers.city}
               onChange={(value) => store.setCity(value)}
               placeholder="Выберите город"
@@ -254,7 +253,7 @@ const SurveyPage: React.FC = () => {
         </div>
         <div className={s.content}>
           <div className={s.logo}>FiveToEight</div>
-          <h1 className={s.title}>Подберём занятия для вас</h1>
+          <h1 className={s.title}>Подберем занятия для вас</h1>
           <p className={s.subtitle}>Ответьте на несколько вопросов — мы покажем подходящие курсы</p>
           <div className={s.stepIndicator}>
             {SURVEY_STEPS.map((step, i) => (

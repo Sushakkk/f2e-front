@@ -16,20 +16,19 @@ type Props = {
 const TeacherStudents: React.FC<Props> = ({ store }) => {
   const [selectedLessonId, setSelectedLessonId] = React.useState<number | null>(null);
 
-  const activeCourseIdsKey = store.activeCourses.map((c) => c.id).join();
-
-  const courseOptions = store.activeCourses.map((c) => ({
-    value: String(c.id),
-    label: c.name,
+  const activeCourseIdsKey = store.activeCourses.map((course) => course.id).join();
+  const courseOptions = store.activeCourses.map((course) => ({
+    value: String(course.id),
+    label: course.name,
   }));
 
   const lessonOptions = React.useMemo(
     () =>
       store.lessons
-        .filter((l) => l.status === 'scheduled')
-        .map((l) => ({
-          value: String(l.id),
-          label: `${formatRu(l.date)} (${l.timeFrom}–${l.timeTo})`,
+        .filter((lesson) => lesson.status === 'scheduled')
+        .map((lesson) => ({
+          value: String(lesson.id),
+          label: `${formatRu(lesson.date)} (${lesson.timeFrom}–${lesson.timeTo})`,
         })),
     [store.lessons]
   );
@@ -39,14 +38,14 @@ const TeacherStudents: React.FC<Props> = ({ store }) => {
       return;
     }
 
-    const ids = new Set(store.activeCourses.map((c) => c.id));
+    const ids = new Set(store.activeCourses.map((course) => course.id));
     const needFix = store.selectedCourseId === null || !ids.has(store.selectedCourseId);
     const nextId = needFix ? store.activeCourses[0].id : store.selectedCourseId;
 
     if (needFix && nextId !== null) {
       store.setSelectedCourse(nextId);
     }
-  }, [store, activeCourseIdsKey, store.selectedCourseId]);
+  }, [activeCourseIdsKey, store, store.selectedCourseId]);
 
   const handleCourseChange = React.useCallback(
     (value: string) => {
@@ -57,9 +56,15 @@ const TeacherStudents: React.FC<Props> = ({ store }) => {
   );
 
   const scheduledLessons = React.useMemo(
-    () => store.lessons.filter((l) => l.status === 'scheduled'),
+    () => store.lessons.filter((lesson) => lesson.status === 'scheduled'),
     [store.lessons]
   );
+
+  const selectedLesson = React.useMemo(
+    () => scheduledLessons.find((lesson) => lesson.id === selectedLessonId) ?? null,
+    [scheduledLessons, selectedLessonId]
+  );
+
   const lessonDropdownSpace = Math.min(260, lessonOptions.length * 44 + 12);
   const lessonSelectorStyle = React.useMemo(() => {
     const style = {} as React.CSSProperties & Record<string, string>;
@@ -72,8 +77,8 @@ const TeacherStudents: React.FC<Props> = ({ store }) => {
   const attendanceMap = React.useMemo(() => {
     const map = new Map<string, boolean>();
 
-    for (const rec of store.attendanceData) {
-      map.set(`${rec.lessonId}_${rec.studentId}`, rec.present);
+    for (const record of store.attendanceData) {
+      map.set(`${record.lessonId}_${record.studentId}`, record.present);
     }
 
     return map;
@@ -98,9 +103,11 @@ const TeacherStudents: React.FC<Props> = ({ store }) => {
           onChange={handleCourseChange}
         />
       </div>
+
       {store.selectedCourseId && store.students.length === 0 && (
         <div className={s.empty}>Нет записавшихся учеников</div>
       )}
+
       {store.students.length > 0 && (
         <div className={s.studentsSection}>
           <h3 className={s.subTitle}>Записавшиеся ученики ({store.students.length})</h3>
@@ -116,6 +123,7 @@ const TeacherStudents: React.FC<Props> = ({ store }) => {
           </div>
         </div>
       )}
+
       {store.students.length > 0 && scheduledLessons.length > 0 && (
         <div className={s.attendanceSection}>
           <h3 className={s.subTitle}>Отметка посещаемости</h3>
@@ -129,6 +137,13 @@ const TeacherStudents: React.FC<Props> = ({ store }) => {
               onChange={(value) => setSelectedLessonId(Number(value))}
             />
           </div>
+
+          {selectedLessonId && selectedLesson && selectedLesson.canMarkAttendance === false && (
+            <div className={s.hint}>
+              Отмечать посещаемость можно только после начала выбранного занятия.
+            </div>
+          )}
+
           {selectedLessonId && (
             <div className={s.attendanceList}>
               {store.students.map((student) => {
@@ -137,11 +152,15 @@ const TeacherStudents: React.FC<Props> = ({ store }) => {
 
                 return (
                   <div key={student.id} className={s.attendanceRow}>
-                    <label className={s.checkLabel}>
+                    <label
+                      className={s.checkLabel}
+                      aria-disabled={selectedLesson?.canMarkAttendance === false}
+                    >
                       <input
                         type="checkbox"
                         className={s.checkbox}
                         checked={present}
+                        disabled={selectedLesson?.canMarkAttendance === false}
                         onChange={() => handleToggle(selectedLessonId, student.id, present)}
                       />
                       <span className={s.studentName}>{student.fullName}</span>

@@ -47,7 +47,6 @@ export const ENDPOINTS = {
     favorite: (id: number, method: EndpointType['method'] = 'POST'): EndpointType =>
       createApiEndpoint(`favorite-courses/${id}/`, method),
   },
-
   notifications: {
     list: createApiEndpoint('notifications/', 'GET'),
     readAll: createApiEndpoint('notifications/read-all/', 'POST'),

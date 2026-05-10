@@ -2,8 +2,8 @@
  * Client-side курс в формате CourseConfigItem.
  */
 
-import type { ScheduleEntry, Teacher } from 'config/cards';
 import type { CourseActivityStatus } from 'config/courseActivity';
+import type { ScheduleEntry, Teacher } from 'config/cards';
 import type { CourseLevel } from 'config/levels';
 
 export type CourseListItemClient = {

@@ -16,6 +16,7 @@ export type BackendUser = {
   first_name: string;
   middle_name: string;
   last_name: string;
+  phone?: string | null;
   avatar?: string | null;
   city: string | null;
   dance_level: string;

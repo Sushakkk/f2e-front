@@ -69,7 +69,9 @@ const Card: React.FC<Props> = ({
       </div>
       <div className={cn(s.level, badgeClassName)}>{badgeLabel ?? level}</div>
       <div className={s.content}>
-        <div className={s.title}>{name}</div>
+        <div className={s.title}>
+          {name}
+        </div>
         {teacher && (
           <div className={s.subtitle} onClick={teacher.id ? goToTeacher : undefined}>
             {teacher.name}

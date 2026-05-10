@@ -7,6 +7,8 @@ export type CourseLessonServer = {
   location_text?: string | null;
   status: string;
   hall?: string | null;
+  start_at?: string;
+  can_mark_attendance?: boolean;
 };
 
 export type CourseLessonsResponseServer = CourseLessonServer[];

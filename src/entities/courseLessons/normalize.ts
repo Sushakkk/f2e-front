@@ -25,5 +25,7 @@ export function normalizeCourseLesson(data: CourseLessonServer): CourseLessonCli
     timeTo: formatClockToHhMm(data.time_to),
     location: data.location_text ?? data.hall ?? undefined,
     status: normalizeLessonStatus(data.status),
+    startAt: data.start_at ?? undefined,
+    canMarkAttendance: data.can_mark_attendance ?? false,
   };
 }

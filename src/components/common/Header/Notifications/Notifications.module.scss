@@ -63,6 +63,28 @@
   border-bottom: 1px solid rgba($color-white, 0.08);
 }
 
+.popoverActions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.popoverAction {
+  border: 0;
+  background: rgba($color-accent, 0.14);
+  color: $color-accent;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 600;
+  border-radius: 999px;
+  padding: 6px 10px;
+  line-height: 1;
+
+  @include hover {
+    background: rgba($color-accent, 0.24);
+  }
+}
+
 .popoverTitle {
   font-size: 14px;
   font-weight: 700;
@@ -162,6 +184,44 @@
   color: rgba($color-white, 0.72);
   line-height: 1.25;
   overflow: hidden;
+}
+
+.itemActions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 6px;
+}
+
+.itemAction,
+.itemActionDanger {
+  border: 1px solid transparent;
+  border-radius: 999px;
+  padding: 4px 8px;
+  font-size: 12px;
+  cursor: pointer;
+  background: transparent;
+  line-height: 1.2;
+}
+
+.itemAction {
+  color: $color-accent;
+  background: rgba($color-accent, 0.16);
+  border-color: rgba($color-accent, 0.32);
+
+  @include hover {
+    background: rgba($color-accent, 0.24);
+  }
+}
+
+.itemActionDanger {
+  color: rgba($color-white, 0.9);
+  background: rgba($color-white, 0.08);
+  border-color: rgba($color-white, 0.16);
+
+  @include hover {
+    background: rgba($color-white, 0.14);
+  }
 }
 
 @include mobile {

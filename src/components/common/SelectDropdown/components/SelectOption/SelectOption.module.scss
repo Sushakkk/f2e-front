@@ -12,14 +12,6 @@
   color: $color-white;
   cursor: pointer;
   text-align: left;
-  font-size: 15px;
-  line-height: 21px;
-
-  @include mobile {
-    font-size: 17px;
-    line-height: 24px;
-    padding: 12px 10px;
-  }
 
   &[data-selected="true"] {
     background: rgba($color-accent, 0.16);

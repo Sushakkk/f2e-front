@@ -5,6 +5,7 @@ export const PROFILE_SECTION_SLUG: Record<ProfileSection, string> = {
   profile: 'personal',
   enrollments: 'enrollments',
   favorites: 'favorites',
+  calendar: 'calendar',
   teacherCourses: 'courses',
   students: 'students',
   stats: 'stats',
@@ -14,6 +15,7 @@ const SLUG_TO_SECTION: Record<string, ProfileSection> = {
   personal: 'profile',
   enrollments: 'enrollments',
   favorites: 'favorites',
+  calendar: 'calendar',
   courses: 'teacherCourses',
   students: 'students',
   stats: 'stats',
@@ -35,6 +37,7 @@ export function profileSectionFromSlug(slug: string | undefined): ProfileSection
 }
 
 export const TEACHER_ONLY_PROFILE_SECTIONS: ProfileSection[] = [
+  'calendar',
   'teacherCourses',
   'students',
   'stats',

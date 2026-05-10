@@ -11,10 +11,9 @@ import {
 import { ENDPOINTS } from 'config/api';
 import { normalizeMapPoints, type MapPointsResponseServer } from 'entities/mapPoint';
 import {
-  DEFAULT_FILTERS,
+  DEFAULT_ZOOM,
   MapFilters,
-  MOSCOW_CENTER,
-  MOSCOW_ZOOM,
+  RUSSIA_CENTER,
   StudioData,
 } from 'pages/MapPage/config';
 import type { ErrorResponse } from 'store/globals/api/types';
@@ -26,6 +25,8 @@ const MAP_LOAD_TIMEOUT_MS = 5_000;
 
 type SelectOption = { value: string; label: string };
 type PrivateFields = '_debouncedSearch' | '_studios' | '_allStudios' | '_isLoading' | '_loadError';
+const EMPTY_MAP_FILTERS: MapFilters = { cities: [], metro: [], studios: [], danceTypes: [] };
+const USER_LOCATION_ZOOM = 11;
 
 function uniqSortedOptions(values: string[]): SelectOption[] {
   return Array.from(new Set(values.filter(Boolean)))
@@ -60,8 +61,9 @@ export class MapPageStore implements ILocalStore {
   searchQuery = '';
   isFiltersOpen = false;
   isMapLoaded = false;
-  filters: MapFilters = DEFAULT_FILTERS;
-  draft: MapFilters = DEFAULT_FILTERS;
+  filters: MapFilters = EMPTY_MAP_FILTERS;
+  draft: MapFilters = EMPTY_MAP_FILTERS;
+  userLocation: [number, number] | null = null;
 
   private _studios: StudioData[] = [];
   private _allStudios: StudioData[] = [];
@@ -81,6 +83,7 @@ export class MapPageStore implements ILocalStore {
       isMapLoaded: observable,
       filters: observable.ref,
       draft: observable.ref,
+      userLocation: observable.ref,
       _studios: observable.ref,
       _allStudios: observable.ref,
       _isLoading: observable,
@@ -103,6 +106,8 @@ export class MapPageStore implements ILocalStore {
       resetFilters: action,
       loadStudios: action.bound,
       loadFilterOptions: action.bound,
+      setUserLocation: action.bound,
+      focusUserLocation: action.bound,
     });
 
     this._disposers.push(
@@ -141,6 +146,7 @@ export class MapPageStore implements ILocalStore {
     );
 
     this._startLoadTimeout();
+    this._requestUserLocation();
   }
 
   get filteredStudios(): StudioData[] {
@@ -247,12 +253,29 @@ export class MapPageStore implements ILocalStore {
   };
 
   resetFilters = (): void => {
-    this.draft = DEFAULT_FILTERS;
-    this.filters = DEFAULT_FILTERS;
+    this.draft = EMPTY_MAP_FILTERS;
+    this.filters = EMPTY_MAP_FILTERS;
     this.isFiltersOpen = false;
     this.selectedStudio = null;
     void this.loadStudios();
   };
+
+  setUserLocation(coords: [number, number] | null): void {
+    this.userLocation = coords;
+
+    if (coords && this.isMapLoaded && !this.selectedStudio && this.searchQuery.trim() === '') {
+      this._fitToFilters();
+    }
+  }
+
+  focusUserLocation(): void {
+    if (!this.userLocation || !this._mapRef) {
+      return;
+    }
+
+    this.selectedStudio = null;
+    void this._mapRef.setCenter(this.userLocation, USER_LOCATION_ZOOM, { duration: 400 });
+  }
 
   loadFilterOptions = async (): Promise<void> => {
     const response = await this._rootStore.apiStore
@@ -334,10 +357,14 @@ export class MapPageStore implements ILocalStore {
   private _fitToFilters(): void {
     const studios = this.filteredStudios;
 
-    if (studios.length > 0) {
+    if (this._shouldCenterOnUserLocation()) {
+      void this._mapRef?.setCenter(this.userLocation as [number, number], USER_LOCATION_ZOOM, {
+        duration: 400,
+      });
+    } else if (studios.length > 0) {
       this._fitBounds(studios);
     } else {
-      void this._mapRef?.setCenter(MOSCOW_CENTER, MOSCOW_ZOOM, { duration: 400 });
+      void this._mapRef?.setCenter(RUSSIA_CENTER, DEFAULT_ZOOM, { duration: 400 });
     }
   }
 
@@ -379,5 +406,36 @@ export class MapPageStore implements ILocalStore {
       window.clearTimeout(this._loadTimer);
       this._loadTimer = null;
     }
+  }
+
+  private _shouldCenterOnUserLocation(): boolean {
+    return Boolean(
+      this.userLocation &&
+        this.filters.cities.length === 0 &&
+        this.filters.metro.length === 0 &&
+        this.filters.studios.length === 0 &&
+        this.filters.danceTypes.length === 0 &&
+        this.searchQuery.trim() === ''
+    );
+  }
+
+  private _requestUserLocation(): void {
+    if (typeof navigator === 'undefined' || !navigator.geolocation) {
+      return;
+    }
+
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        runInAction(() => {
+          this.userLocation = [position.coords.latitude, position.coords.longitude];
+        });
+
+        if (this.isMapLoaded && !this.selectedStudio && this.searchQuery.trim() === '') {
+          this._fitToFilters();
+        }
+      },
+      () => {},
+      { enableHighAccuracy: false, timeout: 5000, maximumAge: 300000 }
+    );
   }
 }

@@ -27,6 +27,7 @@ const HomePage: React.FC = () => {
 
   // Parse URL query params once on mount
   const queryParams = React.useRef(parseQueryFromURL()).current;
+  const [searchInput, setSearchInput] = React.useState(queryParams.search);
 
   const filtersStore = useLocalStore(
     () => new FiltersStore([], queryParams.filters, isMobile ? handleClose : undefined),
@@ -60,7 +61,7 @@ const HomePage: React.FC = () => {
     };
   }, [isFiltersOpen, isMobile]);
 
-  const { search, setSearch, filteredCourses, isEmpty } = useCoursesSearch(
+  const { setSearch, filteredCourses, isEmpty } = useCoursesSearch(
     filtersStore.filteredCourses,
     300,
     queryParams.search
@@ -86,11 +87,16 @@ const HomePage: React.FC = () => {
 
   const handleSearchChange = React.useCallback(
     (value: string) => {
-      setSearch(value);
-      queryStore.setSearch(value);
+      setSearchInput(value);
     },
-    [setSearch, queryStore]
+    []
   );
+
+  const applySearch = React.useCallback(() => {
+    setSearch(searchInput);
+    queryStore.setSearch(searchInput);
+    paginationStore.setPage(1);
+  }, [paginationStore, queryStore, searchInput, setSearch]);
 
   React.useEffect(() => {
     paginationStore.setPerPage(isMobile ? 6 : 9);
@@ -130,7 +136,10 @@ const HomePage: React.FC = () => {
     scrollToAnchor();
   }, [currentPage, scrollToAnchor]);
 
-  const recommendationsItems = React.useMemo(() => filteredCourses.slice(0, 6), [filteredCourses]);
+  const recommendationsItems = React.useMemo(
+    () => filtersStore.filteredCourses.slice(0, 6),
+    [filtersStore.filteredCourses]
+  );
   const showInitialLoader = homeStore.isLoading && homeStore.courses.length === 0;
 
   return (
@@ -140,8 +149,9 @@ const HomePage: React.FC = () => {
       <div className={s.searchBarWrapper}>
         <div ref={anchorRef} className={s.scrollAnchor} />
         <SearchBar
-          value={search}
+          value={searchInput}
           onChange={handleSearchChange}
+          onSubmit={applySearch}
           isFiltersOpen={isMobile ? isFiltersOpen : undefined}
           onToggleFilters={isMobile ? () => setIsFiltersOpen((v) => !v) : undefined}
         />
@@ -153,9 +163,7 @@ const HomePage: React.FC = () => {
               <Card
                 key={item.id}
                 item={item}
-                statusLabel={courseActivityStatusLabelRu(
-                  item.activityStatus ?? CourseActivityStatus.Active
-                )}
+                statusLabel={courseActivityStatusLabelRu(item.activityStatus ?? CourseActivityStatus.Active)}
               />
             ))}
           </div>

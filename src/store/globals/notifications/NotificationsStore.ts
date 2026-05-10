@@ -16,10 +16,10 @@ export class NotificationsStore implements INotificationsStore {
   private readonly _requests: {
     list: IApiRequest<NotificationServer[]>;
     readAll: IApiRequest<{ marked: number }>;
+    deleteOne: IApiRequest<void>;
   };
 
   items: NotificationClient[] = [];
-
   isLoading = false;
 
   constructor(readonly rootStore: IRootStore) {
@@ -34,6 +34,11 @@ export class NotificationsStore implements INotificationsStore {
         showExpectedError: false,
         showUnexpectedError: false,
       }),
+      deleteOne: this.rootStore.apiStore.createExtendedRequest({
+        ...ENDPOINTS.notifications.detail(0, 'DELETE'),
+        showExpectedError: false,
+        showUnexpectedError: false,
+      }),
     };
 
     makeObservable(this, {
@@ -44,6 +49,7 @@ export class NotificationsStore implements INotificationsStore {
       load: action.bound,
       markRead: action.bound,
       markAllRead: action.bound,
+      deleteNotification: action.bound,
       clear: action.bound,
     });
   }
@@ -66,9 +72,7 @@ export class NotificationsStore implements INotificationsStore {
     }
 
     this.isLoading = true;
-
     const response = await this._requests.list.call();
-
     this.isLoading = false;
 
     if (response.isError || !Array.isArray(response.data)) {
@@ -92,7 +96,6 @@ export class NotificationsStore implements INotificationsStore {
     }
 
     const normalized = normalizeNotification(response.data);
-
     this.items = this.items.map((item) => (item.id === id ? normalized : item));
   };
 
@@ -106,8 +109,21 @@ export class NotificationsStore implements INotificationsStore {
     await this.load();
   };
 
+  deleteNotification = async (id: number): Promise<void> => {
+    const response = await this._requests.deleteOne.call({
+      url: ENDPOINTS.notifications.detail(id, 'DELETE').url,
+    });
+
+    if (response.isError) {
+      return;
+    }
+
+    this.items = this.items.filter((item) => item.id !== id);
+  };
+
   destroy = (): void => {
     this._requests.list.cancel();
     this._requests.readAll.cancel();
+    this._requests.deleteOne.cancel();
   };
 }
