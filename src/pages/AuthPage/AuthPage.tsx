@@ -63,8 +63,12 @@ const AuthPage: React.FC = () => {
           <form className={s.form} onSubmit={(e) => void handleSubmit(e)}>
             {!store.isLogin && (
               <div className={s.field}>
-                <label className={s.label}>ФИО</label>
+                <label className={s.label} htmlFor="auth-name">
+                  ФИО
+                </label>
                 <input
+                  id="auth-name"
+                  name="name"
                   className={cn(s.input, store.errors.name && s.inputError)}
                   type="text"
                   placeholder="Иванов Иван Иванович"
@@ -77,8 +81,12 @@ const AuthPage: React.FC = () => {
             )}
             {!store.isLogin && (
               <div className={s.field}>
-                <label className={s.label}>Username</label>
+                <label className={s.label} htmlFor="auth-username">
+                  Username
+                </label>
                 <input
+                  id="auth-username"
+                  name="username"
                   className={cn(s.input, store.errors.username && s.inputError)}
                   type="text"
                   placeholder="ksenia_karpova"
@@ -90,8 +98,12 @@ const AuthPage: React.FC = () => {
               </div>
             )}
             <div className={s.field}>
-              <label className={s.label}>Email</label>
+              <label className={s.label} htmlFor="auth-email">
+                Email
+              </label>
               <input
+                id="auth-email"
+                name="email"
                 className={cn(s.input, store.errors.email && s.inputError)}
                 type="email"
                 placeholder="example@mail.com"
@@ -102,9 +114,13 @@ const AuthPage: React.FC = () => {
               {store.errors.email && <span className={s.error}>{store.errors.email}</span>}
             </div>
             <div className={s.field}>
-              <label className={s.label}>Пароль</label>
+              <label className={s.label} htmlFor="auth-password">
+                Пароль
+              </label>
               <div className={s.inputWrapper}>
                 <input
+                  id="auth-password"
+                  name="password"
                   className={cn(s.input, store.errors.password && s.inputError)}
                   type={store.showPassword ? 'text' : 'password'}
                   placeholder="Введите пароль"
@@ -125,9 +141,13 @@ const AuthPage: React.FC = () => {
             </div>
             {!store.isLogin && (
               <div className={s.field}>
-                <label className={s.label}>Подтвердите пароль</label>
+                <label className={s.label} htmlFor="auth-confirm-password">
+                  Подтвердите пароль
+                </label>
                 <div className={s.inputWrapper}>
                   <input
+                    id="auth-confirm-password"
+                    name="password_confirm"
                     className={cn(s.input, store.errors.confirmPassword && s.inputError)}
                     type={store.showConfirmPassword ? 'text' : 'password'}
                     placeholder="Повторите пароль"
