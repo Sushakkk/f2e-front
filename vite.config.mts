@@ -32,7 +32,6 @@ const getAliases = (): AliasOptions =>
       .map((alias) => [alias, path.join(SRC_PATH, alias)])
   );
 
-// https://vitejs.dev/config/
 export default defineConfig(({ mode }) => {
   process.env = { ...process.env, ...loadEnv(mode, process.cwd()) };
 
@@ -47,27 +46,34 @@ export default defineConfig(({ mode }) => {
   } = process.env;
 
   const IS_PROD = NODE_ENV === 'production';
-
   const IS_DEFAULT_BRANCH = new Set(['main', 'master']).has(CI_COMMIT_REF_SLUG);
-
   const { INJECT_FONTS_PRELOAD_LINKS, INJECT_FONTS_FACES } = buildFontsInject();
 
   const proxyPort = process.env.API_PROXY_PORT;
   const proxyTargetEnv = process.env.VITE_API_PROXY_TARGET;
+  const devHost = process.env.VITE_DEV_HOST ?? '0.0.0.0';
+  const devPort = Number(process.env.VITE_DEV_PORT ?? 8080);
+  const mediaProxyTarget = process.env.VITE_MEDIA_PROXY_TARGET ?? 'http://127.0.0.1:9000';
 
-  /** По умолчанию бэкенд Dancehub (docker compose) — порт 8000; см. .env.example */
   const proxyTarget =
     proxyTargetEnv ?? (proxyPort ? `http://localhost:${proxyPort}` : 'http://localhost:8000');
 
   const serverConfig = {
+    host: devHost,
+    port: devPort,
     proxy: {
       '/api': {
         target: proxyTarget,
         changeOrigin: true,
-        secure: false, // HTTP-бэкенд; true ломает прокси на некоторых системах
+        secure: false,
       },
       '/media': {
         target: proxyTarget,
+        changeOrigin: true,
+        secure: false,
+      },
+      '/dancehub-media': {
+        target: mediaProxyTarget,
         changeOrigin: true,
         secure: false,
       },
@@ -76,7 +82,7 @@ export default defineConfig(({ mode }) => {
 
   return {
     define: defineEnvVariables(['NODE_ENV', 'API_URL', 'SENTRY_DSN', 'SENTRY_AUTH_TOKEN']),
-    base:  '/',
+    base: '/',
     publicDir: 'static',
     build: {
       outDir: BUILD_PATH,

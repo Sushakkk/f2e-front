@@ -1,6 +1,7 @@
 import type { ScheduleEntry } from 'config/cards';
 import { parseCourseActivityStatus } from 'config/courseActivity';
 import type { CourseLevel } from 'config/levels';
+import type { EnrollmentStatus } from 'config/users';
 import { formatClockToHhMm } from 'utils/dateUtils';
 
 import type { CourseListItemClient } from './client';
@@ -12,6 +13,18 @@ const LEVEL_MAP: Record<string, CourseLevel> = {
   advanced: 'Продвинутые',
   any: 'Любой уровень',
 };
+
+function parseEnrollmentStatus(value: string | null | undefined): EnrollmentStatus | null {
+  switch (value) {
+    case 'active':
+    case 'completed':
+    case 'cancelled':
+    case 'pending':
+      return value;
+    default:
+      return null;
+  }
+}
 
 function formatShortDate(iso: string): string {
   if (!iso) {
@@ -31,9 +44,6 @@ function normalizeScheduleEntry(entry: ScheduleEntryServer): ScheduleEntry {
   };
 }
 
-/**
- * Преобразует ответ списка курсов API в формат CourseConfigItem.
- */
 export function normalizeCourseListItem(data: CourseListItemServer): CourseListItemClient {
   return {
     id: data.id,
@@ -66,6 +76,11 @@ export function normalizeCourseListItem(data: CourseListItemServer): CourseListI
       track: '',
       url: '',
     },
+    canEnroll: data.can_enroll ?? true,
+    canCancelEnrollment: data.can_cancel_enrollment ?? true,
+    canEdit: data.can_edit ?? true,
+    firstLessonAt: data.first_lesson_at ?? undefined,
+    viewerEnrollmentStatus: parseEnrollmentStatus(data.viewer_enrollment_status),
     activityStatus: parseCourseActivityStatus(data.status),
   };
 }

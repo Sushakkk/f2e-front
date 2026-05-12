@@ -93,6 +93,10 @@ export class PaginationStore<T = unknown> implements ILocalStore {
     this._items = items;
 
     if (this._isFirstLoad) {
+      if (items.length === 0) {
+        return;
+      }
+
       this._isFirstLoad = false;
 
       if (this._currentPage > this.totalPages) {

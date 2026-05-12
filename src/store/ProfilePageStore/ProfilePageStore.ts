@@ -56,6 +56,7 @@ import { ILocalStore } from 'store/interfaces';
 import { IApiRequest } from 'store/models/ApiRequest/declaration';
 import { resolveCourseImageFetchUrl } from 'utils/courseImageFetchUrl';
 import { ddmmToIso, formatClockToHhMm, fromIsoDate } from 'utils/dateUtils';
+import { normalizeSpecializations } from 'utils/specializations';
 import {
   buildAttendanceStatsCsvContent,
   buildAttendanceStatsExportFileName,
@@ -1000,7 +1001,7 @@ export class ProfilePageStore implements ILocalStore {
       this.teacherProfileForm = {
         bio: teacherProfile?.bio ?? '',
         experience: teacherProfile?.experience ? String(teacherProfile.experience) : '',
-        specializations: (teacherProfile?.specializations ?? []).join('\n'),
+        specializations: normalizeSpecializations(teacherProfile?.specializations).join('\n'),
         achievements: (teacherProfile?.achievements ?? []).join('\n'),
       };
       this.teacherImagePreviews = teacherProfile?.images ?? [];

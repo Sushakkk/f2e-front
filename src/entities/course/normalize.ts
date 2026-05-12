@@ -1,6 +1,7 @@
 import type { ScheduleEntry } from 'config/cards';
 import { parseCourseActivityStatus } from 'config/courseActivity';
 import type { CourseLevel } from 'config/levels';
+import type { EnrollmentStatus } from 'config/users';
 import { formatClockToHhMm } from 'utils/dateUtils';
 
 import type { CourseDetailClient } from './client';
@@ -13,6 +14,18 @@ const LEVEL_MAP: Record<string, CourseLevel> = {
   any: 'Любой уровень',
 };
 
+function parseEnrollmentStatus(value: string | null | undefined): EnrollmentStatus | null {
+  switch (value) {
+    case 'active':
+    case 'completed':
+    case 'cancelled':
+    case 'pending':
+      return value;
+    default:
+      return null;
+  }
+}
+
 function formatShortDate(iso: string): string {
   if (!iso) {
     return '';
@@ -23,13 +36,6 @@ function formatShortDate(iso: string): string {
   return `${String(d.getDate()).padStart(2, '0')}.${String(d.getMonth() + 1).padStart(2, '0')}`;
 }
 
-/**
- * Converts server schedule row into client schedule entry.
- * Pure mapping: no side effects.
- *
- * @param entry server response row
- * @returns normalized client row
- */
 function normalizeScheduleEntry(entry: ScheduleEntryServer): ScheduleEntry {
   return {
     weekday: entry.weekday,
@@ -72,6 +78,11 @@ export function normalizeCourseDetail(data: CourseDetailServer): CourseDetailCli
       track: data.music?.track ?? '',
       url: data.music?.url ?? '',
     },
+    canEnroll: data.can_enroll ?? true,
+    canCancelEnrollment: data.can_cancel_enrollment ?? true,
+    canEdit: data.can_edit ?? true,
+    firstLessonAt: data.first_lesson_at ?? undefined,
+    viewerEnrollmentStatus: parseEnrollmentStatus(data.viewer_enrollment_status),
     activityStatus: parseCourseActivityStatus(data.status),
   };
 }

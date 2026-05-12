@@ -12,6 +12,7 @@ import { ENDPOINTS } from 'config/api';
 import { normalizeMapPoints, type MapPointsResponseServer } from 'entities/mapPoint';
 import {
   DEFAULT_FILTERS,
+  EMPTY_FILTERS,
   MapFilters,
   MOSCOW_CENTER,
   MOSCOW_ZOOM,
@@ -55,6 +56,17 @@ function buildMapQueryParams(filters: MapFilters): Record<string, string> {
   return params;
 }
 
+function resolveDefaultCity(city: string | null | undefined): string {
+  return city && city.trim() ? city.trim() : 'Москва';
+}
+
+function buildDefaultFilters(city: string): MapFilters {
+  return {
+    ...EMPTY_FILTERS,
+    cities: [city],
+  };
+}
+
 export class MapPageStore implements ILocalStore {
   selectedStudio: StudioData | null = null;
   searchQuery = '';
@@ -72,8 +84,13 @@ export class MapPageStore implements ILocalStore {
   private _disposers: IReactionDisposer[] = [];
   private _loadTimer: number | null = null;
   private _loadRequestId = 0;
+  private _defaultCity: string;
 
   constructor(private _rootStore: IRootStore) {
+    this._defaultCity = resolveDefaultCity(this._rootStore.userStore.user?.city);
+    this.filters = buildDefaultFilters(this._defaultCity);
+    this.draft = buildDefaultFilters(this._defaultCity);
+
     makeObservable<this, PrivateFields>(this, {
       selectedStudio: observable.ref,
       searchQuery: observable,
@@ -104,6 +121,37 @@ export class MapPageStore implements ILocalStore {
       loadStudios: action.bound,
       loadFilterOptions: action.bound,
     });
+
+    this._disposers.push(
+      reaction(
+        () => this._rootStore.userStore.user?.city ?? null,
+        (city) => {
+          const nextDefaultCity = resolveDefaultCity(city);
+
+          if (nextDefaultCity === this._defaultCity) {
+            return;
+          }
+
+          const shouldSyncFilters =
+            this.filters.cities.length === 0 ||
+            (this.filters.cities.length === 1 && this.filters.cities[0] === this._defaultCity);
+          const shouldSyncDraft =
+            this.draft.cities.length === 0 ||
+            (this.draft.cities.length === 1 && this.draft.cities[0] === this._defaultCity);
+
+          this._defaultCity = nextDefaultCity;
+
+          if (shouldSyncFilters) {
+            this.filters = buildDefaultFilters(nextDefaultCity);
+            void this.loadStudios();
+          }
+
+          if (shouldSyncDraft) {
+            this.draft = buildDefaultFilters(nextDefaultCity);
+          }
+        }
+      )
+    );
 
     this._disposers.push(
       reaction(
@@ -247,8 +295,8 @@ export class MapPageStore implements ILocalStore {
   };
 
   resetFilters = (): void => {
-    this.draft = DEFAULT_FILTERS;
-    this.filters = DEFAULT_FILTERS;
+    this.draft = buildDefaultFilters(this._defaultCity);
+    this.filters = buildDefaultFilters(this._defaultCity);
     this.isFiltersOpen = false;
     this.selectedStudio = null;
     void this.loadStudios();

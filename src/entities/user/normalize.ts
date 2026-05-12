@@ -1,5 +1,6 @@
 import type { UserClient } from './client';
 import type { BackendUser } from './server';
+import { normalizeSpecializations } from 'utils/specializations';
 
 const USER_LEVEL_MAP: Record<string, string> = {
   beginner: 'Начинающий',
@@ -26,7 +27,7 @@ export const normalizeUser = (user: BackendUser): UserClient => ({
         images: user.teacher.images ?? [],
         achievements: user.teacher.achievements ?? [],
         experience: user.teacher.experience ?? 0,
-        specializations: user.teacher.specializations ?? [],
+        specializations: normalizeSpecializations(user.teacher.specializations),
         rating: Number(user.teacher.rating ?? 0),
       }
     : undefined,

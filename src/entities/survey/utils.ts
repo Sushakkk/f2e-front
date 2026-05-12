@@ -24,14 +24,45 @@ const SURVEY_WEEKDAY_TO_BACKEND: Record<SurveyWeekdayLabel, string> = {
   [SurveyWeekdayLabel.sun]: 'sun',
 };
 
+const BACKEND_LEVEL_TO_SURVEY: Record<BackendDanceLevel, SurveyLevelLabel> = {
+  beginner: SurveyLevelLabel.beginner,
+  intermediate: SurveyLevelLabel.intermediate,
+  advanced: SurveyLevelLabel.advanced,
+  any: SurveyLevelLabel.any,
+};
+
+const BACKEND_WEEKDAY_TO_SURVEY: Record<string, SurveyWeekdayLabel> = {
+  mon: SurveyWeekdayLabel.mon,
+  tue: SurveyWeekdayLabel.tue,
+  wed: SurveyWeekdayLabel.wed,
+  thu: SurveyWeekdayLabel.thu,
+  fri: SurveyWeekdayLabel.fri,
+  sat: SurveyWeekdayLabel.sat,
+  sun: SurveyWeekdayLabel.sun,
+};
+
 export function normalizeSurveyLevel(value: string): BackendDanceLevel | undefined {
   return SURVEY_LEVEL_TO_BACKEND[value as SurveyLevelLabel];
+}
+
+export function denormalizeSurveyLevel(value: string | null | undefined): string {
+  if (!value) {
+    return SurveyLevelLabel.any;
+  }
+
+  return BACKEND_LEVEL_TO_SURVEY[value as BackendDanceLevel] ?? SurveyLevelLabel.any;
 }
 
 export function normalizeSurveyWeekdays(days: string[]): string[] {
   return days
     .map((day) => SURVEY_WEEKDAY_TO_BACKEND[day as SurveyWeekdayLabel])
     .filter((day): day is string => Boolean(day));
+}
+
+export function denormalizeSurveyWeekdays(days: string[] | null | undefined): string[] {
+  return (days ?? [])
+    .map((day) => BACKEND_WEEKDAY_TO_SURVEY[day])
+    .filter((day): day is SurveyWeekdayLabel => Boolean(day));
 }
 
 export function resolveSurveyTimeTo(timeFrom: string): string | undefined {

@@ -1,6 +1,6 @@
 import cn from 'classnames';
 import * as React from 'react';
-import { generatePath, useNavigate } from 'react-router-dom';
+import { generatePath, useLocation, useNavigate } from 'react-router-dom';
 
 import fallbackImage from 'assets/images/courses/five-to-eight-placeholder.png';
 import { CourseConfigItem } from 'config';
@@ -33,25 +33,19 @@ const Card: React.FC<Props> = ({
 }) => {
   const { name, teacher, level, dateFrom, dateTo, price, images, id } = item;
   const navigate = useNavigate();
+  const location = useLocation();
 
   const schedule = React.useMemo(() => getScheduleDisplay(item), [item]);
 
   const goToCourse = React.useCallback(() => {
     if (id) {
-      navigate(generatePath(RoutePath.course, { id: String(id) }));
+      navigate(generatePath(RoutePath.course, { id: String(id) }), {
+        state: {
+          from: `${location.pathname}${location.search}`,
+        },
+      });
     }
-  }, [navigate, id]);
-
-  const goToTeacher = React.useCallback(
-    (e: React.MouseEvent<HTMLDivElement>) => {
-      e.stopPropagation();
-
-      if (teacher?.id) {
-        navigate(generatePath(RoutePath.teacher, { id: String(teacher.id) }));
-      }
-    },
-    [navigate, teacher?.id]
-  );
+  }, [id, location.pathname, location.search, navigate]);
 
   return (
     <div
@@ -70,11 +64,7 @@ const Card: React.FC<Props> = ({
       <div className={cn(s.level, badgeClassName)}>{badgeLabel ?? level}</div>
       <div className={s.content}>
         <div className={s.title}>{name}</div>
-        {teacher && (
-          <div className={s.subtitle} onClick={teacher.id ? goToTeacher : undefined}>
-            {teacher.name}
-          </div>
-        )}
+        {teacher && <div className={s.subtitle}>{teacher.name}</div>}
         {dateFrom && dateTo && (
           <div className={s.subtitle}>
             {dateFrom} - {dateTo}

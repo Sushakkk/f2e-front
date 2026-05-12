@@ -37,5 +37,5 @@ export function buildHomeUrlWithFilters(filters: CoursesFiltersValue): string {
 
   const qs = params.toString();
 
-  return qs ? `/home?${qs}` : '/home';
+  return qs ? `/?${qs}` : '/';
 }

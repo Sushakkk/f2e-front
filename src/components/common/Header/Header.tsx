@@ -10,11 +10,20 @@ import { HEADER_NAV } from './config';
 
 const Header: React.FC = () => {
   const location = useLocation();
+  const homeTarget = React.useMemo(() => {
+    const from = (location.state as { from?: string } | null)?.from;
+
+    if (typeof from === 'string' && (from === RoutePath.home || from.startsWith(`${RoutePath.home}?`))) {
+      return from;
+    }
+
+    return RoutePath.home;
+  }, [location.state]);
 
   return (
     <header className={s.header}>
       <div className={s.inner}>
-        <NavLink className={s.logo} to={RoutePath.home}>
+        <NavLink className={s.logo} to={homeTarget}>
           FiveToEight
         </NavLink>
         <nav className={s.nav}>
@@ -32,7 +41,7 @@ const Header: React.FC = () => {
 
                 return cn(s.link, navActive && s.linkActive);
               }}
-              to={to}
+              to={id === 'home' ? homeTarget : to}
               end={end}
             >
               {label}

@@ -14,5 +14,7 @@ export interface INotificationsStore extends IGlobalStore {
 
   markAllRead: () => Promise<void>;
 
+  deleteNotification: (id: number) => Promise<void>;
+
   clear: () => void;
 }

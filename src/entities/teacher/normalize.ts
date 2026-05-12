@@ -1,4 +1,5 @@
 import type { Review } from 'config/cards';
+import { normalizeSpecializations } from 'utils/specializations';
 
 import type { TeacherClient, TeacherCoursePreview } from './client';
 import type { BackendTeacher, BackendTeacherCourse, BackendTeacherListItem } from './server';
@@ -58,7 +59,7 @@ export const normalizeTeacher = (data: BackendTeacher): TeacherClient => ({
   images: data.images ?? [],
   experience: data.experience ?? 0,
   rating: Number(data.rating ?? 0),
-  specializations: data.specializations ?? [],
+  specializations: normalizeSpecializations(data.specializations),
   achievements: data.achievements ?? [],
   reviews: (data.reviews ?? []).map(normalizeTeacherReview),
   courses: (data.courses ?? []).map(normalizeTeacherCourse),

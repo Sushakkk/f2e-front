@@ -2,13 +2,13 @@ import { action, computed, makeObservable, observable, runInAction } from 'mobx'
 
 import { ENDPOINTS } from 'config/api';
 import type { CourseLevel } from 'config/levels';
-import { buildSurveySubmitPayload } from 'entities/survey';
-import type { CoursesFiltersValue } from 'pages/HomePage/components/Filters/types';
+import type { CityServer } from 'entities/city/server';
+import { buildSurveySubmitPayload, denormalizeSurveyWeekdays } from 'entities/survey';
+import type { UserClient } from 'entities/user/client';
 import {
   BUDGET_OPTIONS,
   DEFAULT_SURVEY_ANSWERS,
   LEVELS_ORDER,
-  SURVEY_DANCE_TYPES,
   SURVEY_STEPS,
   SurveyAnswers,
 } from 'pages/SurveyPage/config';
@@ -22,12 +22,16 @@ export class SurveyPageStore implements ILocalStore {
   private readonly _requests: {
     survey: IApiRequest<unknown, ErrorResponse>;
     updateUser: IApiRequest<unknown, ErrorResponse>;
+    cities: IApiRequest<CityServer[], ErrorResponse>;
   };
 
   answers: SurveyAnswers = { ...DEFAULT_SURVEY_ANSWERS };
   currentStepIndex = 0;
   isSubmitting = false;
   submitError = false;
+  cityOptions: string[] = [];
+  danceTypeOptions: string[] = [];
+  isBootstrapped = false;
 
   constructor(rootStore: IRootStore) {
     this._rootStore = rootStore;
@@ -42,6 +46,11 @@ export class SurveyPageStore implements ILocalStore {
         showExpectedError: false,
         showUnexpectedError: false,
       }),
+      cities: this._rootStore.apiStore.createExtendedRequest({
+        ...ENDPOINTS.dictionaries.cities,
+        showExpectedError: false,
+        showUnexpectedError: false,
+      }),
     };
 
     makeObservable(this, {
@@ -49,12 +58,14 @@ export class SurveyPageStore implements ILocalStore {
       currentStepIndex: observable,
       isSubmitting: observable,
       submitError: observable,
+      cityOptions: observable.ref,
+      danceTypeOptions: observable.ref,
+      isBootstrapped: observable,
 
       currentStep: computed,
       isFirstStep: computed,
       isLastStep: computed,
       progressPercent: computed,
-      filtersFromAnswers: computed,
 
       setRole: action,
       setTypes: action,
@@ -71,6 +82,7 @@ export class SurveyPageStore implements ILocalStore {
       skipCurrentStep: action,
       markSurveyCompleted: action,
       syncSurveyToBackend: action,
+      bootstrap: action,
       reset: action,
     });
   }
@@ -91,33 +103,6 @@ export class SurveyPageStore implements ILocalStore {
     return ((this.currentStepIndex + 1) / SURVEY_STEPS.length) * 100;
   }
 
-  get filtersFromAnswers(): CoursesFiltersValue {
-    const { types, level, city, weekdays, timeFrom, priceFrom, priceTo } = this.answers;
-
-    const timeTo: string | undefined =
-      timeFrom === '09:00'
-        ? '12:00'
-        : timeFrom === '12:00'
-          ? '18:00'
-          : timeFrom === '18:00'
-            ? '23:59'
-            : undefined;
-
-    const effectiveLevel =
-      level && level !== 'Любой уровень' && LEVELS_ORDER.includes(level) ? [level] : [];
-
-    return {
-      types: types.length ? types : [],
-      levels: effectiveLevel,
-      cities: city ? [city] : undefined,
-      weekdays: weekdays.length ? weekdays : undefined,
-      timeFrom: timeFrom || undefined,
-      timeTo,
-      priceFrom,
-      priceTo,
-    };
-  }
-
   setTypes(types: string[]): void {
     this.answers = { ...this.answers, types };
   }
@@ -127,7 +112,8 @@ export class SurveyPageStore implements ILocalStore {
   }
 
   toggleType(type: string): void {
-    const isAllTypesSelected = this.answers.types.length === SURVEY_DANCE_TYPES.length;
+    const isAllTypesSelected =
+      this.danceTypeOptions.length > 0 && this.answers.types.length === this.danceTypeOptions.length;
 
     if (isAllTypesSelected) {
       this.answers = { ...this.answers, types: [type] };
@@ -221,10 +207,16 @@ export class SurveyPageStore implements ILocalStore {
         this.answers = { ...this.answers, role: DEFAULT_SURVEY_ANSWERS.role };
         break;
       case 'types':
-        this.answers = { ...this.answers, types: [...DEFAULT_SURVEY_ANSWERS.types] };
+        this.answers = {
+          ...this.answers,
+          types:
+            this.danceTypeOptions.length > 0
+              ? [...this.danceTypeOptions]
+              : [...DEFAULT_SURVEY_ANSWERS.types],
+        };
         break;
       case 'level':
-        this.answers = { ...this.answers, level: 'Любой уровень' };
+        this.answers = { ...this.answers, level: DEFAULT_SURVEY_ANSWERS.level };
         break;
       case 'city':
         this.answers = { ...this.answers, city: '' };
@@ -259,9 +251,30 @@ export class SurveyPageStore implements ILocalStore {
     this.currentStepIndex = 0;
     this.isSubmitting = false;
     this.submitError = false;
+    this.isBootstrapped = false;
   }
 
   destroy(): void {}
+
+  bootstrap = async (): Promise<void> => {
+    if (this.isBootstrapped) {
+      return;
+    }
+
+    const [styles, citiesResponse] = await Promise.all([
+      this._rootStore.danceStylesStore.requestDanceStyles(),
+      this._requests.cities.call(),
+    ]);
+
+    runInAction(() => {
+      this.danceTypeOptions = styles.map((style) => style.name);
+      this.cityOptions = citiesResponse.isError
+        ? []
+        : citiesResponse.data.map((city) => city.name).sort((a, b) => a.localeCompare(b, 'ru'));
+      this.answers = this.buildAnswersFromUser(this._rootStore.userStore.user);
+      this.isBootstrapped = true;
+    });
+  };
 
   markSurveyCompleted = async (): Promise<boolean> => {
     runInAction(() => {
@@ -310,4 +323,26 @@ export class SurveyPageStore implements ILocalStore {
 
     return !response.isError;
   };
+
+  private buildAnswersFromUser(user: UserClient | null): SurveyAnswers {
+    const fallbackTypes =
+      this.danceTypeOptions.length > 0 ? [...this.danceTypeOptions] : [...DEFAULT_SURVEY_ANSWERS.types];
+    const weekdays = denormalizeSurveyWeekdays(user?.preferredWeekdays);
+
+    return {
+      role: user?.role ?? DEFAULT_SURVEY_ANSWERS.role,
+      types:
+        user?.preferredDanceStyles && user.preferredDanceStyles.length > 0
+          ? [...user.preferredDanceStyles]
+          : fallbackTypes,
+      level: LEVELS_ORDER.includes((user?.level ?? '') as CourseLevel)
+        ? (user?.level as CourseLevel)
+        : DEFAULT_SURVEY_ANSWERS.level,
+      city: user?.city ?? '',
+      weekdays: weekdays.length > 0 ? weekdays : [...DEFAULT_SURVEY_ANSWERS.weekdays],
+      timeFrom: user?.preferredTimeFrom ?? '',
+      priceFrom: user?.priceFrom == null ? undefined : Number(user.priceFrom),
+      priceTo: user?.priceTo == null ? undefined : Number(user.priceTo),
+    };
+  }
 }

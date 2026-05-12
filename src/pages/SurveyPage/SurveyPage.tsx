@@ -14,9 +14,7 @@ import { useLocalStore, useUserStore } from 'store/hooks';
 import s from './SurveyPage.module.scss';
 import {
   BUDGET_OPTIONS,
-  CITIES,
   LEVELS_ORDER,
-  SURVEY_DANCE_TYPES,
   SURVEY_STEPS,
   TIME_PREFERENCES,
   WEEKDAYS,
@@ -28,6 +26,10 @@ const SurveyPage: React.FC = () => {
   const userStore = useUserStore();
   const navigate = useNavigate();
 
+  React.useEffect(() => {
+    void store.bootstrap();
+  }, [store]);
+
   const handleComplete = React.useCallback(async () => {
     const isSuccess = await store.syncSurveyToBackend();
 
@@ -36,20 +38,25 @@ const SurveyPage: React.FC = () => {
     }
 
     const user = await userStore.requestUser();
+    await rootStore.coursesStore.loadCourses();
 
     if (!user) {
       void userStore.flag('surveyCompleted', true);
     }
 
     navigate(RoutePath.home);
-  }, [store, userStore, navigate]);
+  }, [store, userStore, rootStore, navigate]);
 
   const handleClose = React.useCallback(() => {
     navigate(RoutePath.home);
   }, [navigate]);
 
-  const cityOptions = React.useMemo(() => CITIES.map((city) => ({ value: city, label: city })), []);
-  const isAllTypesSelected = store.answers.types.length === SURVEY_DANCE_TYPES.length;
+  const cityOptions = React.useMemo(
+    () => store.cityOptions.map((city) => ({ value: city, label: city })),
+    [store.cityOptions]
+  );
+  const isAllTypesSelected =
+    store.danceTypeOptions.length > 0 && store.answers.types.length === store.danceTypeOptions.length;
   const isAnyDaySelected = store.answers.weekdays.length === WEEKDAYS.length;
 
   const renderStepContent = () => {
@@ -81,15 +88,12 @@ const SurveyPage: React.FC = () => {
           <div className={s.chips}>
             <button
               type="button"
-              className={cn(
-                s.chip,
-                store.answers.types.length === SURVEY_DANCE_TYPES.length && s.chipActive
-              )}
-              onClick={() => store.setTypes([...SURVEY_DANCE_TYPES])}
+              className={cn(s.chip, isAllTypesSelected && s.chipActive)}
+              onClick={() => store.setTypes([...store.danceTypeOptions])}
             >
               Все
             </button>
-            {SURVEY_DANCE_TYPES.map((type) => (
+            {store.danceTypeOptions.map((type) => (
               <button
                 key={type}
                 type="button"
@@ -254,8 +258,8 @@ const SurveyPage: React.FC = () => {
         </div>
         <div className={s.content}>
           <div className={s.logo}>FiveToEight</div>
-          <h1 className={s.title}>Подберём занятия для вас</h1>
-          <p className={s.subtitle}>Ответьте на несколько вопросов — мы покажем подходящие курсы</p>
+          <h1 className={s.title}>Подберем занятия для вас</h1>
+          <p className={s.subtitle}>Ответьте на несколько вопросов, и мы покажем подходящие курсы</p>
           <div className={s.stepIndicator}>
             {SURVEY_STEPS.map((step, i) => (
               <button
@@ -287,8 +291,9 @@ const SurveyPage: React.FC = () => {
                   void handleComplete();
                 }}
                 className={s.nextBtn}
+                disabled={store.isSubmitting || !store.isBootstrapped}
               >
-                Отправить
+                {store.isSubmitting ? 'Сохранение...' : 'Отправить'}
               </Button>
             ) : (
               <Button
@@ -296,6 +301,7 @@ const SurveyPage: React.FC = () => {
                 type="button"
                 onClick={() => store.nextStep()}
                 className={s.nextBtn}
+                disabled={!store.isBootstrapped}
               >
                 Далее
               </Button>

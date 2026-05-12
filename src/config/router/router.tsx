@@ -26,8 +26,8 @@ export const ROUTER = createBrowserRouter([
         element: <HomePage />,
       },
       {
-        path: RoutePath.home,
-        element: <HomePage />,
+        path: RoutePath.homeLegacy,
+        element: <Navigate to={RoutePath.home} replace />,
       },
       {
         path: RoutePath.auth,

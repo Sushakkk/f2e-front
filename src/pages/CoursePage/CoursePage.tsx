@@ -9,7 +9,6 @@ import { Row } from 'components/common/Row';
 import { CourseActivityStatus } from 'config';
 import { ENDPOINTS } from 'config/api';
 import { RoutePath } from 'config/router/paths';
-import type { EnrollmentStatus } from 'config/users';
 import type { CourseDetailServer } from 'entities/course/server';
 import { CourseStore } from 'store/CourseStore';
 import type { ErrorResponse } from 'store/globals/api/types';
@@ -28,7 +27,6 @@ const CoursePage: React.FC = () => {
 
   const courseStore = useLocalStore(() => new CourseStore(rootStore));
   const [enrolling, setEnrolling] = React.useState(false);
-  const [enrollmentStatus, setEnrollmentStatus] = React.useState<EnrollmentStatus | null>(null);
   const numericCourseId = Number(id);
 
   React.useEffect(() => {
@@ -46,10 +44,11 @@ const CoursePage: React.FC = () => {
     courseData && userStore.user?.favoriteCourseIds?.includes(courseData.id)
   );
 
-  const isEnrolled = React.useMemo(
-    () => enrollmentStatus === 'active' || enrollmentStatus === 'pending',
-    [enrollmentStatus]
-  );
+  const isEnrolled = React.useMemo(() => {
+    const status = courseData?.viewerEnrollmentStatus;
+
+    return status === 'active' || status === 'pending';
+  }, [courseData?.viewerEnrollmentStatus]);
 
   const scheduleLines = React.useMemo(
     () => (courseData ? getScheduleLines(courseData) : []),
@@ -57,7 +56,7 @@ const CoursePage: React.FC = () => {
   );
 
   const locationsFromSchedule = React.useMemo(
-    () => [...new Set(scheduleLines.map((l) => l.location).filter(Boolean))] as string[],
+    () => [...new Set(scheduleLines.map((line) => line.location).filter(Boolean))] as string[],
     [scheduleLines]
   );
 
@@ -73,6 +72,7 @@ const CoursePage: React.FC = () => {
     }
 
     setEnrolling(true);
+
     const response = await rootStore.apiStore
       .createExtendedRequest<CourseDetailServer, ErrorResponse>({
         ...ENDPOINTS.courses.enroll(courseData.id, 'POST'),
@@ -82,14 +82,19 @@ const CoursePage: React.FC = () => {
       .call();
 
     if (!response.isError) {
-      setEnrollmentStatus(response.data.status === 'completed' ? 'completed' : 'active');
-      void courseStore.loadCourse(courseData.id);
-      void rootStore.coursesStore.loadCourses();
+      const nextStatus = response.data.status === 'completed' ? 'completed' : 'active';
+
+      courseStore.patchCourse({
+        viewerEnrollmentStatus: nextStatus,
+        spotsLeft: Math.max(0, courseData.spotsLeft - 1),
+        canEnroll: false,
+      });
       void rootStore.notificationsStore.load();
+      void rootStore.coursesStore.loadCourses();
     }
 
     setEnrolling(false);
-  }, [courseStore, courseData, enrolling, isLoggedIn, navigate, rootStore]);
+  }, [courseData, courseStore, enrolling, isLoggedIn, navigate, rootStore]);
 
   const handleCancel = React.useCallback(async () => {
     if (!courseData || enrolling) {
@@ -97,6 +102,7 @@ const CoursePage: React.FC = () => {
     }
 
     setEnrolling(true);
+
     const response = await rootStore.apiStore
       .createExtendedRequest<void, ErrorResponse>({
         ...ENDPOINTS.courses.enroll(courseData.id, 'DELETE'),
@@ -106,14 +112,17 @@ const CoursePage: React.FC = () => {
       .call();
 
     if (!response.isError) {
-      setEnrollmentStatus('cancelled');
-      void courseStore.loadCourse(courseData.id);
-      void rootStore.coursesStore.loadCourses();
+      courseStore.patchCourse({
+        viewerEnrollmentStatus: 'cancelled',
+        spotsLeft: courseData.spotsLeft + 1,
+        canEnroll: courseData.canCancelEnrollment !== false,
+      });
       void rootStore.notificationsStore.load();
+      void rootStore.coursesStore.loadCourses();
     }
 
     setEnrolling(false);
-  }, [courseStore, courseData, enrolling, rootStore]);
+  }, [courseData, courseStore, enrolling, rootStore]);
 
   const goToTeacher = React.useCallback(
     (teacherId?: number) => {
@@ -140,50 +149,13 @@ const CoursePage: React.FC = () => {
     void courseStore.toggleFavorite(isFavorite);
   }, [courseData, courseStore, isFavorite, isLoggedIn, navigate]);
 
-  React.useEffect(() => {
-    if (!isLoggedIn || !courseData) {
-      setEnrollmentStatus(null);
-
-      return undefined;
-    }
-
-    let cancelled = false;
-
-    const loadEnrollmentStatus = async (): Promise<void> => {
-      const response = await rootStore.apiStore
-        .createExtendedRequest<
-          { course: { id: number }; status: EnrollmentStatus }[],
-          ErrorResponse
-        >({
-          ...ENDPOINTS.myCourses,
-          showExpectedError: false,
-          showUnexpectedError: false,
-        })
-        .call();
-
-      if (cancelled || response.isError) {
-        return;
-      }
-
-      const row = response.data.find((e) => e.course.id === courseData.id);
-
-      setEnrollmentStatus(row?.status ?? null);
-    };
-
-    void loadEnrollmentStatus();
-
-    return () => {
-      cancelled = true;
-    };
-  }, [courseData, isLoggedIn, rootStore]);
-
   const handleEnrollClick = React.useCallback(() => {
     if (isEnrolled) {
       void handleCancel();
     } else {
       void handleEnroll();
     }
-  }, [isEnrolled, handleCancel, handleEnroll]);
+  }, [handleCancel, handleEnroll, isEnrolled]);
 
   if (!id || !Number.isFinite(numericCourseId) || numericCourseId <= 0) {
     return <Navigate to={RoutePath.root} />;
@@ -198,10 +170,20 @@ const CoursePage: React.FC = () => {
   }
 
   const scheduleLength = scheduleLines.length;
-  const musicLabel = [courseData.music.artist, courseData.music.track].filter(Boolean).join(' — ');
+  const musicLabel = [courseData.music.artist, courseData.music.track].filter(Boolean).join(' - ');
   const hasMusic = Boolean(musicLabel || courseData.music.url);
   const isCourseCompleted =
     (courseData.activityStatus ?? CourseActivityStatus.Active) === CourseActivityStatus.Completed;
+  const actionAllowed = isEnrolled
+    ? courseData.canCancelEnrollment !== false
+    : courseData.canEnroll !== false;
+  const actionLabel = isEnrolled
+    ? courseData.canCancelEnrollment === false
+      ? 'Отмена записи закрыта'
+      : 'Отменить запись'
+    : courseData.canEnroll === false
+      ? 'Запись закрыта'
+      : 'Записаться';
 
   return (
     <InfoPage
@@ -216,9 +198,9 @@ const CoursePage: React.FC = () => {
             mode={isEnrolled ? 'dark' : 'purple'}
             className={s.enrollBtn}
             onClick={handleEnrollClick}
-            disabled={enrolling}
+            disabled={enrolling || !actionAllowed}
           >
-            {enrolling ? 'Загрузка...' : isEnrolled ? 'Отменить запись' : 'Записаться'}
+            {actionLabel}
           </Button>
         )
       }
@@ -241,11 +223,11 @@ const CoursePage: React.FC = () => {
       )}
       {scheduleLength > 0 && (
         <Row label="Расписание:">
-          {scheduleLines.map((line, i) => (
-            <React.Fragment key={i}>
+          {scheduleLines.map((line, index) => (
+            <React.Fragment key={index}>
               {line.day} {line.time}
               {scheduleLength > 1 && line.location && ` (${line.location})`}
-              {i < scheduleLines.length - 1 && <br />}
+              {index < scheduleLines.length - 1 && <br />}
             </React.Fragment>
           ))}
         </Row>

@@ -83,19 +83,6 @@ export class FiltersStore implements ILocalStore {
       filterDateFrom?.getFullYear() ?? filterDateTo?.getFullYear() ?? new Date().getFullYear();
 
     return courses.filter((course) => {
-      if ((course.spotsLeft ?? 0) <= 0) {
-        return false;
-      }
-
-      const currentYear = new Date().getFullYear();
-      const courseEndDate = parseDDMM(course.dateTo, currentYear);
-      const today = new Date();
-      const todayStart = new Date(today.getFullYear(), today.getMonth(), today.getDate());
-
-      if (courseEndDate && courseEndDate < todayStart) {
-        return false;
-      }
-
       if (types.length > 0 && !types.includes(course.type)) {
         return false;
       }

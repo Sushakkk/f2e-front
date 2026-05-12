@@ -9,9 +9,10 @@ type Props = React.ButtonHTMLAttributes<HTMLButtonElement> & {
   mode?: ButtonMode;
 };
 
-const Button: React.FC<Props> = ({ children, className, mode, ...props }) => {
+const Button: React.FC<Props> = ({ children, className, mode, type = 'button', ...props }) => {
   return (
     <button
+      type={type}
       {...props}
       className={cx(
         s.button,

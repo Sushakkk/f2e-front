@@ -54,6 +54,10 @@ export const ENDPOINTS = {
     detail: (id: number, method: EndpointType['method'] = 'PATCH'): EndpointType =>
       createApiEndpoint(`notifications/${id}/`, method),
   },
+  recommendations: {
+    list: createApiEndpoint('recommendations/', 'GET'),
+    rebuild: createApiEndpoint('recommendations/rebuild/', 'POST'),
+  },
   lessons: {
     cancel: (id: number): EndpointType => createApiEndpoint(`lessons/${id}/cancel/`, 'POST'),
     markAttendance: (id: number): EndpointType =>

@@ -27,6 +27,8 @@ export {
   buildSurveyPreferencePayload,
   buildSurveySkillPayload,
   buildSurveySubmitPayload,
+  denormalizeSurveyLevel,
+  denormalizeSurveyWeekdays,
   normalizeSurveyLevel,
   normalizeSurveyWeekdays,
   resolveSurveyTimeTo,

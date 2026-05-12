@@ -22,6 +22,11 @@ export type CourseListItemServer = {
   studio: string;
   schedule: ScheduleEntryServer[];
   spots_left: number;
+  can_enroll?: boolean;
+  can_cancel_enrollment?: boolean;
+  can_edit?: boolean;
+  first_lesson_at?: string | null;
+  viewer_enrollment_status?: string | null;
 };
 
 export type CourseListResponseServer = CourseListItemServer[] | { results: CourseListItemServer[] };

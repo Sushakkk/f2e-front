@@ -8,6 +8,7 @@ import { CourseActivityStatus, CourseConfigItem, courseActivityStatusLabelRu } f
 import { FiltersStore } from 'store/FiltersStore';
 import { PaginationStore } from 'store/PaginationStore';
 import { QueryStore, parseQueryFromURL } from 'store/QueryStore';
+import { RecommendationsStore } from 'store/RecommendationsStore';
 import { useRootStore } from 'store/globals/root';
 import { useLocalStore } from 'store/hooks/useLocalStore';
 import { useCoursesSearch } from 'utils/useCoursesSearch';
@@ -27,6 +28,7 @@ const HomePage: React.FC = () => {
 
   // Parse URL query params once on mount
   const queryParams = React.useRef(parseQueryFromURL()).current;
+  const recommendationsStore = useLocalStore(() => new RecommendationsStore(rootStore));
 
   const filtersStore = useLocalStore(
     () => new FiltersStore([], queryParams.filters, isMobile ? handleClose : undefined),
@@ -36,6 +38,10 @@ const HomePage: React.FC = () => {
   React.useEffect(() => {
     filtersStore.setCourses(homeStore.courses);
   }, [filtersStore, homeStore.courses]);
+
+  React.useEffect(() => {
+    void recommendationsStore.loadRecommendations();
+  }, [recommendationsStore, rootStore.userStore.user]);
 
   const sidebarRef = React.useRef<HTMLElement | null>(null);
 
@@ -130,13 +136,13 @@ const HomePage: React.FC = () => {
     scrollToAnchor();
   }, [currentPage, scrollToAnchor]);
 
-  const recommendationsItems = React.useMemo(() => filteredCourses.slice(0, 6), [filteredCourses]);
+  const recommendationsItems = homeStore.courses;
   const showInitialLoader = homeStore.isLoading && homeStore.courses.length === 0;
 
   return (
     <div className={s.page}>
       {showInitialLoader && <div className={s.loading}>Загрузка курсов…</div>}
-      <Recommendations items={recommendationsItems} />
+      <Recommendations items={recommendationsItems} recommendations={recommendationsStore.items} />
       <div className={s.searchBarWrapper}>
         <div ref={anchorRef} className={s.scrollAnchor} />
         <SearchBar

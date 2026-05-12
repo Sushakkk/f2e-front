@@ -3,6 +3,7 @@ import { teacherImages } from 'assets/images/teachers';
 
 import type { CourseActivityStatus } from './courseActivity';
 import type { CourseLevel } from './levels';
+import type { EnrollmentStatus } from './users';
 
 export type ScheduleEntry = {
   weekday: string;
@@ -54,6 +55,11 @@ export type CourseConfigItem = {
     track: string;
     url: string;
   };
+  canEnroll?: boolean;
+  canCancelEnrollment?: boolean;
+  canEdit?: boolean;
+  firstLessonAt?: string;
+  viewerEnrollmentStatus?: EnrollmentStatus | null;
 
   /** Витрина: active — пока не прошла дата окончания; completed — иначе. По умолчанию active. */
   activityStatus?: CourseActivityStatus;

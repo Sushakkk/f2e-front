@@ -28,6 +28,7 @@ export class CourseStore implements ILocalStore {
       isLoading: computed,
       loadError: computed,
       loadCourse: action.bound,
+      patchCourse: action.bound,
       toggleFavorite: action.bound,
       destroy: action.bound,
     });
@@ -44,6 +45,17 @@ export class CourseStore implements ILocalStore {
   get loadError(): boolean {
     return this._loadError;
   }
+
+  patchCourse = (patch: Partial<CourseConfigItem>): void => {
+    if (!this._course) {
+      return;
+    }
+
+    this._course = {
+      ...this._course,
+      ...patch,
+    };
+  };
 
   loadCourse = async (courseId: number): Promise<void> => {
     if (this._isLoading) {

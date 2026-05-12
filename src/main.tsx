@@ -19,9 +19,8 @@ const startApp = () => {
   initSentry(rootStore.appParamsStore);
 
   createRoot(document.getElementById('root')!).render(
-    <React.StrictMode>
+
       <App />
-    </React.StrictMode>
   );
 };
 

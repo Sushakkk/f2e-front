@@ -29,10 +29,10 @@ const MIN_LOADER_MS = 300;
 function useImageOrientations<T>(items: T[], getImage: (item: T) => string) {
   const [verticalSet, setVerticalSet] = useState<Set<number> | null>(null);
   const getImageRef = useRef(getImage);
-  const imageUrls = useMemo(() => items.map((item) => getImage(item)), [items, getImage]);
-  const imageSignature = useMemo(() => imageUrls.join('|'), [imageUrls]);
-
   getImageRef.current = getImage;
+
+  const imageUrls = useMemo(() => items.map((item) => getImageRef.current(item)), [items]);
+  const imageSignature = useMemo(() => imageUrls.join('|'), [imageUrls]);
 
   useEffect(() => {
     if (items.length === 0) {
@@ -110,7 +110,7 @@ function useImageOrientations<T>(items: T[], getImage: (item: T) => string) {
       cancelled = true;
       clearTimeout(timer);
     };
-  }, [imageSignature, imageUrls, items.length]);
+  }, [imageSignature, items.length]);
 
   return verticalSet;
 }

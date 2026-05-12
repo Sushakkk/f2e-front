@@ -1,0 +1,1 @@
+export { RecommendationsStore } from './RecommendationsStore';
