@@ -8,6 +8,8 @@
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
 
   @include mobile {
+    display: flex;
+    flex-direction: column;
     padding: 0 16px calc(16px + env(safe-area-inset-bottom, 0px));
     border-radius: 0;
     border: 0;

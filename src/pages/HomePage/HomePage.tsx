@@ -31,9 +31,13 @@ const HomePage: React.FC = () => {
   const recommendationsStore = useLocalStore(() => new RecommendationsStore(rootStore));
 
   const filtersStore = useLocalStore(
-    () => new FiltersStore([], queryParams.filters, isMobile ? handleClose : undefined),
+    () => new FiltersStore(rootStore, [], queryParams.filters, isMobile ? handleClose : undefined),
     [handleClose]
   );
+
+  React.useEffect(() => {
+    void filtersStore.loadReferenceOptions();
+  }, [filtersStore]);
 
   React.useEffect(() => {
     filtersStore.setCourses(homeStore.courses);
