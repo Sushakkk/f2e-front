@@ -81,6 +81,7 @@ export function normalizeCourseDetail(data: CourseDetailServer): CourseDetailCli
     canEnroll: data.can_enroll ?? true,
     canCancelEnrollment: data.can_cancel_enrollment ?? true,
     canEdit: data.can_edit ?? true,
+    canLeaveReview: data.can_leave_review ?? false,
     firstLessonAt: data.first_lesson_at ?? undefined,
     viewerEnrollmentStatus: parseEnrollmentStatus(data.viewer_enrollment_status),
     activityStatus: parseCourseActivityStatus(data.status),

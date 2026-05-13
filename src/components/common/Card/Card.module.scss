@@ -19,6 +19,10 @@
     padding: 10px;
   }
 
+  &_static {
+    cursor: default;
+  }
+
   &_compact {
     flex-direction: row;
     padding: 10px;
@@ -73,6 +77,18 @@
           height: 180px;
         }
       }
+    }
+  }
+
+  &_dimmed {
+    .imageWrapper,
+    .level,
+    .title,
+    .subtitle,
+    .schedule,
+    .price,
+    .container {
+      opacity: 0.5;
     }
   }
 }

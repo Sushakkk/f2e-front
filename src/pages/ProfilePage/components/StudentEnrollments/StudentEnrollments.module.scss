@@ -19,13 +19,65 @@
 }
 
 .cardWrapper {
-  &[data-completed] {
-    opacity: 0.5;
-  }
 }
 
 .courseCard {
   width: 100%;
+}
+
+.reviewButton {
+  min-width: 160px;
+}
+
+.reviewModal {
+  :global(.root__sheet) {
+    max-width: 520px;
+  }
+}
+
+.reviewForm {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.reviewField {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.reviewLabel {
+  font-size: 13px;
+  font-weight: 500;
+  color: $color-white-secondary;
+}
+
+.reviewSelect,
+.reviewTextarea {
+  all: unset;
+  box-sizing: border-box;
+  width: 100%;
+  border-radius: 10px;
+  border: 1px solid $color-bg-tertiary;
+  background: $color-bg-secondary;
+  color: $color-white;
+}
+
+.reviewSelect {
+  height: 40px;
+  padding: 0 12px;
+}
+
+.reviewTextarea {
+  padding: 12px;
+  min-height: 120px;
+  resize: vertical;
+}
+
+.reviewError {
+  font-size: 12px;
+  color: $color-error;
 }
 
 .empty {

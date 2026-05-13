@@ -14,6 +14,50 @@
   z-index: 0;
 }
 
+.geoButton {
+  position: fixed;
+  right: 24px;
+  bottom: 118px;
+  z-index: 30;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 52px;
+  height: 52px;
+  padding: 0;
+  border: 1px solid rgba(20, 24, 32, 0.08);
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.96);
+  color: #2b2f36;
+  line-height: 1;
+  cursor: pointer;
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.18);
+  transition:
+    background-color 0.2s ease,
+    transform 0.2s ease,
+    opacity 0.2s ease,
+    box-shadow 0.2s ease;
+
+  &:hover:not(:disabled) {
+    background: #fff;
+    transform: translateY(-1px);
+    box-shadow: 0 12px 28px rgba(0, 0, 0, 0.22);
+  }
+
+  &:disabled {
+    opacity: 0.4;
+    cursor: default;
+  }
+}
+
+.geoIcon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  transform: rotate(-45deg) translate(1px, -1px);
+}
+
 .bottomPanel {
   position: absolute;
   bottom: 0;
@@ -40,6 +84,17 @@
 @include mobile {
   .bottomPanel {
     bottom: calc(46px + env(safe-area-inset-bottom, 0px));
+  }
+
+  .geoButton {
+    right: 14px;
+    bottom: calc(86px + env(safe-area-inset-bottom, 0px));
+    width: 46px;
+    height: 46px;
+  }
+
+  .geoIcon {
+    font-size: 22px;
   }
 }
 

@@ -1,6 +1,7 @@
 export type BackendTeacherReview = {
   id: number;
   author_name: string;
+  course_name: string;
   rating: number;
   text: string;
   created_at: string;

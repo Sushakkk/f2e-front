@@ -23,6 +23,7 @@ const AuthPage: React.FC = () => {
 
   React.useEffect(() => {
     store.setIsLogin(!isRegisterPath);
+    store.resetForm();
   }, [store, isRegisterPath]);
 
   const handleGoBack = React.useCallback(() => navigate(-1), [navigate]);
@@ -60,7 +61,24 @@ const AuthPage: React.FC = () => {
               ? 'Войдите, чтобы записаться на курсы'
               : 'Создайте аккаунт, чтобы начать'}
           </p>
-          <form className={s.form} onSubmit={(e) => void handleSubmit(e)}>
+          <form
+            key={store.isLogin ? 'login-form' : 'register-form'}
+            className={s.form}
+            autoComplete="off"
+            onSubmit={(e) => void handleSubmit(e)}
+          >
+            {store.isLogin && (
+              <>
+                <input type="text" name="username" autoComplete="username" tabIndex={-1} hidden />
+                <input
+                  type="password"
+                  name="password"
+                  autoComplete="current-password"
+                  tabIndex={-1}
+                  hidden
+                />
+              </>
+            )}
             {!store.isLogin && (
               <div className={s.field}>
                 <label className={s.label} htmlFor="auth-name">
@@ -103,11 +121,14 @@ const AuthPage: React.FC = () => {
               </label>
               <input
                 id="auth-email"
-                name="email"
+                name={store.isLogin ? 'login_email' : 'email'}
                 className={cn(s.input, store.errors.email && s.inputError)}
                 type="email"
                 placeholder="example@mail.com"
-                autoComplete="email"
+                autoComplete={store.isLogin ? 'off' : 'email'}
+                inputMode="email"
+                autoCapitalize="none"
+                spellCheck={false}
                 value={store.email}
                 onChange={(e) => store.setEmail(e.target.value)}
               />
@@ -120,11 +141,11 @@ const AuthPage: React.FC = () => {
               <div className={s.inputWrapper}>
                 <input
                   id="auth-password"
-                  name="password"
+                  name={store.isLogin ? 'login_password' : 'password'}
                   className={cn(s.input, store.errors.password && s.inputError)}
                   type={store.showPassword ? 'text' : 'password'}
                   placeholder="Введите пароль"
-                  autoComplete={store.isLogin ? 'current-password' : 'new-password'}
+                  autoComplete={store.isLogin ? 'off' : 'new-password'}
                   value={store.password}
                   onChange={(e) => store.setPassword(e.target.value)}
                 />

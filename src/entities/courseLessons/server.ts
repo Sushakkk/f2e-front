@@ -5,6 +5,7 @@ export type CourseLessonServer = {
   time_from: string;
   time_to: string;
   location_text?: string | null;
+  studio?: string | null;
   status: string;
   hall?: string | null;
 };

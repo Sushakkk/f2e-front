@@ -12,13 +12,17 @@ type Props = {
   onChange: (next: DateRangeValue) => void;
 };
 
+type Placement = 'bottom' | 'top';
+
 export const DateRangePicker: React.FC<Props> = ({ from, to, onChange }) => {
   const rootRef = React.useRef<HTMLDivElement | null>(null);
+  const popupRef = React.useRef<HTMLDivElement | null>(null);
   const fromBtnRef = React.useRef<HTMLButtonElement | null>(null);
   const toBtnRef = React.useRef<HTMLButtonElement | null>(null);
 
   const [open, setOpen] = React.useState(false);
   const [active, setActive] = React.useState<ActiveField>('from');
+  const [placement, setPlacement] = React.useState<Placement>('bottom');
 
   const fromDate = React.useMemo(() => fromIsoDate(from), [from]);
   const toDate = React.useMemo(() => fromIsoDate(to), [to]);
@@ -35,6 +39,38 @@ export const DateRangePicker: React.FC<Props> = ({ from, to, onChange }) => {
       startOfMonth((active === 'from' ? fromDate : toDate) ?? fromDate ?? toDate ?? new Date())
     );
   }, [open, active, fromDate, toDate]);
+
+  React.useEffect(() => {
+    if (!open) {
+      return;
+    }
+
+    const updatePlacement = () => {
+      const root = rootRef.current;
+
+      if (!root) {
+        return;
+      }
+
+      const rootRect = root.getBoundingClientRect();
+      const popupHeight = popupRef.current?.offsetHeight ?? 320;
+      const gap = 8;
+      const spaceBelow = window.innerHeight - rootRect.bottom;
+      const spaceAbove = rootRect.top;
+
+      setPlacement(spaceBelow < popupHeight + gap && spaceAbove > spaceBelow ? 'top' : 'bottom');
+    };
+
+    updatePlacement();
+
+    window.addEventListener('resize', updatePlacement);
+    window.addEventListener('scroll', updatePlacement, true);
+
+    return () => {
+      window.removeEventListener('resize', updatePlacement);
+      window.removeEventListener('scroll', updatePlacement, true);
+    };
+  }, [open]);
 
   React.useEffect(() => {
     function onDocMouseDown(e: MouseEvent) {
@@ -131,7 +167,14 @@ export const DateRangePicker: React.FC<Props> = ({ from, to, onChange }) => {
         onToggle={toggleField}
       />
       {open && (
-        <CalendarGrid month={month} normalized={normalized} onSetMonth={setMonth} onPick={onPick} />
+        <CalendarGrid
+          ref={popupRef}
+          month={month}
+          normalized={normalized}
+          placement={placement}
+          onSetMonth={setMonth}
+          onPick={onPick}
+        />
       )}
     </div>
   );

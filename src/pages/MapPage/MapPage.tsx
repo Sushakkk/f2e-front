@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 
 import { ScreenSpinner } from 'components/common';
 import { RoutePath } from 'config/router/paths';
-import { SearchBar } from 'pages/HomePage/components';
+import { SearchBar, type SearchSuggestion } from 'pages/HomePage/components';
 import type { StudioData } from 'pages/MapPage/config';
 import { MapPageStore } from 'store/MapPageStore';
 import { useRootStore } from 'store/globals/root';
@@ -43,13 +43,36 @@ const MapPage: React.FC = () => {
     [navigate]
   );
 
+  const suggestions = React.useMemo<SearchSuggestion[]>(
+    () =>
+      store.searchSuggestions.map((studio) => ({
+        id: studio.id,
+        title: studio.name,
+        subtitle: `${studio.address}, ${studio.city}, Россия`,
+      })),
+    [store.searchSuggestions]
+  );
+
   return (
     <div className={s.page}>
       {!store.isMapLoaded && <ScreenSpinner />}
+      <button
+        type="button"
+        className={s.geoButton}
+        onClick={() => store.focusUserLocation()}
+        disabled={!store.userLocation}
+        aria-label="Вернуться к геолокации"
+        title="Вернуться к геолокации"
+      >
+        <span className={s.geoIcon} aria-hidden="true">
+          ➤
+        </span>
+      </button>
       <div className={s.mapWrapper}>
         <StudioMap
-          studios={store.filteredStudios}
+          studios={store.visibleStudios}
           selectedId={store.selectedStudio?.id ?? null}
+          userLocation={store.userLocation}
           onMarkerClick={store.selectStudio}
           mapRef={handleInstanceRef}
         />
@@ -68,6 +91,8 @@ const MapPage: React.FC = () => {
               className={s.searchBar}
               value={store.searchQuery}
               onChange={store.setSearchQuery}
+              suggestions={suggestions}
+              onSuggestionSelect={(suggestion) => store.selectStudioFromSearch(suggestion.id)}
               onToggleFilters={store.toggleFilters}
               isFiltersOpen={store.isFiltersOpen}
               filtersAlwaysVisible

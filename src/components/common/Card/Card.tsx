@@ -19,6 +19,8 @@ type Props = {
   largeImage?: boolean;
   statusLabel?: string;
   actions?: React.ReactNode;
+  clickable?: boolean;
+  dimmed?: boolean;
 };
 
 const Card: React.FC<Props> = ({
@@ -30,6 +32,8 @@ const Card: React.FC<Props> = ({
   profile,
   largeImage,
   actions,
+  clickable = true,
+  dimmed = false,
 }) => {
   const { name, teacher, level, dateFrom, dateTo, price, images, id } = item;
   const navigate = useNavigate();
@@ -38,7 +42,7 @@ const Card: React.FC<Props> = ({
   const schedule = React.useMemo(() => getScheduleDisplay(item), [item]);
 
   const goToCourse = React.useCallback(() => {
-    if (id) {
+    if (clickable && id) {
       navigate(generatePath(RoutePath.course, { id: String(id) }), {
         state: {
           from: `${location.pathname}${location.search}`,
@@ -54,9 +58,11 @@ const Card: React.FC<Props> = ({
         compact && s.card_compact,
         profile && s.card_profile,
         largeImage && s.card_largeImage,
+        !clickable && s.card_static,
+        dimmed && s.card_dimmed,
         className
       )}
-      onClick={goToCourse}
+      onClick={clickable ? goToCourse : undefined}
     >
       <div className={s.imageWrapper}>
         <img src={images[0] || fallbackImage} alt={name} />

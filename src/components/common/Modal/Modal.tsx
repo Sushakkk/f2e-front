@@ -13,6 +13,10 @@ type Props = {
   onConfirm: VoidFunction;
   message?: string;
   className?: string;
+  children?: React.ReactNode;
+  confirmText?: string;
+  cancelText?: string;
+  hideActions?: boolean;
 };
 
 const Modal: React.FC<Props> = ({
@@ -21,6 +25,10 @@ const Modal: React.FC<Props> = ({
   onConfirm,
   message = DEFAULT_MESSAGE,
   className,
+  children,
+  confirmText = 'Да',
+  cancelText = 'Нет',
+  hideActions = false,
 }) => {
   const titleId = React.useId();
 
@@ -29,20 +37,25 @@ const Modal: React.FC<Props> = ({
   }
 
   return (
-    <div className={cx(s.root, className)} role="presentation">
+    <div className={cx(s.root, children && s.root_form, className)} role="presentation">
       <button type="button" className={s.root__backdrop} aria-label="Закрыть" onClick={onClose} />
       <div className={s.root__sheet} role="dialog" aria-modal="true" aria-labelledby={titleId}>
-        <p id={titleId} className={s.root__message}>
-          {message}
-        </p>
-        <div className={s.root__actions}>
-          <Button type="button" mode="purpleDashed" className={s.root__btn} onClick={onClose}>
-            Нет
-          </Button>
-          <Button type="button" mode="dark" className={s.root__btn} onClick={onConfirm}>
-            Да
-          </Button>
-        </div>
+        {message && (
+          <p id={titleId} className={s.root__message}>
+            {message}
+          </p>
+        )}
+        {children}
+        {!hideActions && (
+          <div className={s.root__actions}>
+            <Button type="button" mode="purpleDashed" className={s.root__btn} onClick={onClose}>
+              {cancelText}
+            </Button>
+            <Button type="button" mode="dark" className={s.root__btn} onClick={onConfirm}>
+              {confirmText}
+            </Button>
+          </div>
+        )}
       </div>
     </div>
   );

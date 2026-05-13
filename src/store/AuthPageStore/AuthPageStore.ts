@@ -84,6 +84,7 @@ export class AuthPageStore implements ILocalStore {
       toggleShowPassword: action,
       toggleShowConfirmPassword: action,
       clearError: action,
+      resetForm: action,
       validate: action,
       submit: action,
     });
@@ -126,15 +127,26 @@ export class AuthPageStore implements ILocalStore {
     this._clearError('confirmPassword');
   };
 
+  resetForm = (): void => {
+    this.name = '';
+    this.username = '';
+    this.email = '';
+    this.password = '';
+    this.confirmPassword = '';
+    this.errors = {};
+    this.showPassword = false;
+    this.showConfirmPassword = false;
+    this.isSubmitting = false;
+    this.submitError = null;
+  };
+
   setIsLogin = (isLogin: boolean): void => {
     if (this.isLogin === isLogin) {
       return;
     }
 
     this.isLogin = isLogin;
-    this.username = '';
-    this.errors = {};
-    this.submitError = null;
+    this.resetForm();
   };
 
   toggleMode = (): void => {
@@ -288,6 +300,13 @@ export class AuthPageStore implements ILocalStore {
   private _sanitizeErrorMessage(message: string, fallbackMessage: string): string {
     const normalized = message.trim();
     const lowerCased = normalized.toLowerCase();
+    const translatedMap: Record<string, string> = {
+      'a user with this email already exists.': 'Пользователь с таким email уже существует.',
+      'a user with this username already exists.':
+        'Пользователь с таким username уже существует.',
+      'passwords do not match.': 'Пароли не совпадают.',
+      'invalid email or password.': 'Неверный email или пароль.',
+    };
 
     const looksInternal =
       lowerCased.includes('<!doctype') ||
@@ -300,6 +319,10 @@ export class AuthPageStore implements ILocalStore {
 
     if (looksInternal) {
       return fallbackMessage;
+    }
+
+    if (translatedMap[lowerCased]) {
+      return translatedMap[lowerCased];
     }
 
     return normalized;

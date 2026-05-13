@@ -28,7 +28,13 @@ function formatWeekdays(value: string): string {
 }
 
 function isUniform(entries: ScheduleEntry[]): boolean {
-  return entries.every((e) => e.timeFrom === entries[0].timeFrom && e.timeTo === entries[0].timeTo);
+  return entries.every(
+    (e) =>
+      e.timeFrom === entries[0].timeFrom &&
+      e.timeTo === entries[0].timeTo &&
+      (e.location ?? '') === (entries[0].location ?? '') &&
+      (e.studio ?? '') === (entries[0].studio ?? '')
+  );
 }
 
 function timeRange(from: string, to: string): string {
@@ -89,7 +95,7 @@ export function getScheduleDisplay(course: CourseConfigItem): ScheduleDisplay | 
 
 /* ---- Для страницы курса (CoursePage) ---- */
 
-export type ScheduleLineItem = { day: string; time: string; location?: string };
+export type ScheduleLineItem = { day: string; time: string; location?: string; studio?: string };
 
 export function getScheduleLines(course: CourseConfigItem): ScheduleLineItem[] {
   const entries = getEntries(course);
@@ -107,6 +113,7 @@ export function getScheduleLines(course: CourseConfigItem): ScheduleLineItem[] {
         day: days,
         time: timeRange(first.timeFrom, first.timeTo),
         location: first.location,
+        studio: first.studio,
       },
     ];
   }
@@ -115,5 +122,6 @@ export function getScheduleLines(course: CourseConfigItem): ScheduleLineItem[] {
     day: formatWeekdays(e.weekday),
     time: timeRange(e.timeFrom, e.timeTo),
     location: e.location,
+    studio: e.studio,
   }));
 }

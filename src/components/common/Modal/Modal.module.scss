@@ -44,6 +44,13 @@
     flex-wrap: wrap;
     gap: 12px;
     justify-content: center;
+    margin-top: 20px;
+  }
+
+  &_form {
+    .root__sheet {
+      max-width: 520px;
+    }
   }
 
   &__btn {

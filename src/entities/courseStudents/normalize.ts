@@ -36,6 +36,7 @@ export function normalizeCourseStudent(data: CourseStudentServer): CourseStudent
     firstName,
     lastName,
     email: data.email,
+    avatar: data.avatar || undefined,
     phone: data.phone,
     level: LEVEL_MAP[data.dance_level] ?? data.dance_level,
     enrolledAt: data.enrolled_at,

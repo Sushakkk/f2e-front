@@ -40,6 +40,9 @@ type Props = {
 
 const REFERENCE_YEAR = new Date().getFullYear();
 
+const formatLessonPlace = (location?: string, studio?: string): string =>
+  [location, studio].filter(Boolean).join(', ') || '—';
+
 const CourseForm: React.FC<Props> = ({ store, teacherId, isEditing }) => {
   const danceStylesStore = useDanceStylesStore();
   const form = store.courseFormData;
@@ -552,7 +555,9 @@ const CourseForm: React.FC<Props> = ({ store, teacherId, isEditing }) => {
                     <span className={s.formLessons__colTime}>
                       {lesson.timeFrom}–{lesson.timeTo}
                     </span>
-                    <span className={s.formLessons__colLocation}>{lesson.location ?? '—'}</span>
+                    <span className={s.formLessons__colLocation}>
+                      {formatLessonPlace(lesson.location, lesson.studio)}
+                    </span>
                     <span
                       className={cx(
                         s.formLessons__colStatus,

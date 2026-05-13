@@ -3,6 +3,7 @@ import * as React from 'react';
 
 import { SectionHeader, Card } from 'components/common';
 import { COURSES_CONFIG } from 'config/cards';
+import { useRootStore } from 'store/globals/root';
 
 import ProfileCard from '../ProfileCard';
 
@@ -21,12 +22,18 @@ const Favorites: React.FC<Props> = ({
   favoriteTeacherNames,
   onTeacherClick,
 }) => {
+  const rootStore = useRootStore();
+
   const favoriteCourses = React.useMemo(
     () =>
       favoriteCourseIds
-        .map((id) => COURSES_CONFIG.find((c) => c.id === id))
+        .map(
+          (id) =>
+            rootStore.coursesStore.courses.find((c) => c.id === id) ??
+            COURSES_CONFIG.find((c) => c.id === id)
+        )
         .filter((c): c is NonNullable<typeof c> => Boolean(c)),
-    [favoriteCourseIds]
+    [favoriteCourseIds, rootStore.coursesStore.courses]
   );
 
   const teacherRows = React.useMemo(() => {
@@ -47,23 +54,30 @@ const Favorites: React.FC<Props> = ({
     return rows.filter((row) => typeof row.id === 'number' || row.name !== 'Преподаватель');
   }, [favoriteTeacherIds, favoriteTeacherNames]);
 
-  const getTeacherAvatar = React.useCallback((teacherId?: number, teacherName?: string) => {
-    if (teacherId) {
-      const courseById = COURSES_CONFIG.find((c) => c.teacher.id === teacherId);
+  const getTeacherAvatar = React.useCallback(
+    (teacherId?: number, teacherName?: string) => {
+      if (teacherId) {
+        const courseById =
+          rootStore.coursesStore.courses.find((c) => c.teacher.id === teacherId) ??
+          COURSES_CONFIG.find((c) => c.teacher.id === teacherId);
 
-      if (courseById?.teacher.images?.[0]) {
-        return courseById.teacher.images[0];
+        if (courseById?.teacher.images?.[0]) {
+          return courseById.teacher.images[0];
+        }
       }
-    }
 
-    if (teacherName) {
-      const courseByName = COURSES_CONFIG.find((c) => c.teacher.name === teacherName);
+      if (teacherName) {
+        const courseByName =
+          rootStore.coursesStore.courses.find((c) => c.teacher.name === teacherName) ??
+          COURSES_CONFIG.find((c) => c.teacher.name === teacherName);
 
-      return courseByName?.teacher.images?.[0];
-    }
+        return courseByName?.teacher.images?.[0];
+      }
 
-    return undefined;
-  }, []);
+      return undefined;
+    },
+    [rootStore.coursesStore.courses]
+  );
 
   const hasFavoriteTeachers = teacherRows.length > 0;
 

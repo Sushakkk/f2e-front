@@ -17,6 +17,7 @@ export type ScheduleEntry = {
 
 export type Review = {
   author: string;
+  courseName?: string;
   date: string;
   text: string;
   rating: number;
@@ -58,6 +59,7 @@ export type CourseConfigItem = {
   canEnroll?: boolean;
   canCancelEnrollment?: boolean;
   canEdit?: boolean;
+  canLeaveReview?: boolean;
   firstLessonAt?: string;
   viewerEnrollmentStatus?: EnrollmentStatus | null;
 

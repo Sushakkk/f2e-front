@@ -78,6 +78,16 @@ type ProfileFormErrors = Partial<Record<'username' | 'firstName' | 'lastName', s
 
 const TIME_HHMM_REGEX = /^([01]\d|2[0-3]):([0-5]\d)$/;
 
+const API_WEEKDAY_TO_LABEL: Record<string, string> = {
+  mon: 'Пн',
+  tue: 'Вт',
+  wed: 'Ср',
+  thu: 'Чт',
+  fri: 'Пт',
+  sat: 'Сб',
+  sun: 'Вс',
+};
+
 function buildAttendanceStatsQueryParams(dateFrom: string, dateTo: string): Record<string, string> {
   const params: Record<string, string> = {};
 
@@ -604,7 +614,7 @@ export class ProfilePageStore implements ILocalStore {
       const normalizedSchedule =
         response.data.schedule.length > 0
           ? response.data.schedule.map((entry) => ({
-              weekday: entry.weekday,
+              weekday: API_WEEKDAY_TO_LABEL[entry.weekday] ?? entry.weekday,
               timeFrom: formatClockToHhMm(entry.time_from),
               timeTo: formatClockToHhMm(entry.time_to),
               location: entry.location ?? undefined,
@@ -1439,9 +1449,16 @@ export class ProfilePageStore implements ILocalStore {
       return;
     }
 
-    if (this.selectedCourseId) {
-      void this.loadAttendance(this.selectedCourseId);
-    }
+    const updatedRecord = normalizeCourseAttendance(response.data);
+
+    runInAction(() => {
+      const next = this.attendanceData.filter(
+        (record) => !(record.lessonId === lessonId && record.studentId === studentId)
+      );
+
+      next.push(updatedRecord);
+      this.attendanceData = next;
+    });
   };
 
   exportStatsCsv = async (courseId: number): Promise<void> => {

@@ -497,9 +497,10 @@
     box-sizing: border-box;
     display: flex;
     flex-direction: column;
-    align-items: flex-start;
+    align-items: stretch;
     gap: 0;
-    width: fit-content;
+    width: 100%;
+    min-width: 760px;
     border-radius: 12px;
     overflow: hidden;
     border: 1px solid $color-bg-tertiary;
@@ -509,11 +510,11 @@
   &__row {
     display: grid;
     grid-template-columns:
-      minmax(88px, max-content)
-      minmax(104px, max-content)
-      minmax(112px, max-content)
-      minmax(116px, max-content)
-      minmax(140px, max-content);
+      minmax(88px, 112px)
+      minmax(96px, 112px)
+      minmax(180px, 1fr)
+      minmax(116px, 132px)
+      max-content;
     align-items: center;
     column-gap: 16px;
   }
@@ -561,7 +562,8 @@
   &__colLocation {
     min-width: 0;
     white-space: nowrap;
-    overflow-x: visible;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 
   &__colStatus {
@@ -591,6 +593,7 @@
     justify-self: end;
     justify-content: flex-end;
     align-items: center;
+    min-width: max-content;
     white-space: nowrap;
   }
 

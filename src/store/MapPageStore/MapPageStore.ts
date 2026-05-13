@@ -26,7 +26,15 @@ const SEARCH_DEBOUNCE_MS = 300;
 const MAP_LOAD_TIMEOUT_MS = 5_000;
 
 type SelectOption = { value: string; label: string };
-type PrivateFields = '_debouncedSearch' | '_studios' | '_allStudios' | '_isLoading' | '_loadError';
+type MapViewport = { center: [number, number]; zoom: number };
+type PrivateFields =
+  | '_debouncedSearch'
+  | '_studios'
+  | '_allStudios'
+  | '_isLoading'
+  | '_loadError';
+const USER_LOCATION_ZOOM = 11;
+const MAX_SEARCH_SUGGESTIONS = 10;
 
 function uniqSortedOptions(values: string[]): SelectOption[] {
   return Array.from(new Set(values.filter(Boolean)))
@@ -74,6 +82,7 @@ export class MapPageStore implements ILocalStore {
   isMapLoaded = false;
   filters: MapFilters = DEFAULT_FILTERS;
   draft: MapFilters = DEFAULT_FILTERS;
+  userLocation: [number, number] | null = null;
 
   private _studios: StudioData[] = [];
   private _allStudios: StudioData[] = [];
@@ -85,6 +94,8 @@ export class MapPageStore implements ILocalStore {
   private _loadTimer: number | null = null;
   private _loadRequestId = 0;
   private _defaultCity: string;
+  private _previousViewport: MapViewport | null = null;
+  private _selectedFromSearch = false;
 
   constructor(private _rootStore: IRootStore) {
     this._defaultCity = resolveDefaultCity(this._rootStore.userStore.user?.city);
@@ -98,6 +109,7 @@ export class MapPageStore implements ILocalStore {
       isMapLoaded: observable,
       filters: observable.ref,
       draft: observable.ref,
+      userLocation: observable.ref,
       _studios: observable.ref,
       _allStudios: observable.ref,
       _isLoading: observable,
@@ -105,6 +117,8 @@ export class MapPageStore implements ILocalStore {
       _debouncedSearch: observable,
 
       filteredStudios: computed,
+      visibleStudios: computed,
+      searchSuggestions: computed,
       isLoading: computed,
       loadError: computed,
       cityOptions: computed,
@@ -120,6 +134,9 @@ export class MapPageStore implements ILocalStore {
       resetFilters: action,
       loadStudios: action.bound,
       loadFilterOptions: action.bound,
+      setUserLocation: action.bound,
+      focusUserLocation: action.bound,
+      selectStudioFromSearch: action.bound,
     });
 
     this._disposers.push(
@@ -171,17 +188,13 @@ export class MapPageStore implements ILocalStore {
 
     this._disposers.push(
       reaction(
-        () => ({ search: this._debouncedSearch, studios: this.filteredStudios }),
-        ({ search, studios }) => {
+        () => this._debouncedSearch,
+        (search) => {
           if (!this.isMapLoaded) {
             return;
           }
 
-          if (search.trim()) {
-            if (studios.length > 0) {
-              this._fitBounds(studios);
-            }
-          } else {
+          if (!search.trim()) {
             this._fitToFilters();
           }
         }
@@ -189,6 +202,7 @@ export class MapPageStore implements ILocalStore {
     );
 
     this._startLoadTimeout();
+    this._requestUserLocation();
   }
 
   get filteredStudios(): StudioData[] {
@@ -206,6 +220,44 @@ export class MapPageStore implements ILocalStore {
     }
 
     return result;
+  }
+
+  get visibleStudios(): StudioData[] {
+    if (
+      !this.selectedStudio ||
+      this.filteredStudios.some((studio) => studio.id === this.selectedStudio?.id) ||
+      this.selectedStudio.lat === 0 ||
+      this.selectedStudio.lng === 0
+    ) {
+      return this.filteredStudios;
+    }
+
+    return [this.selectedStudio, ...this.filteredStudios];
+  }
+
+  get searchSuggestions(): StudioData[] {
+    const query = this.searchQuery.trim().toLowerCase();
+
+    if (!query) {
+      return [];
+    }
+
+    return this._allStudios
+      .filter((studio) => studio.lat !== 0 && studio.lng !== 0)
+      .map((studio) => ({
+        studio,
+        score: this._getStudioSearchScore(studio, query),
+      }))
+      .filter((item) => item.score > 0)
+      .sort((a, b) => {
+        if (b.score !== a.score) {
+          return b.score - a.score;
+        }
+
+        return a.studio.name.localeCompare(b.studio.name, 'ru');
+      })
+      .slice(0, MAX_SEARCH_SUGGESTIONS)
+      .map((item) => item.studio);
   }
 
   get isLoading(): boolean {
@@ -268,6 +320,23 @@ export class MapPageStore implements ILocalStore {
 
   closeCard = (): void => {
     this.selectedStudio = null;
+
+    if (this._selectedFromSearch) {
+      this.searchQuery = '';
+      this._debouncedSearch = '';
+      this._selectedFromSearch = false;
+
+      if (this._previousViewport && this._mapRef) {
+        void this._mapRef.setCenter(this._previousViewport.center, this._previousViewport.zoom, {
+          duration: 400,
+        });
+        this._previousViewport = null;
+
+        return;
+      }
+    }
+
+    this._previousViewport = null;
     this._fitToFilters();
   };
 
@@ -301,6 +370,46 @@ export class MapPageStore implements ILocalStore {
     this.selectedStudio = null;
     void this.loadStudios();
   };
+
+  setUserLocation(coords: [number, number] | null): void {
+    this.userLocation = coords;
+
+    if (coords && this.isMapLoaded && !this.selectedStudio && this.searchQuery.trim() === '') {
+      this._fitToFilters();
+    }
+  }
+
+  focusUserLocation(): void {
+    if (!this.userLocation || !this._mapRef) {
+      return;
+    }
+
+    this.selectedStudio = null;
+    void this._mapRef.setCenter(this.userLocation, USER_LOCATION_ZOOM, { duration: 400 });
+  }
+
+  selectStudioFromSearch(studioId: string): void {
+    const studio = this._allStudios.find((item) => item.id === studioId);
+
+    if (!studio || studio.lat === 0 || studio.lng === 0) {
+      return;
+    }
+
+    if (this._mapRef) {
+      const center = this._mapRef.getCenter();
+      const zoom = this._mapRef.getZoom();
+
+      if (Array.isArray(center) && center.length === 2 && typeof zoom === 'number') {
+        this._previousViewport = {
+          center: [Number(center[0]), Number(center[1])],
+          zoom,
+        };
+      }
+    }
+
+    this._selectedFromSearch = true;
+    this.selectStudio(studio);
+  }
 
   loadFilterOptions = async (): Promise<void> => {
     const response = await this._rootStore.apiStore
@@ -382,7 +491,11 @@ export class MapPageStore implements ILocalStore {
   private _fitToFilters(): void {
     const studios = this.filteredStudios;
 
-    if (studios.length > 0) {
+    if (this._shouldCenterOnUserLocation()) {
+      void this._mapRef?.setCenter(this.userLocation as [number, number], USER_LOCATION_ZOOM, {
+        duration: 400,
+      });
+    } else if (studios.length > 0) {
       this._fitBounds(studios);
     } else {
       void this._mapRef?.setCenter(MOSCOW_CENTER, MOSCOW_ZOOM, { duration: 400 });
@@ -427,5 +540,85 @@ export class MapPageStore implements ILocalStore {
       window.clearTimeout(this._loadTimer);
       this._loadTimer = null;
     }
+  }
+
+  private _shouldCenterOnUserLocation(): boolean {
+    return Boolean(
+      this.userLocation &&
+        this.filters.cities.length === 0 &&
+        this.filters.metro.length === 0 &&
+        this.filters.studios.length === 0 &&
+        this.filters.danceTypes.length === 0 &&
+        this.searchQuery.trim() === ''
+    );
+  }
+
+  private _requestUserLocation(): void {
+    if (typeof navigator === 'undefined' || !navigator.geolocation) {
+      return;
+    }
+
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        runInAction(() => {
+          this.userLocation = [position.coords.latitude, position.coords.longitude];
+        });
+
+        if (this.isMapLoaded && !this.selectedStudio && this.searchQuery.trim() === '') {
+          this._fitToFilters();
+        }
+      },
+      () => {},
+      { enableHighAccuracy: false, timeout: 5000, maximumAge: 300000 }
+    );
+  }
+
+  private _getStudioSearchScore(studio: StudioData, query: string): number {
+    const name = studio.name.toLowerCase();
+    const address = studio.address.toLowerCase();
+    const metro = studio.metro.toLowerCase();
+    const city = studio.city.toLowerCase();
+
+    if (name === query) {
+      return 120;
+    }
+
+    if (name.startsWith(query)) {
+      return 100;
+    }
+
+    if (name.split(/\s+/).some((part) => part.startsWith(query))) {
+      return 85;
+    }
+
+    if (name.includes(query)) {
+      return 70;
+    }
+
+    if (address.startsWith(query)) {
+      return 55;
+    }
+
+    if (address.includes(query)) {
+      return 45;
+    }
+
+    if (metro.startsWith(query)) {
+      return 40;
+    }
+
+    if (metro.includes(query)) {
+      return 30;
+    }
+
+    if (city.startsWith(query)) {
+      return 20;
+    }
+
+    if (city.includes(query)) {
+      return 10;
+    }
+
+    return 0;
   }
 }

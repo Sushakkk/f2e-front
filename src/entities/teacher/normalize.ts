@@ -41,6 +41,7 @@ function normalizeTeacherCourse(course: BackendTeacherCourse): TeacherCoursePrev
 function normalizeTeacherReview(review: BackendTeacher['reviews'][number]): Review {
   return {
     author: review.author_name,
+    courseName: review.course_name,
     date: formatReviewDate(review.created_at),
     text: review.text,
     rating: review.rating,

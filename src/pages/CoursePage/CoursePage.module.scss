@@ -108,3 +108,65 @@
   border-radius: 14px;
   margin-top: auto;
 }
+
+.reviewBox {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  margin-top: 12px;
+  padding: 18px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.reviewTitle {
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.ratingRow {
+  display: flex;
+  gap: 8px;
+}
+
+.ratingButton {
+  min-width: 42px;
+  height: 42px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 12px;
+  background: transparent;
+  color: $color-white;
+  cursor: pointer;
+  transition:
+    background-color 0.2s ease,
+    border-color 0.2s ease;
+
+  &_active {
+    background: $color-accent;
+    border-color: $color-accent;
+  }
+}
+
+.reviewTextarea {
+  width: 100%;
+  min-height: 120px;
+  padding: 14px 16px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 14px;
+  background: rgba(0, 0, 0, 0.18);
+  color: $color-white;
+  resize: vertical;
+
+  &::placeholder {
+    color: $color-white-secondary;
+  }
+}
+
+.reviewError {
+  color: #ff6b6b;
+}
+
+.reviewSubmit {
+  width: 100%;
+}

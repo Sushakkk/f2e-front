@@ -36,6 +36,7 @@ export type CourseDetailServer = {
   can_enroll?: boolean;
   can_cancel_enrollment?: boolean;
   can_edit?: boolean;
+  can_leave_review?: boolean;
   first_lesson_at?: string | null;
   viewer_enrollment_status?: string | null;
 };

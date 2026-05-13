@@ -59,6 +59,11 @@ const CoursePage: React.FC = () => {
     () => [...new Set(scheduleLines.map((line) => line.location).filter(Boolean))] as string[],
     [scheduleLines]
   );
+  const formatSchedulePlace = React.useCallback(
+    (line: { location?: string; studio?: string }) =>
+      [line.location, line.studio].filter(Boolean).join(', '),
+    []
+  );
 
   const handleEnroll = React.useCallback(async () => {
     if (!isLoggedIn) {
@@ -226,13 +231,13 @@ const CoursePage: React.FC = () => {
           {scheduleLines.map((line, index) => (
             <React.Fragment key={index}>
               {line.day} {line.time}
-              {scheduleLength > 1 && line.location && ` (${line.location})`}
+              {formatSchedulePlace(line) && ` (${formatSchedulePlace(line)})`}
               {index < scheduleLines.length - 1 && <br />}
             </React.Fragment>
           ))}
         </Row>
       )}
-      {scheduleLength === 1 && <Row label="Место:">{locationsFromSchedule}</Row>}
+      {scheduleLength === 1 && <Row label="Место:">{locationsFromSchedule.join(', ')}</Row>}
       <Row label="Студия:">{courseData.studio}</Row>
       <Row label="Количество мест:">
         {courseData.capacity} (осталось {courseData.spotsLeft})

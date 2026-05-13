@@ -10,7 +10,6 @@ import {
   profilePath,
   profileSectionFromSlug,
 } from 'config/router/profilePaths';
-import type { Enrollment } from 'config/users';
 import { UserRole } from 'entities/user';
 import { ProfilePageStore, type ViewMode } from 'store/ProfilePageStore';
 import { useRootStore } from 'store/globals/root';
@@ -33,14 +32,6 @@ const SECTION_TITLES: Record<string, string> = {
   students: 'Ученики',
   stats: 'Статистика',
 };
-
-const MOCK_ENROLLMENTS: Enrollment[] = [
-  { courseId: 1, enrolledAt: '2025-05-28', status: 'active', paid: true },
-  { courseId: 3, enrolledAt: '2025-02-01', status: 'active', paid: true },
-  { courseId: 8, enrolledAt: '2025-02-10', status: 'active', paid: true },
-  { courseId: 5, enrolledAt: '2024-12-15', status: 'completed', paid: true },
-  { courseId: 4, enrolledAt: '2024-11-20', status: 'completed', paid: true },
-];
 
 const MOCK_FAVORITE_COURSES = [1, 3, 10];
 const MOCK_FAVORITE_TEACHERS = ['Карпова Ксения', 'Кузнецов Артём', 'Смирнова Анна'];
@@ -129,12 +120,7 @@ const ProfilePage: React.FC = () => {
   }
 
   const isMockUser = Boolean(user.registeredAt);
-  const enrollments =
-    store.enrollments.length > 0
-      ? store.enrollments
-      : isMockUser
-        ? user.enrollments ?? MOCK_ENROLLMENTS
-        : user.enrollments ?? [];
+  const enrollments = store.enrollments;
   const favCourses = isMockUser
     ? user.favoriteCourseIds ?? MOCK_FAVORITE_COURSES
     : user.favoriteCourseIds ?? [];

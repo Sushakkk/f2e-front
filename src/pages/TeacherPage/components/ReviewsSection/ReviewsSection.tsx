@@ -26,6 +26,7 @@ const ReviewsSection: React.FC<Props> = ({ reviews }) => {
                 <span className={s.reviewAuthor}>{review.author}</span>
                 <StarRating rating={review.rating} size="sm" showValue={false} />
               </div>
+              {review.courseName && <div className={s.reviewCourse}>Курс: {review.courseName}</div>}
               <span className={s.reviewDate}>{review.date}</span>
               <p className={s.reviewText}>{review.text}</p>
             </div>

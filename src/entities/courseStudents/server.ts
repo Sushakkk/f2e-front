@@ -3,6 +3,7 @@ export type CourseStudentServer = {
   user_id: number;
   full_name: string;
   email: string;
+  avatar?: string;
   phone: string;
   dance_level: string;
   enrolled_at: string;

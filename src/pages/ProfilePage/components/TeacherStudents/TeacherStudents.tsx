@@ -16,9 +16,14 @@ type Props = {
 const TeacherStudents: React.FC<Props> = ({ store }) => {
   const [selectedLessonId, setSelectedLessonId] = React.useState<number | null>(null);
 
-  const activeCourseIdsKey = store.activeCourses.map((c) => c.id).join();
+  const availableCourses = React.useMemo(
+    () => store.teacherCourses.filter((course) => course.courseStatus !== 'cancelled'),
+    [store.teacherCourses]
+  );
 
-  const courseOptions = store.activeCourses.map((c) => ({
+  const availableCourseIdsKey = availableCourses.map((course) => course.id).join();
+
+  const courseOptions = availableCourses.map((c) => ({
     value: String(c.id),
     label: c.name,
   }));
@@ -26,7 +31,7 @@ const TeacherStudents: React.FC<Props> = ({ store }) => {
   const lessonOptions = React.useMemo(
     () =>
       store.lessons
-        .filter((l) => l.status === 'scheduled')
+        .filter((l) => l.status !== 'cancelled')
         .map((l) => ({
           value: String(l.id),
           label: `${formatRu(l.date)} (${l.timeFrom}–${l.timeTo})`,
@@ -35,18 +40,18 @@ const TeacherStudents: React.FC<Props> = ({ store }) => {
   );
 
   React.useEffect(() => {
-    if (store.activeCourses.length === 0) {
+    if (availableCourses.length === 0) {
       return;
     }
 
-    const ids = new Set(store.activeCourses.map((c) => c.id));
+    const ids = new Set(availableCourses.map((course) => course.id));
     const needFix = store.selectedCourseId === null || !ids.has(store.selectedCourseId);
-    const nextId = needFix ? store.activeCourses[0].id : store.selectedCourseId;
+    const nextId = needFix ? availableCourses[0].id : store.selectedCourseId;
 
     if (needFix && nextId !== null) {
       store.setSelectedCourse(nextId);
     }
-  }, [store, activeCourseIdsKey, store.selectedCourseId]);
+  }, [store, availableCourseIdsKey, availableCourses, store.selectedCourseId]);
 
   const handleCourseChange = React.useCallback(
     (value: string) => {
@@ -57,9 +62,26 @@ const TeacherStudents: React.FC<Props> = ({ store }) => {
   );
 
   const scheduledLessons = React.useMemo(
-    () => store.lessons.filter((l) => l.status === 'scheduled'),
+    () => store.lessons.filter((l) => l.status !== 'cancelled'),
     [store.lessons]
   );
+
+  React.useEffect(() => {
+    if (scheduledLessons.length === 0) {
+      if (selectedLessonId !== null) {
+        setSelectedLessonId(null);
+      }
+
+      return;
+    }
+
+    const lessonIds = new Set(scheduledLessons.map((lesson) => lesson.id));
+
+    if (selectedLessonId === null || !lessonIds.has(selectedLessonId)) {
+      setSelectedLessonId(scheduledLessons[0].id);
+    }
+  }, [scheduledLessons, selectedLessonId]);
+
   const lessonDropdownSpace = Math.min(260, lessonOptions.length * 44 + 12);
   const lessonSelectorStyle = React.useMemo(() => {
     const style = {} as React.CSSProperties & Record<string, string>;

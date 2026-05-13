@@ -11,11 +11,15 @@ import s from './CalendarGrid.module.scss';
 type Props = {
   month: Date;
   normalized: NormalizedRange;
+  placement: 'bottom' | 'top';
   onSetMonth: React.Dispatch<React.SetStateAction<Date>>;
   onPick: (date: Date) => void;
 };
 
-const CalendarGrid: React.FC<Props> = ({ month, normalized, onSetMonth, onPick }) => {
+const CalendarGrid = React.forwardRef<HTMLDivElement, Props>(function CalendarGrid(
+  { month, normalized, placement, onSetMonth, onPick },
+  ref
+) {
   const { monthLabel, days } = useCalendar(month);
 
   const handlePrevMonth = React.useCallback(
@@ -26,7 +30,13 @@ const CalendarGrid: React.FC<Props> = ({ month, normalized, onSetMonth, onPick }
   const handleNextMonth = React.useCallback(() => onSetMonth((m) => addMonths(m, 1)), [onSetMonth]);
 
   return (
-    <div className={s.root} role="dialog" aria-label="Выбор диапазона дат">
+    <div
+      ref={ref}
+      className={s.root}
+      data-placement={placement}
+      role="dialog"
+      aria-label="Выбор диапазона дат"
+    >
       <div className={s.header}>
         <button type="button" className={s.navBtn} onClick={handlePrevMonth}>
           ←
@@ -71,6 +81,6 @@ const CalendarGrid: React.FC<Props> = ({ month, normalized, onSetMonth, onPick }
       </div>
     </div>
   );
-};
+});
 
 export default React.memo(CalendarGrid);

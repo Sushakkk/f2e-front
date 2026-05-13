@@ -9,6 +9,7 @@ export type Lesson = {
   timeFrom: string;
   timeTo: string;
   location?: string;
+  studio?: string;
   status: LessonStatus;
 };
 
