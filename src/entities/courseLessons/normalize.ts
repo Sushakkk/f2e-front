@@ -26,5 +26,6 @@ export function normalizeCourseLesson(data: CourseLessonServer): CourseLessonCli
     location: data.location_text ?? data.hall ?? undefined,
     studio: data.studio ?? undefined,
     status: normalizeLessonStatus(data.status),
+    canMarkAttendance: data.can_mark_attendance ?? false,
   };
 }

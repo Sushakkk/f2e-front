@@ -58,7 +58,7 @@ const MapPage: React.FC = () => {
       {!store.isMapLoaded && <ScreenSpinner />}
       <button
         type="button"
-        className={s.geoButton}
+        className={`${s.geoButton} ${store.selectedStudio ? s.geoButtonRaised : ''}`}
         onClick={() => store.focusUserLocation()}
         disabled={!store.userLocation}
         aria-label="Вернуться к геолокации"

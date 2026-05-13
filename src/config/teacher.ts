@@ -11,6 +11,7 @@ export type Lesson = {
   location?: string;
   studio?: string;
   status: LessonStatus;
+  canMarkAttendance?: boolean;
 };
 
 export type AttendanceRecord = {

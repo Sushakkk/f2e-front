@@ -1,7 +1,7 @@
 import { observer } from 'mobx-react';
 import * as React from 'react';
 
-import { Card, SectionHeader } from 'components/common';
+import { Card, SectionHeader, SelectDropdown } from 'components/common';
 import Button from 'components/common/Button/Button';
 import FormField from 'components/common/FormField/FormField';
 import Modal from 'components/common/Modal/Modal';
@@ -20,6 +20,14 @@ type Props = {
 
 const StudentEnrollments: React.FC<Props> = ({ enrollments }) => {
   const rootStore = useRootStore();
+  const reviewRatingOptions = React.useMemo(
+    () =>
+      [5, 4, 3, 2, 1].map((value) => ({
+        value: String(value),
+        label: String(value),
+      })),
+    []
+  );
   const [reviewCourseId, setReviewCourseId] = React.useState<number | null>(null);
   const [reviewText, setReviewText] = React.useState('');
   const [reviewRating, setReviewRating] = React.useState('5');
@@ -46,7 +54,10 @@ const StudentEnrollments: React.FC<Props> = ({ enrollments }) => {
   }, []);
 
   const active = React.useMemo(
-    () => enrollments.filter((enrollment) => enrollment.status === 'active' && !isCompletedEnrollment(enrollment)),
+    () =>
+      enrollments.filter(
+        (enrollment) => enrollment.status === 'active' && !isCompletedEnrollment(enrollment)
+      ),
     [enrollments, isCompletedEnrollment]
   );
 
@@ -120,21 +131,17 @@ const StudentEnrollments: React.FC<Props> = ({ enrollments }) => {
         className={s.reviewModal}
         confirmText={isSubmittingReview ? 'Отправка...' : 'Отправить'}
         cancelText="Отмена"
+        confirmMode="purple"
+        cancelMode="dark"
       >
         <div className={s.reviewForm}>
           <FormField className={s.reviewField} label="Оценка" labelClassName={s.reviewLabel}>
-            <select
+            <SelectDropdown
+              mode="single"
               value={reviewRating}
-              className={s.reviewSelect}
-              onChange={(event) => setReviewRating(event.target.value)}
-              disabled={isSubmittingReview}
-            >
-              {[5, 4, 3, 2, 1].map((value) => (
-                <option key={value} value={value}>
-                  {value}
-                </option>
-              ))}
-            </select>
+              options={reviewRatingOptions}
+              onChange={setReviewRating}
+            />
           </FormField>
           <FormField className={s.reviewField} label="Текст отзыва" labelClassName={s.reviewLabel}>
             <textarea

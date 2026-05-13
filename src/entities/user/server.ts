@@ -25,6 +25,7 @@ export type BackendUser = {
   favorite_course_ids?: number[];
   favorite_teacher_ids?: number[];
   favorite_teacher_names?: string[];
+  favorite_teacher_avatars?: Array<string | null>;
   preferred_time_from?: string | null;
   preferred_time_to?: string | null;
   price_from?: string | number | null;

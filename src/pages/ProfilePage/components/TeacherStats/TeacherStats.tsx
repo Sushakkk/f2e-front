@@ -13,7 +13,7 @@ type Props = {
 };
 
 const TeacherStats: React.FC<Props> = ({ store }) => {
-  const [showCompare, setShowCompare] = React.useState(false);
+  // const [showCompare, setShowCompare] = React.useState(false);
 
   const activeCourseIdsKey = store.activeCourses.map((c) => c.id).join();
 
@@ -62,13 +62,13 @@ const TeacherStats: React.FC<Props> = ({ store }) => {
     [store]
   );
 
-  const handleComparePeriodChange = React.useCallback(
-    ({ from, to }: { from: string; to: string }) => {
-      store.setComparePeriodFrom(from);
-      store.setComparePeriodTo(to);
-    },
-    [store]
-  );
+  // const handleComparePeriodChange = React.useCallback(
+  //   ({ from, to }: { from: string; to: string }) => {
+  //     store.setComparePeriodFrom(from);
+  //     store.setComparePeriodTo(to);
+  //   },
+  //   [store]
+  // );
 
   const handleRefresh = React.useCallback(() => {
     if (store.selectedCourseId) {
@@ -76,11 +76,11 @@ const TeacherStats: React.FC<Props> = ({ store }) => {
     }
   }, [store]);
 
-  const handleCompare = React.useCallback(() => {
-    if (store.selectedCourseId) {
-      void store.loadCompareStats(store.selectedCourseId);
-    }
-  }, [store]);
+  // const handleCompare = React.useCallback(() => {
+  //   if (store.selectedCourseId) {
+  //     void store.loadCompareStats(store.selectedCourseId);
+  //   }
+  // }, [store]);
 
   const handleExport = React.useCallback(() => {
     if (store.selectedCourseId) {
@@ -89,7 +89,7 @@ const TeacherStats: React.FC<Props> = ({ store }) => {
   }, [store]);
 
   const stats = store.statsData;
-  const compare = store.compareStatsData;
+  // const compare = store.compareStatsData;
 
   return (
     <div className={s.root}>
@@ -230,7 +230,7 @@ const TeacherStats: React.FC<Props> = ({ store }) => {
             <Button mode="purple" className={s.exportBtn} onClick={handleExport}>
               Экспорт в CSV
             </Button>
-            <button
+            {/* <button
               type="button"
               className={s.toggleCompare}
               onClick={() => setShowCompare(!showCompare)}
@@ -280,7 +280,7 @@ const TeacherStats: React.FC<Props> = ({ store }) => {
                   </div>
                 )}
               </div>
-            )}
+            )} */}
           </div>
         </>
       )}

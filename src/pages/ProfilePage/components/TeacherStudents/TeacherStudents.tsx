@@ -15,6 +15,7 @@ type Props = {
 
 const TeacherStudents: React.FC<Props> = ({ store }) => {
   const [selectedLessonId, setSelectedLessonId] = React.useState<number | null>(null);
+  const [showAttendanceBlockedMessage, setShowAttendanceBlockedMessage] = React.useState(false);
 
   const availableCourses = React.useMemo(
     () => store.teacherCourses.filter((course) => course.courseStatus !== 'cancelled'),
@@ -72,6 +73,8 @@ const TeacherStudents: React.FC<Props> = ({ store }) => {
         setSelectedLessonId(null);
       }
 
+      setShowAttendanceBlockedMessage(false);
+
       return;
     }
 
@@ -81,6 +84,11 @@ const TeacherStudents: React.FC<Props> = ({ store }) => {
       setSelectedLessonId(scheduledLessons[0].id);
     }
   }, [scheduledLessons, selectedLessonId]);
+
+  const selectedLesson = React.useMemo(
+    () => scheduledLessons.find((lesson) => lesson.id === selectedLessonId),
+    [scheduledLessons, selectedLessonId]
+  );
 
   const lessonDropdownSpace = Math.min(260, lessonOptions.length * 44 + 12);
   const lessonSelectorStyle = React.useMemo(() => {
@@ -103,6 +111,15 @@ const TeacherStudents: React.FC<Props> = ({ store }) => {
 
   const handleToggle = React.useCallback(
     (lessonId: number, studentId: number, current: boolean) => {
+      const lesson = store.lessons.find((item) => item.id === lessonId);
+
+      if (!lesson?.canMarkAttendance) {
+        setShowAttendanceBlockedMessage(true);
+
+        return;
+      }
+
+      setShowAttendanceBlockedMessage(false);
       void store.markAttendance(lessonId, studentId, !current);
     },
     [store]
@@ -148,9 +165,17 @@ const TeacherStudents: React.FC<Props> = ({ store }) => {
               value={selectedLessonId ? String(selectedLessonId) : ''}
               placeholder="Выберите занятие"
               options={lessonOptions}
-              onChange={(value) => setSelectedLessonId(Number(value))}
+              onChange={(value) => {
+                setSelectedLessonId(Number(value));
+                setShowAttendanceBlockedMessage(false);
+              }}
             />
           </div>
+          {showAttendanceBlockedMessage && selectedLesson && !selectedLesson.canMarkAttendance && (
+            <div className={s.warning}>
+              Отметка посещаемости возможна только после начала занятия
+            </div>
+          )}
           {selectedLessonId && (
             <div className={s.attendanceList}>
               {store.students.map((student) => {

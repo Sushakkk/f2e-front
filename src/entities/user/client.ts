@@ -35,6 +35,7 @@ export type UserClient = {
   favoriteCourseIds?: number[];
   favoriteTeacherIds?: number[];
   favoriteTeacherNames?: string[];
+  favoriteTeacherAvatars?: string[];
   preferredTimeFrom?: string;
   preferredTimeTo?: string;
   priceFrom?: string | number | null;

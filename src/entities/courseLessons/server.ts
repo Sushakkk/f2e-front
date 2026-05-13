@@ -8,6 +8,7 @@ export type CourseLessonServer = {
   studio?: string | null;
   status: string;
   hall?: string | null;
+  can_mark_attendance?: boolean;
 };
 
 export type CourseLessonsResponseServer = CourseLessonServer[];

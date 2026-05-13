@@ -13,6 +13,7 @@ type Props = {
   favoriteCourseIds: number[];
   favoriteTeacherIds: number[];
   favoriteTeacherNames: string[];
+  favoriteTeacherAvatars: string[];
   onTeacherClick: (id: number) => void;
 };
 
@@ -20,6 +21,7 @@ const Favorites: React.FC<Props> = ({
   favoriteCourseIds,
   favoriteTeacherIds,
   favoriteTeacherNames,
+  favoriteTeacherAvatars,
   onTeacherClick,
 }) => {
   const rootStore = useRootStore();
@@ -39,45 +41,23 @@ const Favorites: React.FC<Props> = ({
   const teacherRows = React.useMemo(() => {
     const ids = favoriteTeacherIds;
     const names = favoriteTeacherNames;
-    const length = Math.max(ids.length, names.length);
-    const rows: { id: number | undefined; name: string }[] = [];
+    const avatars = favoriteTeacherAvatars;
+    const length = Math.max(ids.length, names.length, avatars.length);
+    const rows: { id: number | undefined; name: string; avatar?: string }[] = [];
 
     for (let index = 0; index < length; index += 1) {
       const rawName = names[index];
+      const rawAvatar = avatars[index];
 
       rows.push({
         id: ids[index],
         name: rawName?.trim() ? rawName : 'Преподаватель',
+        avatar: rawAvatar?.trim() ? rawAvatar : undefined,
       });
     }
 
     return rows.filter((row) => typeof row.id === 'number' || row.name !== 'Преподаватель');
-  }, [favoriteTeacherIds, favoriteTeacherNames]);
-
-  const getTeacherAvatar = React.useCallback(
-    (teacherId?: number, teacherName?: string) => {
-      if (teacherId) {
-        const courseById =
-          rootStore.coursesStore.courses.find((c) => c.teacher.id === teacherId) ??
-          COURSES_CONFIG.find((c) => c.teacher.id === teacherId);
-
-        if (courseById?.teacher.images?.[0]) {
-          return courseById.teacher.images[0];
-        }
-      }
-
-      if (teacherName) {
-        const courseByName =
-          rootStore.coursesStore.courses.find((c) => c.teacher.name === teacherName) ??
-          COURSES_CONFIG.find((c) => c.teacher.name === teacherName);
-
-        return courseByName?.teacher.images?.[0];
-      }
-
-      return undefined;
-    },
-    [rootStore.coursesStore.courses]
-  );
+  }, [favoriteTeacherAvatars, favoriteTeacherIds, favoriteTeacherNames]);
 
   const hasFavoriteTeachers = teacherRows.length > 0;
 
@@ -108,7 +88,7 @@ const Favorites: React.FC<Props> = ({
                 <ProfileCard
                   key={`${row.id ?? 't'}-${row.name}-${index}`}
                   title={row.name}
-                  avatar={getTeacherAvatar(teacherId, row.name)}
+                  avatar={row.avatar}
                   onClick={
                     typeof teacherId === 'number' ? () => onTeacherClick(teacherId) : undefined
                   }

@@ -56,12 +56,25 @@ const CoursePage: React.FC = () => {
   );
 
   const locationsFromSchedule = React.useMemo(
-    () => [...new Set(scheduleLines.map((line) => line.location).filter(Boolean))] as string[],
+    () =>
+      [...new Set(scheduleLines.map((line) => line.location?.trim()).filter(Boolean))] as string[],
     [scheduleLines]
+  );
+  const studiosFromSchedule = React.useMemo(
+    () =>
+      [
+        ...new Set(
+          scheduleLines
+            .map((line) => line.studio?.trim())
+            .filter(Boolean)
+            .concat(courseData?.studio ? [courseData.studio.trim()] : [])
+        ),
+      ] as string[],
+    [courseData?.studio, scheduleLines]
   );
   const formatSchedulePlace = React.useCallback(
     (line: { location?: string; studio?: string }) =>
-      [line.location, line.studio].filter(Boolean).join(', '),
+      [line.studio, line.location].filter(Boolean).join(', '),
     []
   );
 
@@ -175,6 +188,10 @@ const CoursePage: React.FC = () => {
   }
 
   const scheduleLength = scheduleLines.length;
+  const hasSingleAddress = locationsFromSchedule.length <= 1;
+  const hasSingleStudio = studiosFromSchedule.length <= 1;
+  const addressValue = hasSingleAddress ? locationsFromSchedule.join(', ') : '';
+  const studioValue = hasSingleStudio && hasSingleAddress ? studiosFromSchedule[0] ?? '' : '';
   const musicLabel = [courseData.music.artist, courseData.music.track].filter(Boolean).join(' - ');
   const hasMusic = Boolean(musicLabel || courseData.music.url);
   const isCourseCompleted =
@@ -231,14 +248,14 @@ const CoursePage: React.FC = () => {
           {scheduleLines.map((line, index) => (
             <React.Fragment key={index}>
               {line.day} {line.time}
-              {formatSchedulePlace(line) && ` (${formatSchedulePlace(line)})`}
+              {!hasSingleAddress && formatSchedulePlace(line) && ` (${formatSchedulePlace(line)})`}
               {index < scheduleLines.length - 1 && <br />}
             </React.Fragment>
           ))}
         </Row>
       )}
-      {scheduleLength === 1 && <Row label="Место:">{locationsFromSchedule.join(', ')}</Row>}
-      <Row label="Студия:">{courseData.studio}</Row>
+      {addressValue && <Row label="Адрес:">{addressValue}</Row>}
+      {studioValue && <Row label="Студия:">{studioValue}</Row>}
       <Row label="Количество мест:">
         {courseData.capacity} (осталось {courseData.spotsLeft})
       </Row>

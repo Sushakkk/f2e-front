@@ -130,6 +130,7 @@ const ProfilePage: React.FC = () => {
   const favTeacherIds = isMockUser
     ? user.favoriteTeacherIds ?? MOCK_FAVORITE_TEACHER_IDS
     : user.favoriteTeacherIds ?? [];
+  const favTeacherAvatars = isMockUser ? user.favoriteTeacherAvatars ?? [] : user.favoriteTeacherAvatars ?? [];
 
   const renderContent = () => {
     switch (store.activeSection) {
@@ -152,6 +153,7 @@ const ProfilePage: React.FC = () => {
             favoriteCourseIds={favCourses}
             favoriteTeacherIds={favTeacherIds}
             favoriteTeacherNames={favTeachers}
+            favoriteTeacherAvatars={favTeacherAvatars}
             onTeacherClick={goToTeacher}
           />
         );

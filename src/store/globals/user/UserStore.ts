@@ -70,6 +70,8 @@ export class UserStore<UserT extends UserClient = UserClient> implements IUserSt
   login = (user: UserT): void => {
     this._user.setValue(user);
     this._flags.setValue(user.flags ?? {});
+    this.rootStore.coursesStore.clear();
+    void this.rootStore.coursesStore.loadCourses();
     void this.rootStore.notificationsStore.load();
   };
 
@@ -88,6 +90,8 @@ export class UserStore<UserT extends UserClient = UserClient> implements IUserSt
     this._user.setValue(null);
     this._flags.setValue({});
     this.rootStore.notificationsStore.clear();
+    this.rootStore.coursesStore.clear();
+    void this.rootStore.coursesStore.loadCourses();
   };
 
   refreshUser = (): void => {
@@ -161,6 +165,8 @@ export class UserStore<UserT extends UserClient = UserClient> implements IUserSt
       this._user.setValue(null);
       this._flags.setValue({});
       this.rootStore.notificationsStore.clear();
+      this.rootStore.coursesStore.clear();
+      void this.rootStore.coursesStore.loadCourses();
 
       return null;
     }

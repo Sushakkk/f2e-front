@@ -1,7 +1,7 @@
 import cx from 'clsx';
 import * as React from 'react';
 
-import { Button } from '../Button';
+import Button, { type ButtonMode } from '../Button/Button';
 
 import s from './Modal.module.scss';
 
@@ -17,6 +17,8 @@ type Props = {
   confirmText?: string;
   cancelText?: string;
   hideActions?: boolean;
+  confirmMode?: ButtonMode;
+  cancelMode?: ButtonMode;
 };
 
 const Modal: React.FC<Props> = ({
@@ -29,6 +31,8 @@ const Modal: React.FC<Props> = ({
   confirmText = 'Да',
   cancelText = 'Нет',
   hideActions = false,
+  confirmMode = 'dark',
+  cancelMode = 'purpleDashed',
 }) => {
   const titleId = React.useId();
 
@@ -48,10 +52,10 @@ const Modal: React.FC<Props> = ({
         {children}
         {!hideActions && (
           <div className={s.root__actions}>
-            <Button type="button" mode="purpleDashed" className={s.root__btn} onClick={onClose}>
+            <Button type="button" mode={cancelMode} className={s.root__btn} onClick={onClose}>
               {cancelText}
             </Button>
-            <Button type="button" mode="dark" className={s.root__btn} onClick={onConfirm}>
+            <Button type="button" mode={confirmMode} className={s.root__btn} onClick={onConfirm}>
               {confirmText}
             </Button>
           </div>
