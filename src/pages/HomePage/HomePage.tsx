@@ -1,7 +1,7 @@
 import cn from 'classnames';
 import { observer } from 'mobx-react';
 import * as React from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 
 import { Card } from 'components/common';
 import { CourseActivityStatus, CourseConfigItem, courseActivityStatusLabelRu } from 'config';
@@ -20,6 +20,7 @@ import { Filters, Pagination, Recommendations, SearchBar } from './components';
 const HomePage: React.FC = () => {
   const rootStore = useRootStore();
   const navigate = useNavigate();
+  const location = useLocation();
   const isMobile = useMediaQuery('(max-width: 992px)');
   const [isFiltersOpen, setIsFiltersOpen] = React.useState(false);
   const homeStore = rootStore.coursesStore;
@@ -27,7 +28,7 @@ const HomePage: React.FC = () => {
   const handleClose = React.useCallback(() => setIsFiltersOpen(false), []);
 
   // Parse URL query params once on mount
-  const queryParams = React.useRef(parseQueryFromURL()).current;
+  const queryParams = React.useMemo(() => parseQueryFromURL(), [location.search]);
   const recommendationsStore = useLocalStore(() => new RecommendationsStore(rootStore));
 
   const filtersStore = useLocalStore(
@@ -101,6 +102,12 @@ const HomePage: React.FC = () => {
     },
     [setSearch, queryStore]
   );
+
+  React.useEffect(() => {
+    filtersStore.syncFromValue(queryParams.filters);
+    paginationStore.setPage(queryParams.page);
+    setSearch(queryParams.search);
+  }, [filtersStore, paginationStore, queryParams, setSearch]);
 
   React.useEffect(() => {
     paginationStore.setPerPage(isMobile ? 6 : 9);

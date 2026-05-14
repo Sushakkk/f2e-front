@@ -15,19 +15,12 @@ type Props = {
   recommendations?: RecommendationClient[];
 };
 
-export const Recommendations: React.FC<Props> = ({ items, recommendations }) => {
+export const Recommendations: React.FC<Props> = ({ items }) => {
   const navigate = useNavigate();
   const location = useLocation();
   const getImage = useCallback((it: CourseConfigItem) => it.images?.[0] || fallbackImage, []);
   const getKey = useCallback((it: CourseConfigItem) => it.id, []);
   const getAlt = useCallback((it: CourseConfigItem) => it.name, []);
-  const reasonByCourseId = React.useMemo(
-    () =>
-      new Map(
-        (recommendations ?? []).map((item) => [item.course.id, item.reasons[0] ?? ''])
-      ),
-    [recommendations]
-  );
 
   const goToCourse = useCallback(
     (item: CourseConfigItem) => {
@@ -60,9 +53,6 @@ export const Recommendations: React.FC<Props> = ({ items, recommendations }) => 
             <div className={s.overlay}>
               <div className={s.title}>{it.name}</div>
               {it.teacher && <div className={s.subtitle}>{it.teacher.name}</div>}
-              {reasonByCourseId.get(it.id) && (
-                <div className={s.subtitle}>{reasonByCourseId.get(it.id)}</div>
-              )}
               {it.dateFrom && it.dateTo && (
                 <div className={s.subtitle}>
                   {it.dateFrom} - {it.dateTo}

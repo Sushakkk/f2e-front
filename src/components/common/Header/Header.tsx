@@ -10,20 +10,15 @@ import { HEADER_NAV } from './config';
 
 const Header: React.FC = () => {
   const location = useLocation();
-  const homeTarget = React.useMemo(() => {
-    const from = (location.state as { from?: string } | null)?.from;
 
-    if (typeof from === 'string' && (from === RoutePath.home || from.startsWith(`${RoutePath.home}?`))) {
-      return from;
-    }
-
-    return RoutePath.home;
-  }, [location.state]);
+  const handleLogoClick = React.useCallback(() => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, []);
 
   return (
     <header className={s.header}>
       <div className={s.inner}>
-        <NavLink className={s.logo} to={homeTarget}>
+        <NavLink className={s.logo} to={RoutePath.home} onClick={handleLogoClick}>
           FiveToEight
         </NavLink>
         <nav className={s.nav}>
@@ -41,7 +36,7 @@ const Header: React.FC = () => {
 
                 return cn(s.link, navActive && s.linkActive);
               }}
-              to={id === 'home' ? homeTarget : to}
+              to={id === 'home' ? RoutePath.home : to}
               end={end}
             >
               {label}
