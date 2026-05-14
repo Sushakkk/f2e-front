@@ -90,15 +90,6 @@ const TeacherStudents: React.FC<Props> = ({ store }) => {
     [scheduledLessons, selectedLessonId]
   );
 
-  const lessonDropdownSpace = Math.min(260, lessonOptions.length * 44 + 12);
-  const lessonSelectorStyle = React.useMemo(() => {
-    const style = {} as React.CSSProperties & Record<string, string>;
-
-    style['--lesson-dropdown-space'] = `${lessonDropdownSpace}px`;
-
-    return style;
-  }, [lessonDropdownSpace]);
-
   const attendanceMap = React.useMemo(() => {
     const map = new Map<string, boolean>();
 
@@ -158,13 +149,14 @@ const TeacherStudents: React.FC<Props> = ({ store }) => {
       {store.students.length > 0 && scheduledLessons.length > 0 && (
         <div className={s.attendanceSection}>
           <h3 className={s.subTitle}>Отметка посещаемости</h3>
-          <div className={`${s.selector} ${s.lessonSelector}`} style={lessonSelectorStyle}>
+          <div className={`${s.selector} ${s.lessonSelector}`}>
             <label className={s.label}>Занятие</label>
             <SelectDropdown
               mode="single"
               value={selectedLessonId ? String(selectedLessonId) : ''}
               placeholder="Выберите занятие"
               options={lessonOptions}
+              dropdownDirection="up"
               onChange={(value) => {
                 setSelectedLessonId(Number(value));
                 setShowAttendanceBlockedMessage(false);

@@ -4,6 +4,7 @@ type BaseProps = {
   options: SelectOption[];
   placeholder?: string;
   searchable?: boolean;
+  dropdownDirection?: 'down' | 'up';
 };
 
 type SingleProps = BaseProps & {

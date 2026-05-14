@@ -14,11 +14,7 @@
 }
 
 .lessonSelector {
-  transition: padding-bottom 160ms ease;
-
-  &:has([role="listbox"]) {
-    padding-bottom: calc(var(--lesson-dropdown-space, 260px) + 14px);
-  }
+  position: relative;
 }
 
 .label {

@@ -1,4 +1,5 @@
 import * as React from 'react';
+import cn from 'classnames';
 
 import type { SelectOption as SelectOptionType } from '../../types';
 import { SelectOption } from '../SelectOption';
@@ -9,6 +10,7 @@ type Props = {
   isMulti: boolean;
   options: SelectOptionType[];
   selectedValues: string[];
+  direction?: 'down' | 'up';
   clearLabel?: string;
   onClear?: () => void;
   onSelect: (value: string) => void;
@@ -18,12 +20,17 @@ const SelectMenu: React.FC<Props> = ({
   isMulti,
   options,
   selectedValues,
+  direction = 'down',
   clearLabel,
   onClear,
   onSelect,
 }) => {
   return (
-    <div className={s.menu} role="listbox" aria-multiselectable={isMulti || undefined}>
+    <div
+      className={cn(s.menu, direction === 'up' && s.menu_up)}
+      role="listbox"
+      aria-multiselectable={isMulti || undefined}
+    >
       {isMulti && onClear && (
         <SelectOption
           label={clearLabel ?? 'Сбросить'}

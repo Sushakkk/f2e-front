@@ -173,6 +173,7 @@ const SelectDropdown: React.FC<SelectDropdownProps> = (props) => {
           isMulti={isMulti}
           options={filteredOptions}
           selectedValues={selectedValues}
+          direction={props.dropdownDirection ?? 'down'}
           onSelect={handleSelect}
         />
       )}

@@ -15,25 +15,25 @@ type Props = {
 const TeacherStats: React.FC<Props> = ({ store }) => {
   // const [showCompare, setShowCompare] = React.useState(false);
 
-  const activeCourseIdsKey = store.activeCourses.map((c) => c.id).join();
+  const teacherCourseIdsKey = store.teacherCourses.map((c) => c.id).join();
 
   const courseOptions = React.useMemo(
     () =>
-      store.activeCourses.map((c) => ({
+      store.teacherCourses.map((c) => ({
         value: String(c.id),
         label: c.name,
       })),
-    [activeCourseIdsKey, store]
+    [teacherCourseIdsKey, store]
   );
 
   React.useEffect(() => {
-    if (store.activeCourses.length === 0) {
+    if (store.teacherCourses.length === 0) {
       return;
     }
 
-    const ids = new Set(store.activeCourses.map((c) => c.id));
+    const ids = new Set(store.teacherCourses.map((c) => c.id));
     const needFix = store.selectedCourseId === null || !ids.has(store.selectedCourseId);
-    const courseId = needFix ? store.activeCourses[0].id : store.selectedCourseId!;
+    const courseId = needFix ? store.teacherCourses[0].id : store.selectedCourseId!;
 
     if (needFix) {
       store.setSelectedCourse(courseId);
@@ -41,7 +41,7 @@ const TeacherStats: React.FC<Props> = ({ store }) => {
 
     store.applyStatsPeriodFromCourse(courseId);
     void store.loadStats(courseId);
-  }, [store, activeCourseIdsKey, store.selectedCourseId]);
+  }, [store, teacherCourseIdsKey, store.selectedCourseId]);
 
   const handleCourseChange = React.useCallback(
     (value: string) => {
