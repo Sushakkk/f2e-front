@@ -156,7 +156,6 @@ const TeacherStudents: React.FC<Props> = ({ store }) => {
               value={selectedLessonId ? String(selectedLessonId) : ''}
               placeholder="Выберите занятие"
               options={lessonOptions}
-              dropdownDirection="up"
               onChange={(value) => {
                 setSelectedLessonId(Number(value));
                 setShowAttendanceBlockedMessage(false);
