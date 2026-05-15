@@ -58,6 +58,7 @@ export const ENDPOINTS = {
   recommendations: {
     list: createApiEndpoint('recommendations/', 'GET'),
     rebuild: createApiEndpoint('recommendations/rebuild/', 'POST'),
+    trackCourseView: (id: number): EndpointType => createApiEndpoint(`course-views/${id}/`, 'POST'),
   },
   lessons: {
     cancel: (id: number): EndpointType => createApiEndpoint(`lessons/${id}/cancel/`, 'POST'),

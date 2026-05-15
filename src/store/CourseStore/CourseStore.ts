@@ -85,6 +85,16 @@ export class CourseStore implements ILocalStore {
 
       this._course = normalizeCourseDetail(response.data);
     });
+
+    if (!response.isError && this._rootStore.userStore.user) {
+      void this._rootStore.apiStore
+        .createExtendedRequest<{ tracked: boolean }, ErrorResponse>({
+          ...ENDPOINTS.recommendations.trackCourseView(courseId),
+          showExpectedError: false,
+          showUnexpectedError: false,
+        })
+        .call();
+    }
   };
 
   toggleFavorite = async (isFavorite: boolean): Promise<boolean> => {
