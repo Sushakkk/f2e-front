@@ -109,6 +109,14 @@
   margin-top: auto;
 }
 
+.actionError {
+  margin-top: 12px;
+  margin-bottom: 10px;
+  font-size: 14px;
+  line-height: 1.4;
+  color: $color-status-danger;
+}
+
 .reviewBox {
   display: flex;
   flex-direction: column;

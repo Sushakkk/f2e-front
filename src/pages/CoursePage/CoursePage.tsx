@@ -19,6 +19,10 @@ import { getScheduleLines } from 'utils/scheduleUtils';
 
 import s from './CoursePage.module.scss';
 
+type CourseActionErrorResponse = ErrorResponse & {
+  detail?: string;
+};
+
 const CoursePage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const rootStore = useRootStore();
@@ -27,6 +31,7 @@ const CoursePage: React.FC = () => {
 
   const courseStore = useLocalStore(() => new CourseStore(rootStore));
   const [enrolling, setEnrolling] = React.useState(false);
+  const [actionError, setActionError] = React.useState('');
   const numericCourseId = Number(id);
 
   React.useEffect(() => {
@@ -89,6 +94,7 @@ const CoursePage: React.FC = () => {
       return;
     }
 
+    setActionError('');
     setEnrolling(true);
 
     const response = await rootStore.apiStore
@@ -109,6 +115,11 @@ const CoursePage: React.FC = () => {
       });
       void rootStore.notificationsStore.load();
       void rootStore.coursesStore.loadCourses();
+    } else if (
+      (response.data as CourseActionErrorResponse | undefined)?.detail ===
+      'Teacher cannot enroll in own course.'
+    ) {
+      setActionError('Нельзя записаться на собственный курс');
     }
 
     setEnrolling(false);
@@ -119,6 +130,7 @@ const CoursePage: React.FC = () => {
       return;
     }
 
+    setActionError('');
     setEnrolling(true);
 
     const response = await rootStore.apiStore
@@ -137,6 +149,11 @@ const CoursePage: React.FC = () => {
       });
       void rootStore.notificationsStore.load();
       void rootStore.coursesStore.loadCourses();
+    } else if (
+      (response.data as CourseActionErrorResponse | undefined)?.detail ===
+      'Enrollment cancellation closes 24 hours before the first lesson.'
+    ) {
+      setActionError('Отмена записи закрывается за 24 часа до первого занятия');
     }
 
     setEnrolling(false);
@@ -216,14 +233,17 @@ const CoursePage: React.FC = () => {
       onToggleLike={handleToggleFavorite}
       button={
         isCourseCompleted ? undefined : (
-          <Button
-            mode={isEnrolled ? 'dark' : 'purple'}
-            className={s.enrollBtn}
-            onClick={handleEnrollClick}
-            disabled={enrolling || !actionAllowed}
-          >
-            {actionLabel}
-          </Button>
+          <>
+            {actionError && <div className={s.actionError}>{actionError}</div>}
+            <Button
+              mode={isEnrolled ? 'dark' : 'purple'}
+              className={s.enrollBtn}
+              onClick={handleEnrollClick}
+              disabled={enrolling || !actionAllowed}
+            >
+              {actionLabel}
+            </Button>
+          </>
         )
       }
     >

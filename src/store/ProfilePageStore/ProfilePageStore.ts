@@ -1,6 +1,7 @@
 import { action, computed, makeObservable, observable, runInAction } from 'mobx';
 
 import fallbackImage from 'assets/images/courses/five-to-eight-placeholder.png';
+import { SnackbarMessageGoalsEnum } from 'config/snackbars';
 import { ENDPOINTS } from 'config/api';
 import type { ScheduleEntry } from 'config/cards';
 import type { CourseLevel } from 'config/levels';
@@ -260,6 +261,8 @@ const normalizeMyTeachingCourseToTeacherCourse = (
     spotsLeft: row.spots_left ?? 0,
     schedule: (row.schedule ?? []).map(normalizeScheduleEntryForTeacherCourse),
     music: row.music ?? { artist: '', track: '', url: '' },
+    canEdit: row.can_edit ?? true,
+    firstLessonAt: row.first_lesson_at ?? undefined,
     createdByTeacherId: user.id,
     courseStatus: mapApiCourseStatusToTeacherCourseStatus(row.status),
     dateRangeFromIso: row.date_from ? row.date_from.slice(0, 10) : undefined,
@@ -575,6 +578,13 @@ export class ProfilePageStore implements ILocalStore {
     }
   };
 
+  showCourseEditUnavailableError = (): void => {
+    this._rootStore.snackbarStore.openSnackbarMessage({
+      text: 'Редактирование курса закрывается за 48 часов до первого занятия',
+      goal: SnackbarMessageGoalsEnum.error,
+    });
+  };
+
   // ── Form management ──────────────────────────────────────────────────
 
   openCreateForm = (): void => {
@@ -588,10 +598,6 @@ export class ProfilePageStore implements ILocalStore {
   };
 
   openEditForm = async (courseId: number): Promise<void> => {
-    if (this.isLoading) {
-      return;
-    }
-
     runInAction(() => {
       this.isLoading = true;
     });
@@ -1332,7 +1338,7 @@ export class ProfilePageStore implements ILocalStore {
     this.setSelectedCourse(updatedCourse.id);
   };
 
-  /** Завершает курс на бэке (status completed), без удаления записи. */
+  /** Отменяет курс на бэке (status cancelled), без удаления записи. */
   completeCourse = async (courseId: number, teacherId: number): Promise<void> => {
     void teacherId;
 
@@ -1342,10 +1348,11 @@ export class ProfilePageStore implements ILocalStore {
 
     const response = await this._requests.updateCourse.call({
       url: ENDPOINTS.courses.update(courseId).url,
-      data: { status: 'completed' },
+      data: { status: 'cancelled' },
     });
 
     if (response.isError) {
+      this._applyCourseApiErrors(response.data as CourseApiErrorResponse | undefined);
       runInAction(() => {
         this.isLoading = false;
       });
@@ -1804,6 +1811,23 @@ export class ProfilePageStore implements ILocalStore {
           ...this.courseFormErrors,
           ...mappedErrors,
         };
+      });
+
+      return;
+    }
+
+    const detailMessage = this._extractFirstErrorMessage(errorData.detail);
+
+    if (detailMessage === 'Course editing closes 48 hours before the first lesson.') {
+      this.showCourseEditUnavailableError();
+
+      return;
+    }
+
+    if (detailMessage === 'Course cancellation is allowed only before the first lesson starts.') {
+      this._rootStore.snackbarStore.openSnackbarMessage({
+        text: 'Отменить курс можно только до начала первого занятия',
+        goal: SnackbarMessageGoalsEnum.error,
       });
 
       return;

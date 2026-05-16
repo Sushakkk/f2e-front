@@ -57,6 +57,13 @@
   border-radius: 8px;
 }
 
+.inlineError {
+  width: 100%;
+  font-size: 13px;
+  line-height: 1.35;
+  color: $color-status-danger;
+}
+
 .cancelBtn {
   all: unset;
   box-sizing: border-box;

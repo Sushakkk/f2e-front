@@ -23,9 +23,12 @@ const STATUS_LABELS: Record<string, string> = {
   cancelled: 'Отменённые',
 };
 
+const COURSE_EDIT_LOCK_HOURS = 48;
+
 const TeacherCourses: React.FC<Props> = ({ store, teacherId }) => {
   const [searchParams, setSearchParams] = useSearchParams();
   const [pendingCompleteCourseId, setPendingCompleteCourseId] = React.useState<number | null>(null);
+  const [editBlockedCourseId, setEditBlockedCourseId] = React.useState<number | null>(null);
   const createParam = searchParams.get(PROFILE_COURSES_QUERY_CREATE);
   const editParam = searchParams.get(PROFILE_COURSES_QUERY_EDIT);
 
@@ -116,11 +119,26 @@ const TeacherCourses: React.FC<Props> = ({ store, teacherId }) => {
   }, [pendingCompleteCourseId, store, teacherId]);
 
   const handleEdit = React.useCallback(
-    (e: React.MouseEvent, courseId: number) => {
+    (e: React.MouseEvent, courseId: number, canEdit?: boolean, firstLessonAt?: string) => {
       e.stopPropagation();
+
+      const firstLessonTime = firstLessonAt ? new Date(firstLessonAt).getTime() : Number.NaN;
+      const isEditLockedByTime =
+        Number.isFinite(firstLessonTime) &&
+        firstLessonTime - Date.now() <= COURSE_EDIT_LOCK_HOURS * 60 * 60 * 1000;
+
+      if (canEdit === false || isEditLockedByTime) {
+        setEditBlockedCourseId(courseId);
+        store.showCourseEditUnavailableError();
+
+        return;
+      }
+
+      setEditBlockedCourseId(null);
+      void store.openEditForm(courseId);
       openEditInUrl(courseId);
     },
-    [openEditInUrl]
+    [openEditInUrl, store]
   );
 
   if (store.isFormOpen) {
@@ -158,6 +176,11 @@ const TeacherCourses: React.FC<Props> = ({ store, teacherId }) => {
             <div className={s.sectionList}>
               {activeCourses.map((course) => (
                 <div key={course.id} className={s.cardWrapper}>
+                  {editBlockedCourseId === course.id && (
+                    <div className={s.inlineError}>
+                      Редактирование курса закрывается за 48 часов до первого занятия
+                    </div>
+                  )}
                   <Card
                     item={course}
                     compact
@@ -169,7 +192,9 @@ const TeacherCourses: React.FC<Props> = ({ store, teacherId }) => {
                         <Button
                           mode="dark"
                           className={s.actionBtn}
-                          onClick={(e) => handleEdit(e, course.id)}
+                          onClick={(e) =>
+                            handleEdit(e, course.id, course.canEdit, course.firstLessonAt)
+                          }
                         >
                           Редактировать
                         </Button>
