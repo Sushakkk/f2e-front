@@ -29,6 +29,7 @@ const TeacherCourses: React.FC<Props> = ({ store, teacherId }) => {
   const [searchParams, setSearchParams] = useSearchParams();
   const [pendingCompleteCourseId, setPendingCompleteCourseId] = React.useState<number | null>(null);
   const [editBlockedCourseId, setEditBlockedCourseId] = React.useState<number | null>(null);
+  const [cancelBlockedCourseId, setCancelBlockedCourseId] = React.useState<number | null>(null);
   const createParam = searchParams.get(PROFILE_COURSES_QUERY_CREATE);
   const editParam = searchParams.get(PROFILE_COURSES_QUERY_EDIT);
 
@@ -98,10 +99,25 @@ const TeacherCourses: React.FC<Props> = ({ store, teacherId }) => {
     [setSearchParams]
   );
 
-  const openCompleteConfirm = React.useCallback((e: React.MouseEvent, courseId: number) => {
-    e.stopPropagation();
-    setPendingCompleteCourseId(courseId);
-  }, []);
+  const openCompleteConfirm = React.useCallback(
+    (e: React.MouseEvent, courseId: number, firstLessonAt?: string) => {
+      e.stopPropagation();
+
+      const firstLessonTime = firstLessonAt ? new Date(firstLessonAt).getTime() : Number.NaN;
+      const hasLessonStarted = Number.isFinite(firstLessonTime) && Date.now() >= firstLessonTime;
+
+      if (hasLessonStarted) {
+        setCancelBlockedCourseId(courseId);
+        setEditBlockedCourseId(null);
+
+        return;
+      }
+
+      setCancelBlockedCourseId(null);
+      setPendingCompleteCourseId(courseId);
+    },
+    []
+  );
 
   const closeCompleteConfirm = React.useCallback(() => {
     setPendingCompleteCourseId(null);
@@ -129,12 +145,14 @@ const TeacherCourses: React.FC<Props> = ({ store, teacherId }) => {
 
       if (canEdit === false || isEditLockedByTime) {
         setEditBlockedCourseId(courseId);
+        setCancelBlockedCourseId(null);
         store.showCourseEditUnavailableError();
 
         return;
       }
 
       setEditBlockedCourseId(null);
+      setCancelBlockedCourseId(null);
       void store.openEditForm(courseId);
       openEditInUrl(courseId);
     },
@@ -181,6 +199,11 @@ const TeacherCourses: React.FC<Props> = ({ store, teacherId }) => {
                       Редактирование курса закрывается за 48 часов до первого занятия
                     </div>
                   )}
+                  {cancelBlockedCourseId === course.id && (
+                    <div className={s.inlineError}>
+                      Отменить курс можно только до начала первого занятия
+                    </div>
+                  )}
                   <Card
                     item={course}
                     compact
@@ -202,7 +225,7 @@ const TeacherCourses: React.FC<Props> = ({ store, teacherId }) => {
                           type="button"
                           className={s.cancelBtn}
                           disabled={store.isLoading}
-                          onClick={(e) => openCompleteConfirm(e, course.id)}
+                          onClick={(e) => openCompleteConfirm(e, course.id, course.firstLessonAt)}
                         >
                           Отменить курс
                         </button>
