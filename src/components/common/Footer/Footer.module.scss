@@ -16,7 +16,8 @@
     align-items: center;
     justify-content: space-between;
 
-    background-color: $color-bg-secondary;
+    background-color: var(--app-surface);
+    border-top: 1px solid var(--app-border);
     z-index: 1000;
   }
 }
@@ -34,7 +35,7 @@
 
 .icon {
   display: inline-flex;
-  color: $color-white;
+  color: var(--app-text);
   transition: color 150ms ease;
 }
 

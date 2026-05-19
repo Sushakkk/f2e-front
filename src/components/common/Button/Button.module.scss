@@ -61,9 +61,9 @@
   }
 
   &_dark {
-    border-color: $color-bg-tertiary;
-    color: $color-white;
-    background: $color-bg-secondary;
+    border-color: var(--app-border-strong);
+    color: var(--app-text);
+    background: var(--app-surface);
 
     @include hover {
       transform: translateY(-1px);
@@ -74,8 +74,8 @@
   &_purpleDashed {
     border-color: $color-accent;
     border-style: dashed;
-    color: $color-white;
-    background: $color-bg-secondary;
+    color: var(--app-text);
+    background: var(--app-surface);
 
     @include hover {
       transform: translateY(-1px);

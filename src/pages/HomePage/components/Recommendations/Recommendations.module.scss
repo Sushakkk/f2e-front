@@ -10,10 +10,11 @@
   line-height: 15px;
   padding: 2px 8px 4px;
 
-  background: $color-bg-tertiary;
-  border: 1px solid $color-white;
+  background: rgba(var(--app-surface-rgb), 0.92);
+  border: 1px solid rgba(255, 255, 255, 0.7);
   border-top: none;
   border-radius: 0 0 6px 6px;
+  color: #fff;
 }
 
 .overlay {
@@ -36,6 +37,7 @@
 .title {
   font-weight: 600;
   font-size: 32px;
+  color: #fff;
 
   @include mobile {
     font-size: 16px;
@@ -46,7 +48,7 @@
 .subtitle {
   font-size: 20px;
 
-  color: $color-white-secondary;
+  color: rgba(255, 255, 255, 0.84);
 
   @include mobile {
     font-size: 14px;
@@ -72,6 +74,7 @@
   font-weight: 600;
   font-size: 24px;
   flex-shrink: 0;
+  color: #fff;
 
   @include mobile {
     font-size: 14px;

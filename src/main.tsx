@@ -7,6 +7,7 @@ import { createRoot } from 'react-dom/client';
 import { rootStore } from 'store/globals/root';
 import { fixActive } from 'utils/browser';
 import { initSentry, initEruda } from 'utils/init';
+import { initTheme } from 'utils/theme';
 
 import './styles/global.scss';
 
@@ -14,6 +15,7 @@ import App from './App';
 
 const startApp = () => {
   fixActive();
+  initTheme();
 
   initEruda(rootStore.appParamsStore.isDev);
   initSentry(rootStore.appParamsStore);

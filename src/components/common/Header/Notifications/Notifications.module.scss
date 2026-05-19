@@ -32,12 +32,10 @@
   right: 0;
   top: calc(100% + 10px);
   width: min(92vw, 380px);
-  background: $color-bg-secondary;
-  border: 1px solid rgba($color-white, 0.12);
+  background: var(--app-surface);
+  border: 1px solid var(--app-border);
   border-radius: 16px;
-  box-shadow:
-    0 20px 60px rgba($color-black, 0.45),
-    0 8px 24px rgba($color-black, 0.35);
+  box-shadow: var(--app-popover-shadow);
   overflow: hidden;
   z-index: 60;
   transform-origin: top right;
@@ -60,7 +58,7 @@
   align-items: center;
   justify-content: space-between;
   padding: 12px 12px 10px;
-  border-bottom: 1px solid rgba($color-white, 0.08);
+  border-bottom: 1px solid var(--app-border);
 }
 
 .popoverActions {
@@ -95,19 +93,19 @@
   width: 34px;
   height: 34px;
   border-radius: 12px;
-  border: 1px solid rgba($color-white, 0.12);
-  background: rgba($color-white, 0.04);
-  color: rgba($color-white, 0.9);
+  border: 1px solid var(--app-border);
+  background: rgba(var(--app-text-rgb), 0.04);
+  color: rgba(var(--app-text-rgb), 0.9);
   cursor: pointer;
 
   @include hover {
-    background: rgba($color-white, 0.06);
+    background: rgba(var(--app-text-rgb), 0.06);
   }
 }
 
 .empty {
   padding: 18px 14px;
-  color: rgba($color-white, 0.72);
+  color: rgba(var(--app-text-rgb), 0.72);
   font-size: 13px;
   text-align: center;
 }
@@ -141,12 +139,12 @@
   cursor: pointer;
 
   @include hover {
-    background: rgba($color-white, 0.04);
+    background: rgba(var(--app-text-rgb), 0.04);
   }
 }
 
 .itemUnread {
-  background: rgba($color-white, 0.03);
+  background: rgba(var(--app-text-rgb), 0.03);
 }
 
 .itemDot {
@@ -183,13 +181,13 @@
 
 .itemTime {
   font-size: 12px;
-  color: rgba($color-white, 0.55);
+  color: rgba(var(--app-text-rgb), 0.55);
   white-space: nowrap;
 }
 
 .itemText {
   font-size: 13px;
-  color: rgba($color-white, 0.72);
+  color: rgba(var(--app-text-rgb), 0.72);
   line-height: 1.25;
   overflow: hidden;
 }
@@ -223,12 +221,12 @@
 }
 
 .itemActionDanger {
-  color: rgba($color-white, 0.9);
-  background: rgba($color-white, 0.08);
-  border-color: rgba($color-white, 0.16);
+  color: rgba(var(--app-text-rgb), 0.9);
+  background: rgba(var(--app-text-rgb), 0.08);
+  border-color: rgba(var(--app-text-rgb), 0.16);
 
   @include hover {
-    background: rgba($color-white, 0.14);
+    background: rgba(var(--app-text-rgb), 0.14);
   }
 }
 

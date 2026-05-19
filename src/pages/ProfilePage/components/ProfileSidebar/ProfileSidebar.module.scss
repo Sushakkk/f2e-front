@@ -21,8 +21,8 @@
 .toggle {
   display: flex;
   border-radius: 10px;
-  background: $color-bg-secondary;
-  border: 1px solid $color-bg-tertiary;
+  background: var(--app-surface);
+  border: 1px solid var(--app-border-strong);
   padding: 3px;
   gap: 2px;
 }
@@ -36,20 +36,20 @@
   border-radius: 8px;
   font-size: 13px;
   font-weight: 600;
-  color: $color-white-secondary;
+  color: var(--app-text-secondary);
   cursor: pointer;
   transition:
     background 200ms ease,
     color 200ms ease;
 
   @include hover {
-    color: $color-white;
+    color: var(--app-text);
   }
 }
 
 .toggleBtn_active {
   background: $color-accent;
-  color: $color-white;
+  color: #fff;
 }
 
 .items {
@@ -87,7 +87,7 @@
   border-radius: 10px;
   font-size: 14px;
   font-weight: 500;
-  color: $color-white-secondary;
+  color: var(--app-text-secondary);
   cursor: pointer;
   transition:
     background 200ms ease,
@@ -95,8 +95,8 @@
   white-space: nowrap;
 
   @include hover {
-    background: $color-bg-tertiary;
-    color: $color-white;
+    background: var(--app-surface-2);
+    color: var(--app-text);
   }
 }
 
@@ -107,5 +107,5 @@
 
 .item_active {
   background: $color-accent;
-  color: $color-white;
+  color: #fff;
 }

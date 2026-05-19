@@ -24,34 +24,23 @@ const Filters: React.FC<Props> = observer(({ store, onClose, onScrollToTop }) =>
   }, [danceStylesStore]);
 
   const handleTypesChange = React.useCallback((v: string[]) => store.setTypes(v), [store]);
-
   const handleLevelsChange = React.useCallback((next: string[]) => store.setLevels(next), [store]);
-
   const handleDateRangeChange = React.useCallback(
     ({ from, to }: { from: string; to: string }) => store.setDateRange(from, to),
     [store]
   );
-
   const handleTimeFromChange = React.useCallback((v: string) => store.setTimeFrom(v), [store]);
-
   const handleTimeToChange = React.useCallback((v: string) => store.setTimeTo(v), [store]);
-
-  const handleWeekdaysChange = React.useCallback(
-    (next: string[]) => store.setWeekdays(next),
-    [store]
-  );
-
+  const handleWeekdaysChange = React.useCallback((next: string[]) => store.setWeekdays(next), [
+    store,
+  ]);
   const handleTeachersChange = React.useCallback((v: string[]) => store.setTeachers(v), [store]);
-
   const handleStudiosChange = React.useCallback((v: string[]) => store.setStudios(v), [store]);
-
   const handleCitiesChange = React.useCallback((v: string[]) => store.setCities(v), [store]);
-
   const handlePriceFromChange = React.useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => store.setPriceFrom(e.target.value),
     [store]
   );
-
   const handlePriceToChange = React.useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => store.setPriceTo(e.target.value),
     [store]

@@ -2,10 +2,14 @@
 
 .card {
   border-radius: 24px;
-  background: linear-gradient(180deg, rgba($color-white, 0.02), rgba($color-white, 0.01)),
-    $color-bg-secondary;
-  border: 1px solid rgba($color-white, 0.06);
-  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.12);
+  background: linear-gradient(
+      180deg,
+      rgba(var(--app-text-rgb), 0.02),
+      rgba(var(--app-text-rgb), 0.01)
+    ),
+    var(--app-surface);
+  border: 1px solid var(--app-border);
+  box-shadow: 0 18px 40px rgba(var(--app-text-rgb), 0.08);
 }
 
 .cardHeader {
@@ -25,7 +29,7 @@
   margin-top: 6px;
   font-size: 15px;
   line-height: 1.5;
-  color: $color-white-secondary;
+  color: var(--app-text-secondary);
 }
 
 .cardContent {

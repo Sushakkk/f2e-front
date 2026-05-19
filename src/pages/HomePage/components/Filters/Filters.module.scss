@@ -2,10 +2,11 @@
 
 .root {
   width: 100%;
-  border: 1px solid $color-bg-tertiary;
+  border: 1px solid var(--app-border-strong);
   border-radius: 12px;
   padding: 0 20px 20px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  background: var(--app-bg);
+  box-shadow: 0 4px 12px rgba(var(--app-text-rgb), 0.08);
 
   @include mobile {
     display: flex;
@@ -25,10 +26,10 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  background: $color-black;
+  background: var(--app-bg);
   gap: 12px;
   margin-bottom: 16px;
-  border-bottom: 1px solid $color-bg-tertiary;
+  border-bottom: 1px solid var(--app-border-strong);
   padding: 8px 0;
 }
 
@@ -44,7 +45,7 @@
   border-radius: 10px;
   border: 1px solid transparent;
   background: transparent;
-  color: $color-white;
+  color: var(--app-text);
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -53,11 +54,11 @@
   line-height: 1;
 
   @include hover {
-    background: rgba($color-white, 0.06);
+    background: rgba(var(--app-text-rgb), 0.06);
   }
 
   &:active {
-    background: rgba($color-white, 0.1);
+    background: rgba(var(--app-text-rgb), 0.1);
   }
 
   &:focus-visible {
@@ -74,7 +75,7 @@
   display: block;
   margin-bottom: 12px;
   font-weight: 600;
-  color: $color-white;
+  color: var(--app-text);
   font-size: 16px;
 }
 
@@ -89,11 +90,11 @@
 }
 
 .optionBtn {
-  background: $color-bg-secondary;
-  border: 1px solid $color-bg-tertiary;
+  background: var(--app-surface);
+  border: 1px solid var(--app-border-strong);
   border-radius: 999px;
   padding: 10px 18px;
-  color: $color-white;
+  color: var(--app-text);
   cursor: pointer;
   transition:
     background-color 150ms ease,
@@ -148,7 +149,7 @@
   flex: 0 0 auto;
   font-size: 12px;
   line-height: 14px;
-  color: rgba($color-white, 0.75);
+  color: rgba(var(--app-text-rgb), 0.75);
 }
 
 .rangeInlineField {
@@ -164,12 +165,12 @@
 }
 
 .priceInput {
-  background: $color-bg-secondary;
-  border: 1px solid $color-bg-tertiary;
+  background: var(--app-surface);
+  border: 1px solid var(--app-border-strong);
   border-radius: 8px;
   height: 44px;
   padding: 0 12px;
-  color: $color-white;
+  color: var(--app-text);
   width: 100%;
   min-width: 0;
   font-size: 14px;
@@ -186,7 +187,7 @@
 }
 
 .priceMeta {
-  color: rgba($color-white, 0.85);
+  color: rgba(var(--app-text-rgb), 0.85);
   white-space: nowrap;
 }
 

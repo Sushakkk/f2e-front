@@ -11,12 +11,12 @@
     radial-gradient(circle at left center, rgba($color-white, 0.08), transparent 28%),
     linear-gradient(
       135deg,
-      color.adjust($color-bg-secondary, $lightness: 3%) 0%,
-      color.adjust($color-bg-tertiary, $lightness: 4%) 56%,
-      color.adjust($color-bg, $lightness: -1%) 100%
+      rgba(var(--app-surface-rgb), 0.96) 0%,
+      rgba(var(--app-surface-2-rgb), 0.98) 56%,
+      rgba(var(--app-surface-rgb), 1) 100%
     );
-  border: 1px solid rgba($color-white, 0.08);
-  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.18);
+  border: 1px solid var(--app-border);
+  box-shadow: 0 24px 60px rgba(var(--app-text-rgb), 0.12);
 }
 
 .heroGlow {
@@ -76,14 +76,14 @@
   font-size: 12px;
   letter-spacing: 0.12em;
   text-transform: uppercase;
-  color: rgba($color-white, 0.62);
+  color: var(--app-text-secondary);
 }
 
 .userName {
   font-size: 34px;
   line-height: 1.05;
   font-weight: 700;
-  color: $color-white;
+  color: var(--app-text);
 }
 
 .userMetaRow {
@@ -98,9 +98,9 @@
   min-height: 34px;
   padding: 8px 12px;
   border-radius: 999px;
-  background: rgba($color-white, 0.08);
-  border: 1px solid rgba($color-white, 0.08);
-  color: rgba($color-white, 0.82);
+  background: rgba(var(--app-text-rgb), 0.06);
+  border: 1px solid var(--app-border);
+  color: rgba(var(--app-text-rgb), 0.82);
   font-size: 13px;
 }
 

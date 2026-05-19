@@ -99,7 +99,7 @@
   height: 180px;
   flex-shrink: 0;
   overflow: hidden;
-  border: 1px solid $color-bg-tertiary;
+  border: 1px solid var(--app-border-strong);
 
   @include mobile {
     width: 110px;
@@ -157,7 +157,7 @@
 
   padding: 2px 8px;
 
-  background: $color-bg-tertiary;
+  background: var(--app-surface-2);
   border: 2px solid $color-accent;
   border-radius: 0 0 6px 6px;
 
@@ -173,17 +173,17 @@
 .statusLabel {
   font-weight: 500;
   font-size: 14px;
-  color: $color-white-secondary;
+  color: var(--app-text-secondary);
 }
 
 .subtitle {
   font-size: 14px;
-  color: $color-white-secondary;
+  color: var(--app-text-secondary);
 }
 
 .schedule {
   font-size: 13px;
-  color: $color-white-secondary;
+  color: var(--app-text-secondary);
 }
 
 .time {

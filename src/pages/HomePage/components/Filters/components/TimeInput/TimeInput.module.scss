@@ -7,12 +7,12 @@
 }
 
 .input {
-  background: $color-bg-secondary;
-  border: 1px solid $color-bg-tertiary;
+  background: var(--app-surface);
+  border: 1px solid var(--app-border-strong);
   border-radius: 8px;
   height: 44px;
   padding: 0 12px;
-  color: $color-white;
+  color: var(--app-text);
   width: 100%;
   min-width: 0;
   font-size: 14px;
@@ -23,7 +23,7 @@
   }
 
   &::placeholder {
-    color: rgba($color-white, 0.4);
+    color: rgba(var(--app-text-rgb), 0.4);
   }
 
   &:focus-visible {
@@ -51,15 +51,15 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  color: rgba($color-white, 0.5);
+  color: rgba(var(--app-text-rgb), 0.5);
 
   @include hover {
-    color: $color-white;
-    background: rgba($color-white, 0.06);
+    color: var(--app-text);
+    background: rgba(var(--app-text-rgb), 0.06);
   }
 
   &:active {
-    background: rgba($color-white, 0.1);
+    background: rgba(var(--app-text-rgb), 0.1);
   }
 
   &:focus-visible {

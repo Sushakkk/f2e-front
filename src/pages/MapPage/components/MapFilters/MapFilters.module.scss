@@ -4,7 +4,7 @@
   position: fixed;
   inset: 0;
   z-index: 2000;
-  background: rgba($color-black, 0.5);
+  background: rgba(var(--app-text-rgb), 0.18);
   animation: fade-in 0.2s ease-out;
 }
 
@@ -24,14 +24,14 @@
   z-index: 2001;
   display: flex;
   flex-direction: column;
-  background: $color-black;
+  background: var(--app-bg);
   animation: fade-in 0.2s ease-out;
 
   @include media-up(sm) {
     inset: 0 0 0 auto;
     width: 360px;
     border-radius: 12px 0 0 12px;
-    box-shadow: -4px 0 24px rgba(0, 0, 0, 0.4);
+    box-shadow: -4px 0 24px rgba(var(--app-text-rgb), 0.18);
     animation: slide-left 0.3s ease-out;
   }
 }
@@ -54,7 +54,7 @@
   justify-content: space-between;
   gap: 12px;
   padding: 16px 20px;
-  border-bottom: 1px solid rgba($color-white, 0.08);
+  border-bottom: 1px solid var(--app-border);
 
   @include media-up(sm) {
     padding: 24px 24px 16px;
@@ -65,7 +65,7 @@
   font-weight: 700;
   font-size: 18px;
   line-height: 22px;
-  color: $color-white;
+  color: var(--app-text);
 }
 
 .closeBtn {
@@ -74,7 +74,7 @@
   border-radius: 10px;
   border: 1px solid transparent;
   background: transparent;
-  color: $color-white;
+  color: var(--app-text);
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -83,11 +83,11 @@
   line-height: 1;
 
   @include hover {
-    background: rgba($color-white, 0.06);
+    background: rgba(var(--app-text-rgb), 0.06);
   }
 
   &:active {
-    background: rgba($color-white, 0.1);
+    background: rgba(var(--app-text-rgb), 0.1);
   }
 
   &:focus-visible {
@@ -123,7 +123,7 @@
   display: block;
   margin-bottom: 12px;
   font-weight: 600;
-  color: $color-white;
+  color: var(--app-text);
   font-size: 16px;
 }
 

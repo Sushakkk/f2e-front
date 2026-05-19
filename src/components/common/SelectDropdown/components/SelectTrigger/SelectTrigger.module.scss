@@ -8,9 +8,9 @@
   gap: 10px;
   padding: 0 12px;
   border-radius: 8px;
-  border: 1px solid $color-bg-tertiary;
-  background: $color-bg-secondary;
-  color: $color-white;
+  border: 1px solid var(--app-border-strong);
+  background: var(--app-surface);
+  color: var(--app-text);
   cursor: pointer;
   transition: border-color 200ms ease;
 
@@ -41,7 +41,7 @@
 
 .btnCaret {
   flex: 0 0 auto;
-  color: rgba($color-white, 0.75);
+  color: rgba(var(--app-text-rgb), 0.75);
   font-size: 14px;
   line-height: 1;
   cursor: pointer;
@@ -53,12 +53,12 @@
 }
 
 .input {
-  background: $color-bg-secondary;
-  border: 1px solid $color-bg-tertiary;
+  background: var(--app-surface);
+  border: 1px solid var(--app-border-strong);
   border-radius: 8px;
   height: 40px;
   padding: 0 12px;
-  color: $color-white;
+  color: var(--app-text);
   width: 100%;
   min-width: 150px;
   font-size: 14px;
@@ -80,6 +80,6 @@
   right: 12px;
   top: 50%;
   transform: translateY(-50%);
-  color: rgba($color-white, 0.75);
+  color: rgba(var(--app-text-rgb), 0.75);
   cursor: pointer;
 }
