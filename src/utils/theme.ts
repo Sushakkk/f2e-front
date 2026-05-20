@@ -1,7 +1,7 @@
 export type AppTheme = 'dark' | 'light';
 
 const THEME_STORAGE_KEY = 'five-to-eight-theme';
-const DEFAULT_THEME: AppTheme = 'dark';
+const DEFAULT_THEME: AppTheme = 'light';
 
 export function getStoredTheme(): AppTheme {
   if (typeof window === 'undefined') {
