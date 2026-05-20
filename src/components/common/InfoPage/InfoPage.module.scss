@@ -54,7 +54,7 @@
 
 .text {
   margin: 0;
-  color: $color-white-secondary;
+  color: var(--app-text-secondary);
   @include text-description;
 
   &_accent {

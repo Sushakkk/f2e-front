@@ -180,7 +180,9 @@ const AuthPage: React.FC = () => {
                     type="button"
                     className={s.eyeBtn}
                     onClick={store.toggleShowConfirmPassword}
-                    aria-label={store.showConfirmPassword ? 'Скрыть пароль' : 'Показать пароль'}
+                    aria-label={
+                      store.showConfirmPassword ? 'Скрыть пароль' : 'Показать пароль'
+                    }
                   >
                     {store.showConfirmPassword ? <EyeOpen /> : <EyeClosed />}
                   </button>

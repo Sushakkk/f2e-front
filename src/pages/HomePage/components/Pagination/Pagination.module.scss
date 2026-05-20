@@ -20,9 +20,9 @@
   min-width: 40px;
   height: 40px;
   border-radius: 10px;
-  border: 1.5px solid $color-bg-tertiary;
+  border: 1.5px solid var(--app-border-strong);
   background: transparent;
-  color: $color-white;
+  color: var(--app-text);
   cursor: pointer;
   font-size: 14px;
   font-weight: 500;
@@ -87,7 +87,7 @@
   justify-content: center;
   min-width: 32px;
   height: 40px;
-  color: $color-white-secondary;
+  color: var(--app-text-secondary);
   font-size: 14px;
   user-select: none;
 }

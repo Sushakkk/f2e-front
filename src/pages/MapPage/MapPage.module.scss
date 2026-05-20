@@ -64,7 +64,8 @@
   left: 0;
   right: 0;
   z-index: 2;
-  background: $color-bg-secondary;
+  background: var(--app-surface);
+  border-top: 1px solid var(--app-border);
   border-radius: 16px 16px 0 0;
 }
 

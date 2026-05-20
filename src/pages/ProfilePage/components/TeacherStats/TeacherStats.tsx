@@ -169,10 +169,10 @@ const TeacherStats: React.FC<Props> = ({ store }) => {
                           style={{
                             color:
                               row.percent >= 70
-                                ? '#a5d6a7'
+                                ? '#2e7d32'
                                 : row.percent >= 40
-                                  ? '#fff59d'
-                                  : '#ef9a9a',
+                                  ? '#a66a00'
+                                  : '#c62828',
                           }}
                         >
                           {row.percent}%
@@ -211,10 +211,10 @@ const TeacherStats: React.FC<Props> = ({ store }) => {
                           style={{
                             color:
                               row.percent >= 70
-                                ? '#a5d6a7'
+                                ? '#2e7d32'
                                 : row.percent >= 40
-                                  ? '#fff59d'
-                                  : '#ef9a9a',
+                                  ? '#a66a00'
+                                  : '#c62828',
                           }}
                         >
                           {row.percent}%
