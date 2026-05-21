@@ -40,6 +40,8 @@ export type CalendarFormatsLocale = {
 };
 
 export const CALENDAR_FORMATS = {
+  monthHeaderFormat: (date: Date, culture?: string, loc?: CalendarFormatsLocale) =>
+    loc ? loc.format(date, 'LLLL yyyy', culture) : '',
   weekdayFormat: (date: Date, culture?: string, loc?: CalendarFormatsLocale) =>
     loc ? loc.format(date, 'EEEEEE', culture) : '',
   dayFormat: (date: Date, culture?: string, loc?: CalendarFormatsLocale) =>
