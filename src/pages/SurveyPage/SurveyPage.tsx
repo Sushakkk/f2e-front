@@ -55,8 +55,10 @@ const SurveyPage: React.FC = () => {
     () => store.cityOptions.map((city) => ({ value: city, label: city })),
     [store.cityOptions]
   );
+
   const isAllTypesSelected =
-    store.danceTypeOptions.length > 0 && store.answers.types.length === store.danceTypeOptions.length;
+    store.danceTypeOptions.length > 0 &&
+    store.answers.types.length === store.danceTypeOptions.length;
   const isAnyDaySelected = store.answers.weekdays.length === WEEKDAYS.length;
 
   const renderStepContent = () => {
@@ -259,7 +261,9 @@ const SurveyPage: React.FC = () => {
         <div className={s.content}>
           <div className={s.logo}>FiveToEight</div>
           <h1 className={s.title}>Подберем занятия для вас</h1>
-          <p className={s.subtitle}>Ответьте на несколько вопросов, и мы покажем подходящие курсы</p>
+          <p className={s.subtitle}>
+            Ответьте на несколько вопросов, и мы покажем подходящие курсы
+          </p>
           <div className={s.stepIndicator}>
             {SURVEY_STEPS.map((step, i) => (
               <button

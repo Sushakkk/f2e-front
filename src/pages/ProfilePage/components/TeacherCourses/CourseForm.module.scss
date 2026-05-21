@@ -6,7 +6,7 @@
   gap: 20px;
   padding: 20px;
   border-radius: 12px;
-  border: 1px solid $color-bg-tertiary;
+  border: 1px solid var(--app-border);
 }
 
 .header {
@@ -27,7 +27,7 @@
   font-size: 14px;
   font-weight: 500;
   line-height: 1.35;
-  color: $color-white-secondary;
+  color: var(--app-text-secondary);
 }
 
 .gallery {
@@ -104,7 +104,7 @@
   height: 36px;
   border-radius: 10px;
   border: 1px solid $color-bg-tertiary;
-  color: $color-white-secondary;
+  color: var(--app-text-secondary);
   cursor: pointer;
   transition:
     border-color 200ms ease,
@@ -176,11 +176,11 @@
   all: unset;
   font-size: 24px;
   cursor: pointer;
-  color: $color-white-secondary;
+  color: var(--app-text-secondary);
   padding: 4px 8px;
 
   @include hover {
-    color: $color-white;
+    color: var(--app-text);
   }
 }
 
@@ -226,7 +226,7 @@
 .label {
   font-size: 13px;
   font-weight: 500;
-  color: $color-white-secondary;
+  color: var(--app-text-secondary);
 }
 
 .requiredMark {
@@ -239,10 +239,10 @@
   height: var(--form-control-height);
   padding: 0 12px;
   border-radius: 8px;
-  background: $color-bg-secondary;
+  background: var(--app-surface-2);
   font-size: 14px;
-  color: $color-white;
-  border: 1px solid $color-bg-tertiary;
+  color: var(--app-text);
+  border: 1px solid var(--app-border);
   transition: border-color 200ms ease;
 
   @include hover {
@@ -254,8 +254,8 @@
   }
 
   option {
-    background: $color-bg-secondary;
-    color: $color-white;
+    background: var(--app-surface);
+    color: var(--app-text);
   }
 }
 
@@ -279,10 +279,10 @@
   box-sizing: border-box;
   padding: 10px 14px;
   border-radius: 8px;
-  background: $color-bg-secondary;
+  background: var(--app-surface-2);
   font-size: 14px;
-  color: $color-white;
-  border: 1px solid $color-bg-tertiary;
+  color: var(--app-text);
+  border: 1px solid var(--app-border);
   resize: vertical;
   white-space: pre-wrap;
   word-wrap: break-word;
@@ -317,13 +317,13 @@
   min-width: 0;
   flex: 1 1 220px;
   font-size: 14px;
-  color: $color-white-secondary;
+  color: var(--app-text-secondary);
 }
 
 .sameLocationStudioLabel {
   font-size: 12px;
   font-weight: 500;
-  color: $color-white-secondary;
+  color: var(--app-text-secondary);
 }
 
 .checkboxRow {
@@ -334,18 +334,18 @@
   width: fit-content;
   padding: 8px 12px;
   border-radius: 10px;
-  border: 1px solid $color-bg-tertiary;
-  background: $color-bg-secondary;
+  border: 1px solid var(--app-border);
+  background: var(--app-surface-2);
   cursor: pointer;
   font-size: 14px;
-  color: $color-white-secondary;
+  color: var(--app-text-secondary);
   transition:
     border-color 200ms ease,
     background-color 200ms ease;
 
   @include hover {
     border-color: rgba($color-accent, 0.55);
-    background: rgba($color-bg-secondary, 0.9);
+    background: rgba($color-accent, 0.08);
   }
 }
 
@@ -361,7 +361,7 @@
   height: 18px;
   border-radius: 5px;
   border: 1px solid $color-bg-tertiary;
-  background: $color-bg;
+  background: var(--app-bg);
   transition:
     border-color 200ms ease,
     background-color 200ms ease;
@@ -382,7 +382,7 @@
 }
 
 .checkboxText {
-  color: $color-white;
+  color: var(--app-text);
 }
 
 .checkboxInput:checked + .checkboxIndicator {
@@ -405,7 +405,8 @@
   gap: 12px;
   padding: 16px;
   border-radius: 10px;
-  border: 1px solid $color-bg-tertiary;
+  border: 1px solid var(--app-border);
+  background: var(--app-surface);
 }
 
 .scheduleFields {
@@ -425,7 +426,7 @@
 .scheduleLabel {
   font-size: 12px;
   font-weight: 500;
-  color: $color-white-secondary;
+  color: var(--app-text-secondary);
 }
 
 .scheduleTimeRow {
@@ -476,13 +477,13 @@
     margin: 0;
     font-size: 16px;
     font-weight: 600;
-    color: $color-white;
+    color: var(--app-text);
   }
 
   &__empty {
     margin: 0;
     font-size: 14px;
-    color: $color-white-secondary;
+    color: var(--app-text-secondary);
   }
 
   &__tableScroll {
@@ -503,7 +504,7 @@
     min-width: 760px;
     border-radius: 12px;
     overflow: hidden;
-    border: 1px solid $color-bg-tertiary;
+    border: 1px solid var(--app-border);
   }
 
   &__head,
@@ -521,23 +522,23 @@
 
   &__head {
     padding: 10px 16px;
-    background-color: $color-bg-tertiary;
+    background-color: var(--app-surface-2);
     font-size: 12px;
     font-weight: 600;
-    color: $color-white-secondary;
+    color: var(--app-text-secondary);
     text-transform: uppercase;
     letter-spacing: 0.5px;
   }
 
   &__row {
     padding: 12px 16px;
-    background-color: $color-bg-secondary;
-    border-bottom: 1px solid $color-bg-tertiary;
+    background-color: var(--app-surface);
+    border-bottom: 1px solid var(--app-border);
     font-size: 14px;
     transition: background 200ms ease;
 
     @include hover {
-      background-color: $color-bg-tertiary;
+      background-color: var(--app-surface-2);
     }
 
     &_cancelled {
@@ -584,7 +585,7 @@
   }
 
   &__statusCompleted {
-    color: $color-white-secondary;
+    color: var(--app-text-secondary);
   }
 
   &__colAction {

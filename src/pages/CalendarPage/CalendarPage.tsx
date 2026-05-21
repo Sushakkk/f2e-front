@@ -1,4 +1,4 @@
-import { format, parse, startOfWeek, getDay } from 'date-fns';
+import { format, getDay, parse, startOfWeek } from 'date-fns';
 import { ru } from 'date-fns/locale';
 import { observer } from 'mobx-react';
 import * as React from 'react';

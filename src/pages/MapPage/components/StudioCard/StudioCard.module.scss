@@ -37,7 +37,9 @@
   gap: 16px;
   padding: 12px;
   border-radius: 16px;
-  background: $color-bg-secondary;
+  background: var(--app-surface);
+  border: 1px solid var(--app-border);
+  box-shadow: var(--app-popover-shadow);
   animation: slide-up 0.3s ease-out;
   cursor: pointer;
   transition: transform 150ms ease, border-color 150ms ease;
@@ -92,19 +94,19 @@
   margin: 0;
   font-size: 17px;
   font-weight: 600;
-  color: $color-white;
+  color: var(--app-text);
 }
 
 .address {
   margin: 0;
   font-size: 13px;
-  color: $color-white-secondary;
+  color: var(--app-text-secondary);
   line-height: 1.4;
 }
 
 .meta {
   margin: 0;
   font-size: 13px;
-  color: $color-white-secondary;
+  color: var(--app-text-secondary);
   line-height: 1.4;
 }

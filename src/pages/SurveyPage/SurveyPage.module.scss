@@ -75,12 +75,12 @@
   width: 100%;
   max-width: 520px;
   border-radius: 24px;
-  background: rgba($color-bg-tertiary, 0.6);
+  background: rgba(var(--app-surface-rgb), 0.88);
   backdrop-filter: blur(24px);
-  border: 1px solid rgba($color-white, 0.06);
+  border: 1px solid var(--app-border);
   box-shadow:
-    0 8px 32px rgba($color-black, 0.4),
-    inset 0 1px 0 rgba($color-white, 0.04);
+    0 20px 50px rgba(0, 0, 0, 0.12),
+    inset 0 1px 0 rgba(255, 255, 255, 0.35);
   margin: 0 10px;
 
   @include mobile {
@@ -122,7 +122,7 @@
   background: none;
   border: none;
   cursor: pointer;
-  color: $color-white-secondary;
+  color: var(--app-text-secondary);
   border-radius: 12px;
   transition:
     color 200ms ease,
@@ -146,11 +146,11 @@
   width: 40px;
   height: 40px;
   padding: 0;
-  background: rgba($color-white, 0.06);
-  border: 1px solid rgba($color-white, 0.08);
+  background: var(--app-surface-2);
+  border: 1px solid var(--app-border);
   margin-bottom: 5px;
   border-radius: 50%;
-  color: $color-white-secondary;
+  color: var(--app-text-secondary);
   cursor: pointer;
   transition:
     color 200ms ease,
@@ -159,7 +159,7 @@
     transform 200ms ease;
 
   @include hover {
-    color: $color-white;
+    color: var(--app-text);
     background: rgba($color-accent, 0.18);
     border-color: rgba($color-accent, 0.5);
     transform: scale(1.05);
@@ -190,6 +190,7 @@
   font-size: 22px;
   font-weight: 600;
   text-align: center;
+  color: var(--app-text);
 
   @include mobile {
     font-size: 18px;
@@ -199,7 +200,7 @@
 .subtitle {
   margin: 0 0 24px;
   font-size: 14px;
-  color: $color-white-secondary;
+  color: var(--app-text-secondary);
   text-align: center;
 
   @include mobile {
@@ -218,14 +219,14 @@
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  background: rgba($color-white, 0.2);
+  background: rgba(var(--app-text-rgb), 0.2);
   border: none;
   cursor: pointer;
   padding: 0;
   transition: background 200ms ease;
 
   @include hover {
-    background: rgba($color-white, 0.35);
+    background: rgba(var(--app-text-rgb), 0.35);
   }
 }
 
@@ -261,7 +262,7 @@
 .stepSubtitle {
   margin: 0 0 20px;
   font-size: 13px;
-  color: $color-white-secondary;
+  color: var(--app-text-secondary);
   text-align: center;
 }
 
@@ -277,9 +278,9 @@
   border-radius: 20px;
   font-size: 14px;
   font-weight: 500;
-  color: $color-white-secondary;
-  background: rgba($color-bg, 0.7);
-  border: 1px solid rgba($color-white, 0.08);
+  color: var(--app-text-secondary);
+  background: var(--app-surface-2);
+  border: 1px solid var(--app-border);
   cursor: pointer;
   transition:
     border-color 200ms ease,
@@ -289,14 +290,14 @@
   @include hover {
     border-color: rgba($color-accent, 0.5);
     background: rgba($color-accent, 0.08);
-    color: $color-white;
+    color: var(--app-text);
   }
 }
 
 .chipActive {
   border-color: $color-accent;
   background: rgba($color-accent, 0.2);
-  color: $color-white;
+  color: var(--app-text);
 }
 
 .options {
@@ -310,9 +311,9 @@
   border-radius: 12px;
   font-size: 15px;
   font-weight: 500;
-  color: $color-white-secondary;
-  background: rgba($color-bg, 0.7);
-  border: 1px solid rgba($color-white, 0.08);
+  color: var(--app-text-secondary);
+  background: var(--app-surface-2);
+  border: 1px solid var(--app-border);
   cursor: pointer;
   text-align: left;
   transition:
@@ -323,14 +324,14 @@
   @include hover {
     border-color: rgba($color-accent, 0.5);
     background: rgba($color-accent, 0.08);
-    color: $color-white;
+    color: var(--app-text);
   }
 }
 
 .optionActive {
   border-color: $color-accent;
   background: rgba($color-accent, 0.2);
-  color: $color-white;
+  color: var(--app-text);
 }
 
 .actions {
@@ -346,7 +347,7 @@
 .skipLink {
   margin-top: 20px;
   font-size: 13px;
-  color: rgba($color-white, 0.5);
+  color: var(--app-text-secondary);
   background: none;
   border: none;
   cursor: pointer;
@@ -355,6 +356,6 @@
   transition: color 200ms ease;
 
   @include hover {
-    color: $color-white-secondary;
+    color: var(--app-text);
   }
 }
